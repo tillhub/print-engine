@@ -3,7 +3,6 @@ plugins {
     kotlin(Dependencies.KotlinPlugins.KAPT)
     id(Dependencies.Plugins.LIBRARY)
     id(Dependencies.Plugins.DETEKT) version Versions.Plugins.DETEKT
-    id(Dependencies.Plugins.HILT)
     id(Dependencies.Plugins.PUBLISH)
 }
 
@@ -30,10 +29,6 @@ android {
         targetCompatibility = ConfigData.JAVA_VERSION
     }
 
-    hilt {
-        enableExperimentalClasspathAggregation = true
-    }
-
     tasks.withType<Test> {
         useJUnitPlatform()
     }
@@ -52,9 +47,17 @@ android {
 }
 
 dependencies {
-    // Groups
+    // Core Dependencies
     implementDependencyGroup(Dependencies.Groups.CORE)
-    // Timber
+
+    // Pax Dependencies
+    implementation(project(Dependencies.Modules.PAX))
+    implementation(Dependencies.Google.ZXING)
+
+    // Sunmi Dependencies
+    implementation(Dependencies.Sunmi.PRINTER)
+
+    // Utils
     implementation(Dependencies.Tools.TIMBER)
 
     // Unit tests

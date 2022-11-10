@@ -14,22 +14,15 @@ object Versions {
 
     object AndroidX {
         const val CORE_KTX = "1.7.0"
-        const val APP_COMPAT = "1.3.1"
-
-        const val CONSTRAINT_LAYOUT = "2.1.1"
-
-        const val FRAGMENT = "1.4.0"
     }
 
     object Google {
-        const val MATERIAL = "1.4.0"
+        const val ZXING = "3.5.0"
         const val HILT = "2.38.1"
-        const val MLKIT = "17.0.0"
     }
 
-    object CameraX {
-        const val CAMERA_X = "1.1.0-beta01"
-        const val CAMERA_VIEW = "1.1.0-beta01"
+    object Sunmi {
+        const val PRINTER = "1.0.19"
     }
 
     object Testing {
@@ -42,10 +35,5 @@ object Versions {
 
     object AndroidTest {
         const val CORE = "1.4.0"
-        const val RUNNER = "1.4.0"
-        const val RULES = "1.4.0"
-        const val JUNIT = "1.1.3"
-        const val TRUTH = "1.4.0"
-        const val ESPRESSO_CORE = "3.4.0"
     }
 }
