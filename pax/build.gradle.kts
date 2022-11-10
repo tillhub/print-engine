@@ -2,11 +2,14 @@ plugins {
     id(Dependencies.Plugins.LIBRARY)
 }
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 android {
     compileSdk = ConfigData.targetSdkVersion
     defaultConfig {
-        minSdk = ConfigData.minSdkVersion
-        targetSdk = ConfigData.targetSdkVersion
         ndk {
             abiFilters.add("armeabi-v7a")
         }
