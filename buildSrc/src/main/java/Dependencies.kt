@@ -49,10 +49,6 @@ object Dependencies {
         const val CORE = "androidx.test:core-ktx:${Versions.AndroidTest.CORE}"
     }
 
-    object Modules {
-        const val PAX = ":pax"
-    }
-
     object Groups {
         val CORE = arrayListOf<Dependency>().apply {
             add(Dependency.Implementation(AndroidX.CORE_KTX))

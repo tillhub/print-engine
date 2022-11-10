@@ -18,6 +18,9 @@ android {
     defaultConfig {
         minSdk = ConfigData.minSdkVersion
         targetSdk = ConfigData.targetSdkVersion
+        ndk {
+            abiFilters.add("armeabi-v7a")
+        }
     }
 
     buildFeatures {
@@ -49,9 +52,9 @@ android {
 dependencies {
     // Core Dependencies
     implementDependencyGroup(Dependencies.Groups.CORE)
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     // Pax Dependencies
-    implementation(project(Dependencies.Modules.PAX))
     implementation(Dependencies.Google.ZXING)
 
     // Sunmi Dependencies
