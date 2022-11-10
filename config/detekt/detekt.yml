@@ -1,0 +1,44 @@
+build:
+    maxIssues: 1
+
+complexity:
+    TooManyFunctions:
+        ignorePrivate: true
+        thresholdInClasses: 25
+        thresholdInInterfaces: 25
+        thresholdInObjects: 25
+
+exceptions:
+    SwallowedException:
+        active: false
+    PrintStackTrace:
+        active: false
+
+formatting:
+    ParameterListWrapping:
+        active: false
+    MaximumLineLength:
+        active: false
+
+empty-blocks:
+    EmptyFunctionBlock:
+        ignoreOverridden: true
+
+potential-bugs:
+    UnnecessaryNotNullOperator:
+        active: true
+    UnsafeCast:
+        active: true
+
+style:
+    ForbiddenComment:
+        active: false
+    MagicNumber:
+        ignoreNumbers: ['-1', '0', '1', '2', '50', '100', '1000']
+        ignorePropertyDeclaration: true
+        ignoreLocalVariableDeclaration: true
+        ignoreAnnotation: true
+        ignoreEnums: true
+        ignoreRanges: true
+    VarCouldBeVal:
+        active: true
