@@ -65,6 +65,7 @@ dependencies {
 
     // Unit tests
     implementDependencyGroup(Dependencies.Groups.TEST_LIBRARIES)
+    implementDependencyGroup(Dependencies.Groups.TEST_ROBOLECTRIC)
 }
 
 afterEvaluate {

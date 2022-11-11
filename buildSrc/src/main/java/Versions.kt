@@ -28,12 +28,12 @@ object Versions {
     object Testing {
         const val JUNIT = "4.13.2"
         const val MOCKK = "1.12.0"
-        const val ROBOLECTRIC = "4.7.2"
+        const val ROBOLECTRIC = "4.9"
         const val KOTEST = "4.6.3"
         const val KOTEST_ROBOLECTRIC = "0.4.0"
     }
 
     object AndroidTest {
-        const val CORE = "1.4.0"
+        const val CORE = "1.5.0"
     }
 }
