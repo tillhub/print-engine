@@ -4,7 +4,6 @@ object Dependencies {
     object Plugins {
         const val LIBRARY = "com.android.library"
         const val DETEKT = "io.gitlab.arturbosch.detekt"
-        const val HILT = "dagger.hilt.android.plugin"
         const val PUBLISH = "maven-publish"
     }
 
@@ -27,9 +26,11 @@ object Dependencies {
     }
 
     object Google {
-        const val HILT = "com.google.dagger:hilt-android:${Versions.Google.HILT}"
-        const val HILT_COMPILER = "com.google.dagger:hilt-android-compiler:${Versions.Google.HILT}"
-        const val HILT_TESTING = "com.google.dagger:hilt-android-testing:${Versions.Google.HILT}"
+        const val ZXING = "com.google.zxing:core:${Versions.Google.ZXING}"
+    }
+
+    object Sunmi {
+        const val PRINTER = "com.sunmi:printerlibrary:${Versions.Sunmi.PRINTER}"
     }
 
     object Testing {
@@ -51,8 +52,6 @@ object Dependencies {
     object Groups {
         val CORE = arrayListOf<Dependency>().apply {
             add(Dependency.Implementation(AndroidX.CORE_KTX))
-            add(Dependency.Implementation(Google.HILT))
-            add(Dependency.Kapt(Google.HILT_COMPILER))
             add(Dependency.Implementation(Kotlin.COROUTINES))
         }
 
@@ -68,8 +67,6 @@ object Dependencies {
 
         val TEST_ROBOLECTRIC = arrayListOf<Dependency>().apply {
             add(Dependency.TestImplementation(AndroidTesting.CORE))
-            add(Dependency.TestImplementation(Google.HILT_TESTING))
-            add(Dependency.KaptTest(Google.HILT_COMPILER))
             add(Dependency.TestImplementation(Testing.ROBOLECTRIC))
             add(Dependency.TestImplementation(Testing.KOTEST_ROBOLECTRIC))
         }

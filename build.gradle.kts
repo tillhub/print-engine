@@ -3,7 +3,6 @@ plugins {
     kotlin(Dependencies.KotlinPlugins.KAPT)
     id(Dependencies.Plugins.LIBRARY)
     id(Dependencies.Plugins.DETEKT) version Versions.Plugins.DETEKT
-    id(Dependencies.Plugins.HILT)
     id(Dependencies.Plugins.PUBLISH)
 }
 
@@ -19,6 +18,9 @@ android {
     defaultConfig {
         minSdk = ConfigData.minSdkVersion
         targetSdk = ConfigData.targetSdkVersion
+        ndk {
+            abiFilters.add("armeabi-v7a")
+        }
     }
 
     buildFeatures {
@@ -28,10 +30,6 @@ android {
     compileOptions {
         sourceCompatibility = ConfigData.JAVA_VERSION
         targetCompatibility = ConfigData.JAVA_VERSION
-    }
-
-    hilt {
-        enableExperimentalClasspathAggregation = true
     }
 
     tasks.withType<Test> {
@@ -52,13 +50,22 @@ android {
 }
 
 dependencies {
-    // Groups
+    // Core Dependencies
     implementDependencyGroup(Dependencies.Groups.CORE)
-    // Timber
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+
+    // Pax Dependencies
+    implementation(Dependencies.Google.ZXING)
+
+    // Sunmi Dependencies
+    implementation(Dependencies.Sunmi.PRINTER)
+
+    // Utils
     implementation(Dependencies.Tools.TIMBER)
 
     // Unit tests
     implementDependencyGroup(Dependencies.Groups.TEST_LIBRARIES)
+    implementDependencyGroup(Dependencies.Groups.TEST_ROBOLECTRIC)
 }
 
 afterEvaluate {
