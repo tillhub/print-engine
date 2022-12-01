@@ -27,6 +27,16 @@ android {
         viewBinding = true
     }
 
+    buildTypes {
+        getByName(ConfigData.BuildType.RELEASE) {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
     compileOptions {
         sourceCompatibility = ConfigData.JAVA_VERSION
         targetCompatibility = ConfigData.JAVA_VERSION
