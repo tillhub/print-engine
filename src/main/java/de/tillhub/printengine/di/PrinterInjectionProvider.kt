@@ -5,6 +5,8 @@ import de.tillhub.printengine.analytics.PrintAnalytics
 import de.tillhub.printengine.data.PrinterManufacturer
 import de.tillhub.printengine.emulated.EmulatedPrinter
 import de.tillhub.printengine.pax.PaxPrinter
+import de.tillhub.printengine.pax.barcode.BarcodeEncoder
+import de.tillhub.printengine.pax.barcode.BarcodeEncoderImpl
 import de.tillhub.printengine.sunmi.SunmiPrinter
 
 object PrinterInjectionProvider {
@@ -15,5 +17,9 @@ object PrinterInjectionProvider {
             PrinterManufacturer.SUNMI -> SunmiPrinter(analytics = analytics)
             PrinterManufacturer.UNKNOWN -> EmulatedPrinter()
         }
+    }
+
+    fun provideBarcodeEncoder(): BarcodeEncoder {
+        return BarcodeEncoderImpl()
     }
 }
