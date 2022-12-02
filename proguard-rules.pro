@@ -22,6 +22,7 @@
 
 -keep class de.tillhub.printengine.Printer
 -keep class de.tillhub.printengine.pax.barcode.BarcodeEncoder
+-keep class de.tillhub.printengine.di.PrinterInjectionProvider
 
 -keep class com.pax.** {
     *;
