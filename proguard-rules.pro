@@ -20,6 +20,9 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+-keep class de.tillhub.printengine.analytics.PrintAnalytics {
+    *;
+}
 -keep class de.tillhub.printengine.Printer {
     *;
 }
