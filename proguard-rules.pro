@@ -20,6 +20,9 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+-keep class de.tillhub.printengine.Printer
+-keep class de.tillhub.printengine.pax.barcode.BarcodeEncoder
+
 -keep class com.pax.** {
     *;
 }
