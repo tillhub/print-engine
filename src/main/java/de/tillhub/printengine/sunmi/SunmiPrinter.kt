@@ -33,7 +33,7 @@ class SunmiPrinter(
         enabled = false
     }
 
-    override suspend fun getPrinterState(): PrinterState =
+    override fun getPrinterState(): PrinterState =
         printerService.withPrinterOrDefault(default = PrinterState.Error.Unknown) {
             it.getPrinterState()
         }
