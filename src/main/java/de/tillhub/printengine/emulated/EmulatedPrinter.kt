@@ -3,12 +3,14 @@ package de.tillhub.printengine.emulated
 import android.content.Context
 import android.graphics.Bitmap
 import de.tillhub.printengine.Printer
-import de.tillhub.printengine.analytics.PrintAnalytics
 import de.tillhub.printengine.data.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 
+/**
+ * EmulatedPrinter is used when Printer is not available or supported by device
+ */
 class EmulatedPrinter : Printer {
 
     override fun connect(context: Context) {
@@ -16,7 +18,7 @@ class EmulatedPrinter : Printer {
     }
 
     override fun observeConnection(): Flow<PrinterConnectionState> = flow {
-        emit(PrinterConnectionState.PrinterConnected)
+        emit(PrinterConnectionState.PrinterNotAvailable)
     }
 
     override fun enable() {
@@ -27,7 +29,7 @@ class EmulatedPrinter : Printer {
         logInfo("printer disabled")
     }
 
-    override suspend fun getPrinterState(): PrinterState = PrinterState.Connected
+    override suspend fun getPrinterState(): PrinterState = PrinterState.PrinterNotDetected
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> {
         return PrinterResult.Success(PrinterInfo(
