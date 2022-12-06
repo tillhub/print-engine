@@ -131,6 +131,24 @@ class PaxPrinterController(
     }
 
     /**
+     * Sets printing intensity (darkness of the print)
+     *  DEFAULT: 100%
+     *  LIGHT: 50%
+     *  DARK: 150%
+     *  DARKER: 250%
+     *  DARKEST: 500%
+     */
+    override fun setIntensity(intensity: PrintingIntensity) {
+        printerService.setGray(when (intensity) {
+            PrintingIntensity.DEFAULT -> DEFAULT_INTENSITY
+            PrintingIntensity.LIGHT -> LIGHT_INTENSITY
+            PrintingIntensity.DARK -> DARK_INTENSITY
+            PrintingIntensity.DARKER -> DARKER_INTENSITY
+            PrintingIntensity.DARKEST -> DARKEST_INTENSITY
+        })
+    }
+
+    /**
      * Start printer and prints data in buffer.This is synchronous interface.
      */
     override fun start() {
@@ -163,6 +181,12 @@ class PaxPrinterController(
     }
 
     companion object {
+        private const val DEFAULT_INTENSITY = 1
+        private const val LIGHT_INTENSITY = 50
+        private const val DARK_INTENSITY = 150
+        private const val DARKER_INTENSITY = 250
+        private const val DARKEST_INTENSITY = 500
+
         const val FULL_PAPER_CUT = 0
         const val PAPER_FEEDER_DIVIDER = 20
         const val PAPER_FEEDER_LENGTH_END = 180

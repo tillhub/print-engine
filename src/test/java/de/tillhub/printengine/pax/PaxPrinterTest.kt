@@ -37,6 +37,7 @@ class PaxPrinterTest : DescribeSpec({
             every { sendRawData(any()) } just Runs
             every { feedPaper() } just Runs
             every { cutPaper() } just Runs
+            every { setIntensity(any()) } just Runs
             every { start() } just Runs
             coEvery { getPrinterInfo() } returns PrinterInfo(
                 serialNumber = "n/a",
@@ -106,71 +107,157 @@ class PaxPrinterTest : DescribeSpec({
             printer.enable()
         }
 
-        it("printText") {
-            printer.printText("text_to_print")
+        describe("default intensity") {
+            it("printText") {
+                printer.printText("text_to_print")
 
-            verify {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printText("text_to_print")
-                controller.feedPaper()
-                controller.start()
+                verify {
+                    controller.setIntensity(PrintingIntensity.DEFAULT)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.printText("text_to_print")
+                    controller.feedPaper()
+                    controller.start()
+                }
+            }
+
+            it("printReceipt without image") {
+                printer.printReceipt("receipt_to_print", null)
+
+                verify {
+                    controller.setIntensity(PrintingIntensity.DEFAULT)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.printText("receipt_to_print")
+                    controller.feedPaper()
+                    controller.start()
+                    analytics.logPrintReceipt("receipt_to_print")
+                }
+
+                verify(inverse = true) {
+                    controller.printImage(any())
+                }
+            }
+
+            it("printReceipt with image") {
+                printer.printReceipt("receipt_to_print", bitmap)
+
+                verify {
+                    controller.setIntensity(PrintingIntensity.DEFAULT)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.printImage(bitmap)
+                    controller.printText("receipt_to_print")
+                    controller.feedPaper()
+                    controller.start()
+                    analytics.logPrintReceipt("receipt_to_print")
+                }
+            }
+
+            it("printReceipt") {
+                printer.printReceipt("raw_receipt_text", "barcode", bitmap, "signature_qr_code")
+
+                verify {
+                    controller.setIntensity(PrintingIntensity.DEFAULT)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.printImage(bitmap)
+                    controller.printText("raw_receipt_text")
+                    controller.printQr("signature_qr_code")
+                    controller.printBarcode("barcode")
+                    controller.feedPaper()
+                    controller.start()
+                    analytics.logPrintReceipt("raw_receipt_text")
+                }
+            }
+
+            it("print RawReceipt") {
+                val rawReceipt = RawReceipt(RawPrinterData("raw_data".toByteArray()))
+                printer.printReceipt(rawReceipt)
+
+                verify {
+                    controller.setIntensity(PrintingIntensity.DEFAULT)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.sendRawData(rawReceipt.rawData)
+                    controller.feedPaper()
+                    controller.start()
+                    analytics.logPrintReceipt("raw_data")
+                }
             }
         }
 
-        it("printReceipt without image") {
-            printer.printReceipt("receipt_to_print", null)
-
-            verify {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printText("receipt_to_print")
-                controller.feedPaper()
-                controller.start()
-                analytics.logPrintReceipt("receipt_to_print")
+        describe("changed intensity") {
+            beforeTest {
+                printer.setPrintingIntensity(PrintingIntensity.DARK)
             }
 
-            verify(inverse = true) {
-                controller.printImage(any())
+            it("printText") {
+                printer.printText("text_to_print")
+
+                verify {
+                    controller.setIntensity(PrintingIntensity.DARK)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.printText("text_to_print")
+                    controller.feedPaper()
+                    controller.start()
+                }
             }
-        }
 
-        it("printReceipt with image") {
-            printer.printReceipt("receipt_to_print", bitmap)
+            it("printReceipt without image") {
+                printer.printReceipt("receipt_to_print", null)
 
-            verify {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printImage(bitmap)
-                controller.printText("receipt_to_print")
-                controller.feedPaper()
-                controller.start()
-                analytics.logPrintReceipt("receipt_to_print")
+                verify {
+                    controller.setIntensity(PrintingIntensity.DARK)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.printText("receipt_to_print")
+                    controller.feedPaper()
+                    controller.start()
+                    analytics.logPrintReceipt("receipt_to_print")
+                }
+
+                verify(inverse = true) {
+                    controller.printImage(any())
+                }
             }
-        }
 
-        it("printReceipt") {
-            printer.printReceipt("raw_receipt_text", "barcode", bitmap, "signature_qr_code")
+            it("printReceipt with image") {
+                printer.printReceipt("receipt_to_print", bitmap)
 
-            verify {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printImage(bitmap)
-                controller.printText("raw_receipt_text")
-                controller.printQr("signature_qr_code")
-                controller.printBarcode("barcode")
-                controller.feedPaper()
-                controller.start()
-                analytics.logPrintReceipt("raw_receipt_text")
+                verify {
+                    controller.setIntensity(PrintingIntensity.DARK)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.printImage(bitmap)
+                    controller.printText("receipt_to_print")
+                    controller.feedPaper()
+                    controller.start()
+                    analytics.logPrintReceipt("receipt_to_print")
+                }
             }
-        }
 
-        it("print RawReceipt") {
-            val rawReceipt = RawReceipt(RawPrinterData("raw_data".toByteArray()))
-            printer.printReceipt(rawReceipt)
+            it("printReceipt") {
+                printer.printReceipt("raw_receipt_text", "barcode", bitmap, "signature_qr_code")
 
-            verify {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.sendRawData(rawReceipt.rawData)
-                controller.feedPaper()
-                controller.start()
-                analytics.logPrintReceipt("raw_data")
+                verify {
+                    controller.setIntensity(PrintingIntensity.DARK)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.printImage(bitmap)
+                    controller.printText("raw_receipt_text")
+                    controller.printQr("signature_qr_code")
+                    controller.printBarcode("barcode")
+                    controller.feedPaper()
+                    controller.start()
+                    analytics.logPrintReceipt("raw_receipt_text")
+                }
+            }
+
+            it("print RawReceipt") {
+                val rawReceipt = RawReceipt(RawPrinterData("raw_data".toByteArray()))
+                printer.printReceipt(rawReceipt)
+
+                verify {
+                    controller.setIntensity(PrintingIntensity.DARK)
+                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                    controller.sendRawData(rawReceipt.rawData)
+                    controller.feedPaper()
+                    controller.start()
+                    analytics.logPrintReceipt("raw_data")
+                }
             }
         }
 

@@ -14,6 +14,7 @@ interface Printer {
     fun disable()
     fun observeConnection(): Flow<PrinterConnectionState>
     fun getPrinterState(): PrinterState
+    fun setPrintingIntensity(intensity: PrintingIntensity)
     suspend fun getPrinterInfo(): PrinterResult<PrinterInfo>
     suspend fun printText(text: String): PrinterResult<Unit>
     suspend fun printReceipt(text: String, headerImage: Bitmap?): PrinterResult<Unit>

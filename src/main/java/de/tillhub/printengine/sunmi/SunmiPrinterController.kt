@@ -153,6 +153,10 @@ class SunmiPrinterController(
         }
     }
 
+    override fun setIntensity(intensity: PrintingIntensity) {
+        // not needed for sunmi devices
+    }
+
     override fun start() {
         // not needed for sunmi devices
     }
