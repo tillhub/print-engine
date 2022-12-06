@@ -29,7 +29,7 @@ class EmulatedPrinter : Printer {
         logInfo("printer disabled")
     }
 
-    override suspend fun getPrinterState(): PrinterState = PrinterState.PrinterNotDetected
+    override fun getPrinterState(): PrinterState = PrinterState.PrinterNotDetected
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> {
         return PrinterResult.Success(PrinterInfo(

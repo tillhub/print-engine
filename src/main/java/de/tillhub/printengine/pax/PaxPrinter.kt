@@ -33,7 +33,7 @@ class PaxPrinter(
         enabled = false
     }
 
-    override suspend fun getPrinterState(): PrinterState =
+    override fun getPrinterState(): PrinterState =
         paxPrintService.withPrinterOrDefault(default = PrinterState.Error.Unknown) {
             it.getPrinterState()
         }
