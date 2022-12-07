@@ -26,6 +26,9 @@
 -keep class de.tillhub.printengine.Printer {
     *;
 }
+-keep class de.tillhub.printengine.Printer$Companion {
+    *;
+}
 -keep class de.tillhub.printengine.pax.barcode.BarcodeEncoder {
     *;
 }

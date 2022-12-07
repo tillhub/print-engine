@@ -38,6 +38,10 @@ class SunmiPrinter(
             it.getPrinterState()
         }
 
+    override fun setPrintingIntensity(intensity: PrintingIntensity) {
+        // not needed for sunmi devices
+    }
+
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
         printerService.withPrinterCatching {
             it.getPrinterInfo().let { info ->

@@ -37,6 +37,7 @@ class PaxPrinterControllerTest : FunSpec({
             every { printStr(any(), any()) } just Runs
             every { step(any()) } just Runs
             every { printBitmap(any()) } just Runs
+            every { setGray(any()) } just Runs
             every { cutPaper(any()) } just Runs
             every { start() } returns 0
         }
@@ -172,6 +173,22 @@ class PaxPrinterControllerTest : FunSpec({
 
         verify(exactly = 1) {
             printerService.cutPaper(0)
+        }
+    }
+
+    test("setIntensity") {
+        printerController.setIntensity(PrintingIntensity.DEFAULT)
+        printerController.setIntensity(PrintingIntensity.LIGHT)
+        printerController.setIntensity(PrintingIntensity.DARK)
+        printerController.setIntensity(PrintingIntensity.DARKER)
+        printerController.setIntensity(PrintingIntensity.DARKEST)
+
+        verify(ordering = Ordering.ORDERED) {
+            printerService.setGray(1)
+            printerService.setGray(50)
+            printerService.setGray(150)
+            printerService.setGray(250)
+            printerService.setGray(500)
         }
     }
 

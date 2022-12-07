@@ -18,6 +18,7 @@ class PaxPrinter(
 ) : Printer {
 
     private var enabled: Boolean = true
+    private var printingIntensity: PrintingIntensity = PrintingIntensity.DEFAULT
 
     override fun connect(context: Context) {
         paxPrintService.initPrinterService(context)
@@ -37,6 +38,10 @@ class PaxPrinter(
         paxPrintService.withPrinterOrDefault(default = PrinterState.Error.Unknown) {
             it.getPrinterState()
         }
+
+    override fun setPrintingIntensity(intensity: PrintingIntensity) {
+        printingIntensity = intensity
+    }
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
         paxPrintService.withPrinterCatching {
@@ -65,6 +70,7 @@ class PaxPrinter(
                    |""".trimMargin()
             )
             if (enabled) {
+                it.setIntensity(printingIntensity)
                 it.setFontSize(it.getPrinterInfo().printingFontType)
                 it.printText(text)
                 it.feedPaper()
@@ -83,6 +89,7 @@ class PaxPrinter(
                    |""".trimMargin()
             )
             if (enabled) {
+                printer.setIntensity(printingIntensity)
                 printer.setFontSize(printer.getPrinterInfo().printingFontType)
                 headerImage?.let { printer.printImage(it) }
                 printer.printText(text)
@@ -113,6 +120,7 @@ class PaxPrinter(
                    |""".trimMargin()
             )
             if (enabled) {
+                printer.setIntensity(printingIntensity)
                 printer.setFontSize(printer.getPrinterInfo().printingFontType)
                 headerImage?.let { printer.printImage(it) }
                 printer.printText(rawReceiptText)
@@ -136,6 +144,7 @@ class PaxPrinter(
                    |""".trimMargin()
             )
             if (enabled) {
+                printer.setIntensity(printingIntensity)
                 printer.setFontSize(printer.getPrinterInfo().printingFontType)
                 printer.sendRawData(receipt.rawData)
                 printer.feedPaper()
