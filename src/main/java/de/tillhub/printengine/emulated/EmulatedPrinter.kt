@@ -31,6 +31,10 @@ class EmulatedPrinter : Printer {
 
     override fun getPrinterState(): PrinterState = PrinterState.PrinterNotDetected
 
+    override fun setPrintingIntensity(intensity: PrintingIntensity) {
+        logInfo("setting printer intensity to: ${intensity.name}")
+    }
+
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> {
         return PrinterResult.Success(PrinterInfo(
             serialNumber = "n/a",
