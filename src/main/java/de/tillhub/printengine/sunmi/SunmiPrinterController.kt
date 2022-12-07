@@ -4,7 +4,13 @@ import android.graphics.Bitmap
 import android.os.RemoteException
 import com.sunmi.peripheral.printer.SunmiPrinterService
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.*
+import de.tillhub.printengine.data.PrinterInfo
+import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.data.PrintingFontType
+import de.tillhub.printengine.data.RawPrinterData
+import de.tillhub.printengine.data.PrintingPaperSpec
+import de.tillhub.printengine.data.PrinterServiceVersion
+import de.tillhub.printengine.data.PrintingIntensity
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 

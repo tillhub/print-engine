@@ -1,7 +1,11 @@
 package de.tillhub.printengine
 
 import android.graphics.Bitmap
-import de.tillhub.printengine.data.*
+import de.tillhub.printengine.data.PrinterInfo
+import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.data.PrintingFontType
+import de.tillhub.printengine.data.RawPrinterData
+import de.tillhub.printengine.data.PrintingIntensity
 
 interface PrinterController {
     fun sendRawData(data: RawPrinterData)

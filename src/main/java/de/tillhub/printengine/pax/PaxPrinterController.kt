@@ -6,7 +6,13 @@ import com.pax.dal.entity.EFontTypeAscii
 import com.pax.dal.entity.EFontTypeExtCode
 import com.pax.dal.exceptions.PrinterDevException
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.*
+import de.tillhub.printengine.data.PrinterInfo
+import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.data.PrintingFontType
+import de.tillhub.printengine.data.RawPrinterData
+import de.tillhub.printengine.data.PrintingPaperSpec
+import de.tillhub.printengine.data.PrinterServiceVersion
+import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.pax.barcode.BarcodeEncoder
 import de.tillhub.printengine.pax.barcode.BarcodeType
 
