@@ -71,6 +71,7 @@ class EmulatedPrinter : Printer {
         rawReceiptText: String,
         barcode: String,
         headerImage: Bitmap?,
+        footerImage: Bitmap?,
         signatureQr: String?
     ): PrinterResult<Unit> {
         logInfo(

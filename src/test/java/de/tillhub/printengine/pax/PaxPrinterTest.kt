@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class PaxPrinterTest : DescribeSpec({
 
     lateinit var bitmap: Bitmap
+    lateinit var footerBitmap: Bitmap
     lateinit var controller: PrinterController
     lateinit var service: PrintService
     lateinit var analytics: PrintAnalytics
@@ -24,6 +25,7 @@ class PaxPrinterTest : DescribeSpec({
 
     beforeSpec {
         bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
+        footerBitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
     }
 
     beforeTest {
@@ -152,12 +154,19 @@ class PaxPrinterTest : DescribeSpec({
             }
 
             it("printReceipt") {
-                printer.printReceipt("raw_receipt_text", "barcode", bitmap, "signature_qr_code")
+                printer.printReceipt(
+                    "raw_receipt_text",
+                    "barcode",
+                    bitmap,
+                    footerBitmap,
+                    "signature_qr_code"
+                )
 
                 verify {
                     controller.setIntensity(PrintingIntensity.DEFAULT)
                     controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                     controller.printImage(bitmap)
+                    controller.printImage(footerBitmap)
                     controller.printText("raw_receipt_text")
                     controller.printQr("signature_qr_code")
                     controller.printBarcode("barcode")
@@ -231,12 +240,19 @@ class PaxPrinterTest : DescribeSpec({
             }
 
             it("printReceipt") {
-                printer.printReceipt("raw_receipt_text", "barcode", bitmap, "signature_qr_code")
+                printer.printReceipt(
+                    "raw_receipt_text",
+                    "barcode",
+                    bitmap,
+                    footerBitmap,
+                    "signature_qr_code"
+                )
 
                 verify {
                     controller.setIntensity(PrintingIntensity.DARK)
                     controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                     controller.printImage(bitmap)
+                    controller.printImage(footerBitmap)
                     controller.printText("raw_receipt_text")
                     controller.printQr("signature_qr_code")
                     controller.printBarcode("barcode")
@@ -322,10 +338,11 @@ class PaxPrinterTest : DescribeSpec({
         }
 
         it("printReceipt") {
-            printer.printReceipt("raw_receipt_text", "barcode", bitmap, "signature_qr_code")
+            printer.printReceipt("raw_receipt_text", "barcode", bitmap, footerBitmap, "signature_qr_code")
 
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                controller.printImage(footerBitmap)
                 controller.printImage(bitmap)
                 controller.printText("raw_receipt_text")
                 controller.printQr("signature_qr_code")

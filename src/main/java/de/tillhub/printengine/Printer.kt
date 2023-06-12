@@ -22,6 +22,7 @@ interface Printer {
         rawReceiptText: String,
         barcode: String,
         headerImage: Bitmap?,
+        footerImage: Bitmap?,
         signatureQr: String?
     ): PrinterResult<Unit>
     suspend fun printReceipt(receipt: RawReceipt): PrinterResult<Unit>
