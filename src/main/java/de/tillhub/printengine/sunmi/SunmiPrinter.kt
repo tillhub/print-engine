@@ -99,6 +99,7 @@ class SunmiPrinter(
         rawReceiptText: String,
         barcode: String,
         headerImage: Bitmap?,
+        footerImage: Bitmap?,
         signatureQr: String?,
     ): PrinterResult<Unit> =
         printerService.withPrinterCatching {
@@ -120,6 +121,7 @@ class SunmiPrinter(
                     it.printQr(qrData)
                 }
                 it.printBarcode(barcode)
+                if (footerImage != null) it.printImage(footerImage)
                 it.feedPaper()
                 analytics.logPrintReceipt(rawReceiptText)
             }
