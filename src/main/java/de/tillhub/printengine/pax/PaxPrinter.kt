@@ -106,6 +106,7 @@ class PaxPrinter(
         rawReceiptText: String,
         barcode: String,
         headerImage: Bitmap?,
+        footerImage: Bitmap?,
         signatureQr: String?
     ): PrinterResult<Unit> =
         paxPrintService.withPrinterCatching { printer ->
@@ -126,6 +127,7 @@ class PaxPrinter(
                 printer.printText(rawReceiptText)
                 signatureQr?.let { printer.printQr(it) }
                 printer.printBarcode(barcode)
+                footerImage?.let { printer.printImage(it) }
                 printer.feedPaper()
                 printer.start()
                 analytics.logPrintReceipt(rawReceiptText)
