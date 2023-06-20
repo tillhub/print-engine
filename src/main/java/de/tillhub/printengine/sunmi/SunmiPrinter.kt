@@ -120,8 +120,8 @@ class SunmiPrinter(
                 signatureQr?.let { qrData ->
                     it.printQr(qrData)
                 }
-                it.printBarcode(barcode)
                 if (footerImage != null) it.printImage(footerImage)
+                it.printBarcode(barcode)
                 it.feedPaper()
                 analytics.logPrintReceipt(rawReceiptText)
             }

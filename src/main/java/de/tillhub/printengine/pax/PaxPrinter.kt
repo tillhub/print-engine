@@ -126,8 +126,8 @@ class PaxPrinter(
                 headerImage?.let { printer.printImage(it) }
                 printer.printText(rawReceiptText)
                 signatureQr?.let { printer.printQr(it) }
-                printer.printBarcode(barcode)
                 footerImage?.let { printer.printImage(it) }
+                printer.printBarcode(barcode)
                 printer.feedPaper()
                 printer.start()
                 analytics.logPrintReceipt(rawReceiptText)
