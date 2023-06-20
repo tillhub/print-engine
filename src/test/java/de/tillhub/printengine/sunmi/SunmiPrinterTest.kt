@@ -147,10 +147,10 @@ class SunmiPrinterTest : DescribeSpec({
             verify {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printImage(bitmap)
-                controller.printImage(footerBitmap)
                 controller.printText("raw_receipt_text")
                 controller.printQr("signature_qr_code")
                 controller.printBarcode("barcode")
+                controller.printImage(footerBitmap)
                 controller.feedPaper()
                 analytics.logPrintReceipt("raw_receipt_text")
             }
@@ -227,10 +227,10 @@ class SunmiPrinterTest : DescribeSpec({
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printImage(bitmap)
-                controller.printImage(footerBitmap)
                 controller.printText("raw_receipt_text")
                 controller.printQr("signature_qr_code")
                 controller.printBarcode("barcode")
+                controller.printImage(footerBitmap)
                 controller.feedPaper()
             }
         }
