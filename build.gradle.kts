@@ -1,23 +1,13 @@
 plugins {
-    kotlin(Dependencies.KotlinPlugins.ANDROID)
-    kotlin(Dependencies.KotlinPlugins.KAPT)
-    id(Dependencies.Plugins.LIBRARY)
-    id(Dependencies.Plugins.DETEKT) version Versions.Plugins.DETEKT
-    id(Dependencies.Plugins.PUBLISH)
-}
-
-repositories {
-    google()
-    mavenCentral()
-    gradlePluginPortal()
+    id("com.android.library")
+    id("kotlin-android")
+    id("maven-publish")
 }
 
 android {
     compileSdk = ConfigData.targetSdkVersion
-
     defaultConfig {
         minSdk = ConfigData.minSdkVersion
-        targetSdk = ConfigData.targetSdkVersion
         ndk {
             abiFilters.add("armeabi-v7a")
         }
@@ -57,25 +47,26 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    namespace = "de.tillhub.printengine"
 }
 
 dependencies {
     // Core Dependencies
-    implementDependencyGroup(Dependencies.Groups.CORE)
+    implementation(libs.bundles.core)
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     // Pax Dependencies
-    implementation(Dependencies.Google.ZXING)
+    implementation(libs.google.zxing)
 
     // Sunmi Dependencies
-    implementation(Dependencies.Sunmi.PRINTER)
+    implementation(libs.sunmi.printer)
 
     // Utils
-    implementation(Dependencies.Tools.TIMBER)
+    implementation(libs.timber)
 
     // Unit tests
-    implementDependencyGroup(Dependencies.Groups.TEST_LIBRARIES)
-    implementDependencyGroup(Dependencies.Groups.TEST_ROBOLECTRIC)
+    testImplementation(libs.bundles.testing)
+    testImplementation(libs.bundles.robolectric)
 }
 
 afterEvaluate {

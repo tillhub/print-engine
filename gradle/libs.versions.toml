@@ -1,0 +1,74 @@
+[versions]
+# Define the dependency versions
+kotlin = "1.8.20"
+kotlinCoroutines = "1.7.0-RC"
+androidGradlePlugin = "8.0.2"
+core = "1.10.1"
+zxing = "3.5.0"
+sunmiPrinter = "1.0.19"
+timber = "5.0.1"
+
+junit = "4.13.2"
+mockk = "1.13.7"
+robolectric = "4.10"
+kotest = "4.6.4"
+kotestRobolectric = "0.4.0"
+coreTest = "1.5.0"
+
+[plugins]
+# Define the plugins
+kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
+
+[libraries]
+# Define the libraries
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinCoroutines" }
+kotlin-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinCoroutines" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
+
+google-zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+sunmi-printer = { group = "com.sunmi", name = "printerlibrary", version.ref = "sunmiPrinter" }
+
+# Unit testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
+mockk-agent = { group = "io.mockk", name = "mockk-agent", version.ref = "mockk" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+kotest-api = { group = "io.kotest", name = "kotest-framework-api", version.ref = "kotest" }
+kotest-runner = { group = "io.kotest", name = "kotest-runner-junit5-jvm", version.ref = "kotest" }
+kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core-jvm", version.ref = "kotest" }
+kotest-property = { group = "io.kotest", name = "kotest-property-jvm", version.ref = "kotest" }
+kotest-robolectric = { group = "io.kotest.extensions", name = "kotest-extensions-robolectric", version.ref = "kotestRobolectric" }
+
+androidx-test-core = { group = "androidx.test", name = "core-ktx", version.ref = "coreTest" }
+
+# Dependencies of the included build-logic
+gradlePlugin-android = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
+gradlePlugin-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+
+[bundles]
+core = [
+    "androidx.core",
+    "kotlin.coroutines"
+]
+testing = [
+    "junit",
+    "mockk",
+    "mockk.agent",
+    "mockk.android",
+    "kotest.runner",
+    "kotest.assertions",
+    "kotest.property",
+    "kotest-api",
+    "kotlin.coroutines.test"
+]
+robolectric = [
+    "robolectric",
+    "kotest.robolectric",
+    "androidx.test.core"
+]
