@@ -30,6 +30,7 @@ android {
     compileOptions {
         sourceCompatibility = ConfigData.JAVA_VERSION
         targetCompatibility = ConfigData.JAVA_VERSION
+        isCoreLibraryDesugaringEnabled = true
     }
 
     tasks.withType<Test> {
@@ -39,6 +40,9 @@ android {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
             jvmTarget = ConfigData.JVM_TARGET
+            freeCompilerArgs = listOf(
+                "-Xstring-concat=inline"
+            )
         }
     }
 
@@ -53,6 +57,7 @@ android {
 dependencies {
     // Core Dependencies
     implementation(libs.bundles.core)
+    coreLibraryDesugaring(libs.android.desugarJdkLibs)
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     // Pax Dependencies

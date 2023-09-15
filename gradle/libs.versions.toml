@@ -1,12 +1,13 @@
 [versions]
 # Define the dependency versions
-kotlin = "1.8.20"
-kotlinCoroutines = "1.7.0-RC"
-androidGradlePlugin = "8.0.2"
-core = "1.10.1"
+kotlin = "1.8.22"
+kotlinCoroutines = "1.7.1"
+androidGradlePlugin = "8.1.1"
+core = "1.12.0"
 zxing = "3.5.0"
 sunmiPrinter = "1.0.19"
 timber = "5.0.1"
+androidDesugarJdkLibs = "1.2.2"
 
 junit = "4.13.2"
 mockk = "1.13.7"
@@ -26,6 +27,7 @@ android-library = { id = "com.android.library", version.ref = "androidGradlePlug
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinCoroutines" }
 kotlin-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinCoroutines" }
+android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
