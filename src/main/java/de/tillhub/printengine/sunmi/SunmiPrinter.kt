@@ -25,12 +25,8 @@ class SunmiPrinter(
 
     override fun observeConnection(): Flow<PrinterConnectionState> = printerService.printerConnectionState
 
-    override fun enable() {
-        enabled = true
-    }
-
-    override fun disable() {
-        enabled = false
+    override fun setEnabled(enabled: Boolean) {
+        this.enabled = enabled
     }
 
     override fun getPrinterState(): PrinterState =

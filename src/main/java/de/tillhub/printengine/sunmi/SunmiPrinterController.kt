@@ -11,6 +11,7 @@ import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingIntensity
+import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -46,7 +47,7 @@ class SunmiPrinterController(
             SunmiPrinterState.FirmwareUpgradeFailed -> PrinterState.Error.FirmwareUpgradeFailed
         } }
     } catch (e: RemoteException) {
-        e.printStackTrace()
+        Timber.e(e)
         PrinterState.Error.Unknown
     }
 
@@ -139,6 +140,7 @@ class SunmiPrinterController(
         try {
             printerService.autoOutPaper(null)
         } catch (e: RemoteException) {
+            Timber.e(e)
             print3Line()
         }
     }
@@ -155,6 +157,7 @@ class SunmiPrinterController(
         try {
             printerService.cutPaper(null)
         } catch (e: RemoteException) {
+            Timber.e(e)
             // not handled
         }
     }

@@ -15,6 +15,7 @@ import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.pax.barcode.BarcodeEncoder
 import de.tillhub.printengine.pax.barcode.BarcodeType
+import timber.log.Timber
 
 /**
  * A wrapper to simplify access and interaction with [IPrinter].
@@ -48,7 +49,7 @@ class PaxPrinterController(
             PaxPrinterState.DataPackageTooLong -> PrinterState.Error.DataPackageTooLong
         }
     } catch (e: PrinterDevException) {
-        e.printStackTrace()
+        Timber.e(e)
         PrinterState.Error.Unknown
     }
 

@@ -5,6 +5,7 @@ import android.os.RemoteException
 import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.data.PrinterResult
 import kotlinx.coroutines.flow.StateFlow
+import timber.log.Timber
 
 abstract class PrintService {
     abstract var printController: PrinterController?
@@ -16,6 +17,7 @@ abstract class PrintService {
             try {
                 body(it)
             } catch (e: RemoteException) {
+                Timber.e(e)
                 default
             }
         } ?: default

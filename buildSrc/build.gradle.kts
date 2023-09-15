@@ -13,4 +13,7 @@ dependencies {
 
     /* Depend on the android gradle plugin, since we want to access it in our plugin */
     implementation(libs.gradlePlugin.android)
+
+    /* Depend on the detekt plugin */
+    implementation(libs.gradlePlugin.detekt)
 }
