@@ -106,7 +106,7 @@ class PaxPrinterTest : DescribeSpec({
 
     describe("printer enabled") {
         beforeTest {
-            printer.enable()
+            printer.setEnabled(true)
         }
 
         describe("default intensity") {
@@ -296,7 +296,7 @@ class PaxPrinterTest : DescribeSpec({
 
     describe("printer disabled") {
         beforeTest {
-            printer.disable()
+            printer.setEnabled(false)
         }
 
         it("printText") {
