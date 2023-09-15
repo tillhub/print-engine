@@ -48,7 +48,6 @@ class EmulatedPrinter : Printer {
         ))
     }
 
-
     override suspend fun printText(text: String): PrinterResult<Unit> {
         logInfo("printing text '$text'")
         return PrinterResult.Success(Unit)

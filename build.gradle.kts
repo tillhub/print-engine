@@ -69,6 +69,7 @@ dependencies {
 
     // Utils
     implementation(libs.timber)
+    detektPlugins(libs.detekt.formatting)
 
     // Unit tests
     testImplementation(libs.bundles.testing)

@@ -17,13 +17,6 @@ kotest = "4.6.4"
 kotestRobolectric = "0.4.0"
 coreTest = "1.5.0"
 
-[plugins]
-# Define the plugins
-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
-android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
-
 [libraries]
 # Define the libraries
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
@@ -55,6 +48,7 @@ androidx-test-core = { group = "androidx.test", name = "core-ktx", version.ref =
 gradlePlugin-android = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 gradlePlugin-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 gradlePlugin-detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
 
 [bundles]
 core = [
