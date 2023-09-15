@@ -24,15 +24,11 @@ class PaxPrinter(
         paxPrintService.initPrinterService(context)
     }
 
+    override fun setEnabled(enabled: Boolean) {
+        this.enabled = enabled
+    }
+
     override fun observeConnection(): Flow<PrinterConnectionState> = paxPrintService.printerConnectionState
-
-    override fun enable() {
-        enabled = true
-    }
-
-    override fun disable() {
-        enabled = false
-    }
 
     override fun getPrinterState(): PrinterState =
         paxPrintService.withPrinterOrDefault(default = PrinterState.Error.Unknown) {

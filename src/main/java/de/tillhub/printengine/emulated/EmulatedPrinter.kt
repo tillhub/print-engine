@@ -17,16 +17,13 @@ class EmulatedPrinter : Printer {
         logInfo("printer connected")
     }
 
+    override fun setEnabled(enabled: Boolean) {
+        if (enabled) logInfo("printer enabled")
+        else logInfo("printer disabled")
+    }
+
     override fun observeConnection(): Flow<PrinterConnectionState> = flow {
         emit(PrinterConnectionState.PrinterNotAvailable)
-    }
-
-    override fun enable() {
-        logInfo("printer enabled")
-    }
-
-    override fun disable() {
-        logInfo("printer disabled")
     }
 
     override fun getPrinterState(): PrinterState = PrinterState.PrinterNotDetected
@@ -50,7 +47,6 @@ class EmulatedPrinter : Printer {
             )
         ))
     }
-
 
     override suspend fun printText(text: String): PrinterResult<Unit> {
         logInfo("printing text '$text'")

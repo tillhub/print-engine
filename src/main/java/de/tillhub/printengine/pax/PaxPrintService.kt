@@ -10,6 +10,7 @@ import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.pax.barcode.BarcodeEncoderImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import timber.log.Timber
 
 /**
  * Print service for encapsulating connection handling, error handling and convenience methods for working with
@@ -30,10 +31,10 @@ class PaxPrintService(
                 printController = PaxPrinterController(getDal(context).printer, BarcodeEncoderImpl())
                 connectionState.value = PrinterConnectionState.PrinterConnected
             } catch (e: PrinterDevException) { // Printer Initialization
-                e.printStackTrace()
+                Timber.e(e)
                 connectionState.value = PrinterConnectionState.PrinterNotAvailable
             } catch (e: Exception) {
-                e.printStackTrace()
+                Timber.e(e)
                 connectionState.value = PrinterConnectionState.PrinterNotAvailable
             }
         }

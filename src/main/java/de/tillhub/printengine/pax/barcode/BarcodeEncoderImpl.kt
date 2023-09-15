@@ -6,6 +6,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import timber.log.Timber
 
 class BarcodeEncoderImpl : BarcodeEncoder {
 
@@ -23,7 +24,7 @@ class BarcodeEncoderImpl : BarcodeEncoder {
         val result: BitMatrix = try {
             writer.encode(content, typeConverter(type), imgWidth, imgHeight, hints)
         } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
+            Timber.e(e)
             return null
         }
 

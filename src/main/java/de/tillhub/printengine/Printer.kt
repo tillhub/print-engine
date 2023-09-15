@@ -2,7 +2,13 @@ package de.tillhub.printengine
 
 import android.content.Context
 import android.graphics.Bitmap
-import de.tillhub.printengine.data.*
+import de.tillhub.printengine.data.PrinterConnectionState
+import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.data.PrintingIntensity
+import de.tillhub.printengine.data.PrinterResult
+import de.tillhub.printengine.data.PrinterInfo
+import de.tillhub.printengine.data.RawReceipt
+import de.tillhub.printengine.data.PrintingPaperSpec
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -10,8 +16,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface Printer {
     fun connect(context: Context)
-    fun enable()
-    fun disable()
+    fun setEnabled(enabled: Boolean)
     fun observeConnection(): Flow<PrinterConnectionState>
     fun getPrinterState(): PrinterState
     fun setPrintingIntensity(intensity: PrintingIntensity)
