@@ -1,6 +1,5 @@
 package de.tillhub.printengine.pax
 
-import android.content.Context
 import android.graphics.Bitmap
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.Printer
@@ -54,7 +53,6 @@ class PaxPrinterTest : DescribeSpec({
         }
         service = mockk {
             every { printController } returns controller
-            every { initPrinterService(any()) } just Runs
         }
         analytics = mockk {
             every { logPrintReceipt(any()) } just Runs
@@ -68,14 +66,6 @@ class PaxPrinterTest : DescribeSpec({
     }
 
     describe("independent") {
-        it("connect") {
-            val context: Context = mockk()
-            printer.connect(context)
-
-            verify {
-                service.initPrinterService(context)
-            }
-        }
 
         it("observeConnection") {
             val flow = MutableStateFlow(PrinterConnectionState.PrinterConnected)
@@ -111,7 +101,14 @@ class PaxPrinterTest : DescribeSpec({
 
         describe("default intensity") {
             it("printText") {
-                printer.printText("text_to_print")
+                printer.startPrintJob(
+                    PrintJob(
+                        listOf(
+                            PrintCommand.Text("text_to_print"),
+                            PrintCommand.FeedPaper
+                        )
+                    )
+                )
 
                 verify {
                     controller.setIntensity(PrintingIntensity.DEFAULT)
@@ -122,25 +119,16 @@ class PaxPrinterTest : DescribeSpec({
                 }
             }
 
-            it("printReceipt without image") {
-                printer.printReceipt("receipt_to_print", null)
-
-                verify {
-                    controller.setIntensity(PrintingIntensity.DEFAULT)
-                    controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                    controller.printText("receipt_to_print")
-                    controller.feedPaper()
-                    controller.start()
-                    analytics.logPrintReceipt("receipt_to_print")
-                }
-
-                verify(inverse = true) {
-                    controller.printImage(any())
-                }
-            }
-
             it("printReceipt with image") {
-                printer.printReceipt("receipt_to_print", bitmap)
+                printer.startPrintJob(
+                    PrintJob(
+                        listOf(
+                            PrintCommand.Image(bitmap),
+                            PrintCommand.Text("receipt_to_print"),
+                            PrintCommand.FeedPaper
+                        )
+                    )
+                )
 
                 verify {
                     controller.setIntensity(PrintingIntensity.DEFAULT)
@@ -149,17 +137,24 @@ class PaxPrinterTest : DescribeSpec({
                     controller.printText("receipt_to_print")
                     controller.feedPaper()
                     controller.start()
-                    analytics.logPrintReceipt("receipt_to_print")
+                    analytics.logPrintReceipt("======IMAGE========\n" +
+                            "receipt_to_print\n" +
+                            "-----FEED PAPER-----")
                 }
             }
 
             it("printReceipt") {
-                printer.printReceipt(
-                    "raw_receipt_text",
-                    "barcode",
-                    bitmap,
-                    footerBitmap,
-                    "signature_qr_code"
+                printer.startPrintJob(
+                    PrintJob(
+                        listOf(
+                            PrintCommand.Image(bitmap),
+                            PrintCommand.Text("raw_receipt_text"),
+                            PrintCommand.QrCode("signature_qr_code"),
+                            PrintCommand.Barcode("barcode"),
+                            PrintCommand.Image(footerBitmap),
+                            PrintCommand.FeedPaper
+                        )
+                    )
                 )
 
                 verify {
@@ -172,21 +167,34 @@ class PaxPrinterTest : DescribeSpec({
                     controller.printImage(footerBitmap)
                     controller.feedPaper()
                     controller.start()
-                    analytics.logPrintReceipt("raw_receipt_text")
+                    analytics.logPrintReceipt("======IMAGE========\n" +
+                            "raw_receipt_text\n" +
+                            "==QR: signature_qr_code ==\n" +
+                            "==BC: barcode ==\n" +
+                            "======IMAGE========\n" +
+                            "-----FEED PAPER-----")
                 }
             }
 
             it("print RawReceipt") {
-                val rawReceipt = RawReceipt(RawPrinterData("raw_data".toByteArray()))
-                printer.printReceipt(rawReceipt)
+                val rawPrinterData = RawPrinterData("raw_data".toByteArray())
+                printer.startPrintJob(
+                    PrintJob(
+                        listOf(
+                            PrintCommand.RawData(rawPrinterData),
+                            PrintCommand.FeedPaper
+                        )
+                    )
+                )
 
                 verify {
                     controller.setIntensity(PrintingIntensity.DEFAULT)
                     controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                    controller.sendRawData(rawReceipt.rawData)
+                    controller.sendRawData(rawPrinterData)
                     controller.feedPaper()
                     controller.start()
-                    analytics.logPrintReceipt("raw_data")
+                    analytics.logPrintReceipt("raw_data\n" +
+                            "-----FEED PAPER-----")
                 }
             }
         }
@@ -197,7 +205,14 @@ class PaxPrinterTest : DescribeSpec({
             }
 
             it("printText") {
-                printer.printText("text_to_print")
+                printer.startPrintJob(
+                    PrintJob(
+                        listOf(
+                            PrintCommand.Text("text_to_print"),
+                            PrintCommand.FeedPaper
+                        )
+                    )
+                )
 
                 verify {
                     controller.setIntensity(PrintingIntensity.DARK)
@@ -209,7 +224,14 @@ class PaxPrinterTest : DescribeSpec({
             }
 
             it("printReceipt without image") {
-                printer.printReceipt("receipt_to_print", null)
+                printer.startPrintJob(
+                    PrintJob(
+                        listOf(
+                            PrintCommand.Text("receipt_to_print"),
+                            PrintCommand.FeedPaper
+                        )
+                    )
+                )
 
                 verify {
                     controller.setIntensity(PrintingIntensity.DARK)
@@ -217,7 +239,8 @@ class PaxPrinterTest : DescribeSpec({
                     controller.printText("receipt_to_print")
                     controller.feedPaper()
                     controller.start()
-                    analytics.logPrintReceipt("receipt_to_print")
+                    analytics.logPrintReceipt("receipt_to_print\n" +
+                            "-----FEED PAPER-----")
                 }
 
                 verify(inverse = true) {
@@ -226,7 +249,15 @@ class PaxPrinterTest : DescribeSpec({
             }
 
             it("printReceipt with image") {
-                printer.printReceipt("receipt_to_print", bitmap)
+                printer.startPrintJob(
+                    PrintJob(
+                        listOf(
+                            PrintCommand.Image(bitmap),
+                            PrintCommand.Text("receipt_to_print"),
+                            PrintCommand.FeedPaper
+                        )
+                    )
+                )
 
                 verify {
                     controller.setIntensity(PrintingIntensity.DARK)
@@ -235,17 +266,24 @@ class PaxPrinterTest : DescribeSpec({
                     controller.printText("receipt_to_print")
                     controller.feedPaper()
                     controller.start()
-                    analytics.logPrintReceipt("receipt_to_print")
+                    analytics.logPrintReceipt("======IMAGE========\n" +
+                            "receipt_to_print\n" +
+                            "-----FEED PAPER-----")
                 }
             }
 
             it("printReceipt") {
-                printer.printReceipt(
-                    "raw_receipt_text",
-                    "barcode",
-                    bitmap,
-                    footerBitmap,
-                    "signature_qr_code"
+                printer.startPrintJob(
+                    PrintJob(
+                        listOf(
+                            PrintCommand.Image(bitmap),
+                            PrintCommand.Text("raw_receipt_text"),
+                            PrintCommand.QrCode("signature_qr_code"),
+                            PrintCommand.Barcode("barcode"),
+                            PrintCommand.Image(footerBitmap),
+                            PrintCommand.FeedPaper
+                        )
+                    )
                 )
 
                 verify {
@@ -258,21 +296,34 @@ class PaxPrinterTest : DescribeSpec({
                     controller.printImage(footerBitmap)
                     controller.feedPaper()
                     controller.start()
-                    analytics.logPrintReceipt("raw_receipt_text")
+                    analytics.logPrintReceipt("======IMAGE========\n" +
+                            "raw_receipt_text\n" +
+                            "==QR: signature_qr_code ==\n" +
+                            "==BC: barcode ==\n" +
+                            "======IMAGE========\n" +
+                            "-----FEED PAPER-----")
                 }
             }
 
             it("print RawReceipt") {
-                val rawReceipt = RawReceipt(RawPrinterData("raw_data".toByteArray()))
-                printer.printReceipt(rawReceipt)
+                val rawPrinterData = RawPrinterData("raw_data".toByteArray())
+                printer.startPrintJob(
+                    PrintJob(
+                        listOf(
+                            PrintCommand.RawData(rawPrinterData),
+                            PrintCommand.FeedPaper
+                        )
+                    )
+                )
 
                 verify {
                     controller.setIntensity(PrintingIntensity.DARK)
                     controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                    controller.sendRawData(rawReceipt.rawData)
+                    controller.sendRawData(rawPrinterData)
                     controller.feedPaper()
                     controller.start()
-                    analytics.logPrintReceipt("raw_data")
+                    analytics.logPrintReceipt("raw_data\n" +
+                            "-----FEED PAPER-----")
                 }
             }
         }
@@ -300,7 +351,14 @@ class PaxPrinterTest : DescribeSpec({
         }
 
         it("printText") {
-            printer.printText("text_to_print")
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.Text("receipt_to_print"),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
@@ -310,23 +368,16 @@ class PaxPrinterTest : DescribeSpec({
             }
         }
 
-        it("printReceipt without image") {
-            printer.printReceipt("receipt_to_print", null)
-
-            verify(inverse = true) {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printText("receipt_to_print")
-                controller.feedPaper()
-                controller.start()
-            }
-
-            verify(inverse = true) {
-                controller.printImage(any())
-            }
-        }
-
         it("printReceipt with image") {
-            printer.printReceipt("receipt_to_print", bitmap)
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.Image(bitmap),
+                        PrintCommand.Text("receipt_to_print"),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
@@ -338,27 +389,44 @@ class PaxPrinterTest : DescribeSpec({
         }
 
         it("printReceipt") {
-            printer.printReceipt("raw_receipt_text", "barcode", bitmap, footerBitmap, "signature_qr_code")
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.Image(bitmap),
+                        PrintCommand.Text("raw_receipt_text"),
+                        PrintCommand.QrCode("signature_qr_code"),
+                        PrintCommand.Barcode("barcode"),
+                        PrintCommand.Image(footerBitmap),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printImage(bitmap)
-                controller.printText("raw_receipt_text")
-                controller.printQr("signature_qr_code")
-                controller.printBarcode("barcode")
-                controller.printImage(footerBitmap)
+                controller.printText(any())
+                controller.printQr(any())
+                controller.printBarcode(any())
+                controller.printImage(any())
                 controller.feedPaper()
                 controller.start()
             }
         }
 
         it("print RawReceipt") {
-            val rawReceipt = RawReceipt(RawPrinterData("raw_data".toByteArray()))
-            printer.printReceipt(rawReceipt)
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.RawData(RawPrinterData("raw_data".toByteArray())),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.sendRawData(rawReceipt.rawData)
+                controller.sendRawData(any())
                 controller.feedPaper()
                 controller.start()
             }

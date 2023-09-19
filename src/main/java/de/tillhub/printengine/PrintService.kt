@@ -1,6 +1,5 @@
 package de.tillhub.printengine
 
-import android.content.Context
 import android.os.RemoteException
 import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.data.PrinterResult
@@ -10,7 +9,6 @@ import timber.log.Timber
 abstract class PrintService {
     abstract var printController: PrinterController?
     abstract val printerConnectionState: StateFlow<PrinterConnectionState>
-    abstract fun initPrinterService(context: Context)
 
     inline fun <T> withPrinterOrDefault(default: T, body: (PrinterController) -> T): T {
         return printController?.let {

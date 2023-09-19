@@ -1,7 +1,5 @@
 package de.tillhub.printengine.sunmi
 
-import android.content.Context
-import android.graphics.Bitmap
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.Printer
 import de.tillhub.printengine.analytics.PrintAnalytics
@@ -13,24 +11,20 @@ import timber.log.Timber
  * Implementation of a Sunmi [Printer].
  */
 class SunmiPrinter(
-    private val printerService: PrintService = SunmiPrintService(),
-    private val analytics: PrintAnalytics
+    private val printService: PrintService,
+    private val analytics: PrintAnalytics?
 ) : Printer {
 
     private var enabled: Boolean = true
 
-    override fun connect(context: Context) {
-        printerService.initPrinterService(context)
-    }
-
-    override fun observeConnection(): Flow<PrinterConnectionState> = printerService.printerConnectionState
+    override fun observeConnection(): Flow<PrinterConnectionState> = printService.printerConnectionState
 
     override fun setEnabled(enabled: Boolean) {
         this.enabled = enabled
     }
 
     override fun getPrinterState(): PrinterState =
-        printerService.withPrinterOrDefault(default = PrinterState.Error.Unknown) {
+        printService.withPrinterOrDefault(default = PrinterState.Error.Unknown) {
             it.getPrinterState()
         }
 
@@ -39,7 +33,7 @@ class SunmiPrinter(
     }
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
-        printerService.withPrinterCatching {
+        printService.withPrinterCatching {
             it.getPrinterInfo().let { info ->
                 PrinterInfo(
                     info.serialNumber,
@@ -56,96 +50,36 @@ class SunmiPrinter(
             logWarning("getting printer info")
         }
 
-    override suspend fun printText(text: String): PrinterResult<Unit> =
-        printerService.withPrinterCatching {
+    override suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit> =
+        printService.withPrinterCatching { controller ->
             logInfo(
                 """receipt: START #################
-                   |$text
+                   |${job.description}
                    |receipt END #################
                    |""".trimMargin()
             )
-            if (enabled) {
-                it.setFontSize(it.getPrinterInfo().printingFontType)
-                it.printText(text)
-            }
-        }.doOnError {
-            logWarning("printing text '$text'")
-        }
-
-    override suspend fun printReceipt(text: String, headerImage: Bitmap?): PrinterResult<Unit> =
-        printerService.withPrinterCatching {
-            logInfo(
-                """receipt: START #################
-                   |$text
-                   |receipt END #################
-                   |""".trimMargin()
-            )
-            if (enabled) {
-                it.setFontSize(it.getPrinterInfo().printingFontType)
-                if (headerImage != null) it.printImage(headerImage)
-                it.printText(text)
-                analytics.logPrintReceipt(text)
-            }
-        }.doOnError {
-            logWarning("printing text '$text'")
-            analytics.logErrorPrintReceipt("printing text '$text'")
-        }
-
-    override suspend fun printReceipt(
-        rawReceiptText: String,
-        barcode: String,
-        headerImage: Bitmap?,
-        footerImage: Bitmap?,
-        signatureQr: String?,
-    ): PrinterResult<Unit> =
-        printerService.withPrinterCatching {
-            logInfo(
-                """receipt: START #################
-                   |$rawReceiptText
-                   |receipt SIGNATURE QR #################
-                   |$signatureQr
-                   |receipt BARCODE #################
-                   |$barcode
-                   |receipt END #################
-                   |""".trimMargin()
-            )
-            if (enabled) {
-                it.setFontSize(it.getPrinterInfo().printingFontType)
-                if (headerImage != null) it.printImage(headerImage)
-                it.printText(rawReceiptText)
-                signatureQr?.let { qrData ->
-                    it.printQr(qrData)
+            if (enabled && job.isNotEmpty) {
+                controller.setFontSize(controller.getPrinterInfo().printingFontType)
+                job.commands.forEach { command ->
+                    when (command) {
+                        is PrintCommand.Barcode -> controller.printBarcode(command.barcode)
+                        is PrintCommand.Image -> controller.printImage(command.image)
+                        is PrintCommand.QrCode -> controller.printQr(command.code)
+                        is PrintCommand.RawData -> controller.sendRawData(command.data)
+                        is PrintCommand.Text -> controller.printText(command.text)
+                        PrintCommand.CutPaper -> controller.cutPaper()
+                        PrintCommand.FeedPaper -> controller.feedPaper()
+                    }
                 }
-                if (footerImage != null) it.printImage(footerImage)
-                it.printBarcode(barcode)
-                it.feedPaper()
-                analytics.logPrintReceipt(rawReceiptText)
+                analytics?.logPrintReceipt(job.description)
             }
         }.doOnError {
-            logWarning("printing receipt '$rawReceiptText'")
-            analytics.logErrorPrintReceipt("printing receipt '$rawReceiptText'")
-        }
-
-    override suspend fun printReceipt(receipt: RawReceipt): PrinterResult<Unit> =
-        printerService.withPrinterCatching {
-            logInfo(
-                """receipt: START #################
-                   |${receipt.rawData.bytes.toString(Charsets.UTF_8)}
-                   |receipt END #################
-                   |""".trimMargin()
-            )
-            if (enabled) {
-                it.setFontSize(it.getPrinterInfo().printingFontType)
-                it.sendRawData(receipt.rawData)
-                analytics.logPrintReceipt(receipt.rawData.bytes.toString(Charsets.UTF_8))
-            }
-        }.doOnError {
-            logWarning("printing receipt '${receipt.rawData}'")
-            analytics.logErrorPrintReceipt("printing receipt '${receipt.rawData}'")
+            logWarning("printing job '${job.description}'")
+            analytics?.logErrorPrintReceipt("printing text '${job.description}'")
         }
 
     override suspend fun feedPaper(): PrinterResult<Unit> =
-        printerService.withPrinterCatching {
+        printService.withPrinterCatching {
             if (enabled) {
                 it.feedPaper()
             }
@@ -154,7 +88,7 @@ class SunmiPrinter(
         }
 
     override suspend fun cutPaper(): PrinterResult<Unit> =
-        printerService.withPrinterCatching {
+        printService.withPrinterCatching {
             if (enabled) {
                 it.cutPaper()
             }

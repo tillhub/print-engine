@@ -16,34 +16,28 @@ import timber.log.Timber
  * Print service for encapsulating connection handling, error handling and convenience methods for working with
  * [PaxPrinterController].
  */
-class PaxPrintService(
-    private var dal: IDAL? = null,
+class PaxPrintService(context: Context) : PrintService() {
+
+    private val dal: IDAL by lazy {
+        NeptuneLiteUser.getInstance().getDal(context)
+            ?: throw IllegalStateException("Error occurred, DAL is null")
+    }
     override var printController: PrinterController? = null
-) : PrintService() {
 
     private val connectionState = MutableStateFlow<PrinterConnectionState>(PrinterConnectionState.CheckingForPrinter)
     override val printerConnectionState: StateFlow<PrinterConnectionState> = connectionState
 
-    @Suppress("TooGenericExceptionCaught")
-    override fun initPrinterService(context: Context) {
-        if (printController == null) {
-            try {
-                printController = PaxPrinterController(getDal(context).printer, BarcodeEncoderImpl())
-                connectionState.value = PrinterConnectionState.PrinterConnected
-            } catch (e: PrinterDevException) { // Printer Initialization
-                Timber.e(e)
-                connectionState.value = PrinterConnectionState.PrinterNotAvailable
-            } catch (e: Exception) {
-                Timber.e(e)
-                connectionState.value = PrinterConnectionState.PrinterNotAvailable
-            }
+    init {
+        @Suppress("TooGenericExceptionCaught")
+        try {
+            printController = PaxPrinterController(dal.printer, BarcodeEncoderImpl())
+            connectionState.value = PrinterConnectionState.PrinterConnected
+        } catch (e: PrinterDevException) { // Printer Initialization
+            Timber.e(e)
+            connectionState.value = PrinterConnectionState.PrinterNotAvailable
+        } catch (e: Exception) {
+            Timber.e(e)
+            connectionState.value = PrinterConnectionState.PrinterNotAvailable
         }
-    }
-
-    private fun getDal(context: Context): IDAL {
-        if (dal == null) {
-            dal = NeptuneLiteUser.getInstance().getDal(context)
-        }
-        return dal ?: throw IllegalStateException("Error occurred, DAL is null")
     }
 }
