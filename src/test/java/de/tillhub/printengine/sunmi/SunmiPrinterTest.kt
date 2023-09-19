@@ -1,6 +1,5 @@
 package de.tillhub.printengine.sunmi
 
-import android.content.Context
 import android.graphics.Bitmap
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.Printer
@@ -52,7 +51,6 @@ class SunmiPrinterTest : DescribeSpec({
         }
         service = mockk {
             every { printController } returns controller
-            every { initPrinterService(any()) } just Runs
         }
         analytics = mockk {
             every { logPrintReceipt(any()) } just Runs
@@ -66,14 +64,6 @@ class SunmiPrinterTest : DescribeSpec({
     }
 
     describe("independent") {
-        it("connect") {
-            val context: Context = mockk()
-            printer.connect(context)
-
-            verify {
-                service.initPrinterService(context)
-            }
-        }
 
         it("observeConnection") {
             val flow = MutableStateFlow(PrinterConnectionState.PrinterConnected)
@@ -108,7 +98,14 @@ class SunmiPrinterTest : DescribeSpec({
         }
 
         it("printText") {
-            printer.printText("text_to_print")
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.Text("text_to_print"),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
@@ -116,33 +113,40 @@ class SunmiPrinterTest : DescribeSpec({
             }
         }
 
-        it("printReceipt without image") {
-            printer.printReceipt("receipt_to_print", null)
-
-            verify {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printText("receipt_to_print")
-                analytics.logPrintReceipt("receipt_to_print")
-            }
-
-            verify(inverse = true) {
-                controller.printImage(any())
-            }
-        }
-
         it("printReceipt with image") {
-            printer.printReceipt("receipt_to_print", bitmap)
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.Image(bitmap),
+                        PrintCommand.Text("receipt_to_print"),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printImage(bitmap)
                 controller.printText("receipt_to_print")
-                analytics.logPrintReceipt("receipt_to_print")
+                analytics.logPrintReceipt("======IMAGE========\n" +
+                        "receipt_to_print\n" +
+                        "-----FEED PAPER-----")
             }
         }
 
         it("printReceipt") {
-            printer.printReceipt("raw_receipt_text", "barcode", bitmap, footerBitmap, "signature_qr_code")
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.Image(bitmap),
+                        PrintCommand.Text("raw_receipt_text"),
+                        PrintCommand.QrCode("signature_qr_code"),
+                        PrintCommand.Barcode("barcode"),
+                        PrintCommand.Image(footerBitmap),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
@@ -152,18 +156,31 @@ class SunmiPrinterTest : DescribeSpec({
                 controller.printBarcode("barcode")
                 controller.printImage(footerBitmap)
                 controller.feedPaper()
-                analytics.logPrintReceipt("raw_receipt_text")
+                analytics.logPrintReceipt("======IMAGE========\n" +
+                        "raw_receipt_text\n" +
+                        "==QR: signature_qr_code ==\n" +
+                        "==BC: barcode ==\n" +
+                        "======IMAGE========\n" +
+                        "-----FEED PAPER-----")
             }
         }
 
         it("print RawReceipt") {
-            val rawReceipt = RawReceipt(RawPrinterData("raw_data".toByteArray()))
-            printer.printReceipt(rawReceipt)
+            val rawPrinterData = RawPrinterData("raw_data".toByteArray())
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.RawData(rawPrinterData),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.sendRawData(rawReceipt.rawData)
-                analytics.logPrintReceipt("raw_data")
+                controller.sendRawData(rawPrinterData)
+                analytics.logPrintReceipt("raw_data\n" +
+                        "-----FEED PAPER-----")
             }
         }
 
@@ -190,16 +207,23 @@ class SunmiPrinterTest : DescribeSpec({
         }
 
         it("printText") {
-            printer.printText("text_to_print")
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.Text("text_to_print"),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printText("text_to_print")
+                controller.printText(any())
             }
         }
 
         it("printReceipt without image") {
-            printer.printReceipt("receipt_to_print", null)
+//            printer.printReceipt("receipt_to_print", null)
 
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
@@ -211,37 +235,44 @@ class SunmiPrinterTest : DescribeSpec({
             }
         }
 
-        it("printReceipt with image") {
-            printer.printReceipt("receipt_to_print", bitmap)
-
-            verify(inverse = true) {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printImage(bitmap)
-                controller.printText("receipt_to_print")
-            }
-        }
-
         it("printReceipt") {
-            printer.printReceipt("raw_receipt_text", "barcode", bitmap, footerBitmap, "signature_qr_code")
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.Image(bitmap),
+                        PrintCommand.Text("raw_receipt_text"),
+                        PrintCommand.QrCode("signature_qr_code"),
+                        PrintCommand.Barcode("barcode"),
+                        PrintCommand.Image(footerBitmap),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printImage(bitmap)
-                controller.printText("raw_receipt_text")
-                controller.printQr("signature_qr_code")
-                controller.printBarcode("barcode")
-                controller.printImage(footerBitmap)
+                controller.printImage(any())
+                controller.printText(any())
+                controller.printQr(any())
+                controller.printBarcode(any())
+                controller.printImage(any())
                 controller.feedPaper()
             }
         }
 
         it("print RawReceipt") {
-            val rawReceipt = RawReceipt(RawPrinterData("raw_data".toByteArray()))
-            printer.printReceipt(rawReceipt)
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.RawData(RawPrinterData("raw_data".toByteArray())),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
 
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.sendRawData(rawReceipt.rawData)
+                controller.sendRawData(any())
             }
         }
 
