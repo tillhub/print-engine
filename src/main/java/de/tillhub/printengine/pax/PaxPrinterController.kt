@@ -134,9 +134,7 @@ class PaxPrinterController(
      *  -1:No cutting knife,not support
      */
     override fun cutPaper() {
-        if (printerService.cutMode != PrinterCutter.NO_CUTTING_KNIFE.value) {
-            printerService.cutPaper(PrinterCutter.FULL_PAPER_CUT.value)
-        }
+        printerService.cutPaper(FULL_PAPER_CUT)
     }
 
     /**
@@ -196,10 +194,7 @@ class PaxPrinterController(
         private const val DARKER_INTENSITY = 250
         private const val DARKEST_INTENSITY = 500
 
-        private enum class PrinterCutter(val value: Int) {
-            NO_CUTTING_KNIFE(-1),
-            FULL_PAPER_CUT(0)
-        }
+        const val FULL_PAPER_CUT = 0
         const val PAPER_FEEDER_DIVIDER = 20
         const val PAPER_FEEDER_LENGTH_END = 180
         const val CHARSET = "UTF-8"
