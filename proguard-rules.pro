@@ -38,7 +38,13 @@
 -keep class de.tillhub.printengine.PrintEngine {
     *;
 }
+-keep class de.tillhub.printengine.PrintEngine$Companion {
+    *;
+}
 -keep class de.tillhub.printengine.data.** {
+    *;
+}
+-keep public class de.tillhub.printengine.helper.SingletonHolder {
     *;
 }
 
