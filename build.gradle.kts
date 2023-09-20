@@ -20,7 +20,7 @@ android {
 
     buildTypes {
         getByName(ConfigData.BuildType.RELEASE) {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

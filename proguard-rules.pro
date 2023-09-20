@@ -38,6 +38,9 @@
 -keep class de.tillhub.printengine.PrintEngine {
     *;
 }
+-keep class de.tillhub.printengine.PrintEngine$Companion {
+    *;
+}
 -keep class de.tillhub.printengine.data.** {
     *;
 }
