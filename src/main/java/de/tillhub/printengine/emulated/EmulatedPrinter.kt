@@ -1,7 +1,5 @@
 package de.tillhub.printengine.emulated
 
-import android.content.Context
-import android.graphics.Bitmap
 import de.tillhub.printengine.Printer
 import de.tillhub.printengine.data.*
 import kotlinx.coroutines.flow.Flow
@@ -13,20 +11,13 @@ import timber.log.Timber
  */
 class EmulatedPrinter : Printer {
 
-    override fun connect(context: Context) {
-        logInfo("printer connected")
+    override fun setEnabled(enabled: Boolean) {
+        if (enabled) logInfo("printer enabled")
+        else logInfo("printer disabled")
     }
 
     override fun observeConnection(): Flow<PrinterConnectionState> = flow {
         emit(PrinterConnectionState.PrinterNotAvailable)
-    }
-
-    override fun enable() {
-        logInfo("printer enabled")
-    }
-
-    override fun disable() {
-        logInfo("printer disabled")
     }
 
     override fun getPrinterState(): PrinterState = PrinterState.PrinterNotDetected
@@ -51,46 +42,10 @@ class EmulatedPrinter : Printer {
         ))
     }
 
-
-    override suspend fun printText(text: String): PrinterResult<Unit> {
-        logInfo("printing text '$text'")
-        return PrinterResult.Success(Unit)
-    }
-
-    override suspend fun printReceipt(text: String, headerImage: Bitmap?): PrinterResult<Unit> {
+    override suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit> {
         logInfo(
             """receipt: START #################
-                   |$text
-                   |receipt END #################
-                   |""".trimMargin()
-        )
-        return PrinterResult.Success(Unit)
-    }
-
-    override suspend fun printReceipt(
-        rawReceiptText: String,
-        barcode: String,
-        headerImage: Bitmap?,
-        footerImage: Bitmap?,
-        signatureQr: String?
-    ): PrinterResult<Unit> {
-        logInfo(
-            """receipt: START #################
-                   |$rawReceiptText
-                   |receipt SIGNATURE QR #################
-                   |$signatureQr
-                   |receipt BARCODE #################
-                   |$barcode
-                   |receipt END #################
-                   |""".trimMargin()
-        )
-        return PrinterResult.Success(Unit)
-    }
-
-    override suspend fun printReceipt(receipt: RawReceipt): PrinterResult<Unit> {
-        logInfo(
-            """receipt: START #################
-                   |${receipt.rawData.bytes.toString(Charsets.UTF_8)}
+                   |${job.description}
                    |receipt END #################
                    |""".trimMargin()
         )

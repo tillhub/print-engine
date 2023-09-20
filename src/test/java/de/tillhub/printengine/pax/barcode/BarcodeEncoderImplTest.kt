@@ -17,7 +17,14 @@ class BarcodeEncoderImplTest : FunSpec({
     test("encodeAsBitmap barcode") {
         val result = barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 500, 150)
 
-        val expectedResult: BitMatrix = MultiFormatWriter().encode("barcode", BarcodeFormat.CODE_128, 500, 150, emptyMap<EncodeHintType, Any>())
+        val expectedResult: BitMatrix =
+            MultiFormatWriter().encode(
+                "barcode",
+                BarcodeFormat.CODE_128,
+                500,
+                150,
+                emptyMap<EncodeHintType, Any>()
+            )
 
         val width = expectedResult.width
         val height = expectedResult.height
@@ -31,9 +38,16 @@ class BarcodeEncoderImplTest : FunSpec({
     test("encodeAsBitmap qr code") {
         val result = barcodeEncoder.encodeAsBitmap("qrcode", BarcodeType.QR_CODE, 500, 500)
 
-        val expectedResult: BitMatrix = MultiFormatWriter().encode("qrcode", BarcodeFormat.QR_CODE, 500, 500, HashMap<EncodeHintType, Any>().apply {
-            put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.Q)
-        })
+        val expectedResult: BitMatrix =
+            MultiFormatWriter().encode(
+                "qrcode",
+                BarcodeFormat.QR_CODE,
+                500,
+                500,
+                HashMap<EncodeHintType, Any>().apply {
+                    put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.Q)
+                }
+            )
 
         val width = expectedResult.width
         val height = expectedResult.height

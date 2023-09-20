@@ -13,12 +13,13 @@ import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.data.PrinterServiceVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import timber.log.Timber
 
 /**
  * Print service for encapsulating connection handling, error handling and convenience methods for working with
  * [SunmiPrinterController].
  */
-class SunmiPrintService : PrintService() {
+class SunmiPrintService(context: Context) : PrintService() {
 
     override var printController: PrinterController? = null
     private var serviceVersion: PrinterServiceVersion = PrinterServiceVersion.Unknown
@@ -35,7 +36,7 @@ class SunmiPrintService : PrintService() {
             try {
                 InnerPrinterManager.getInstance().hasPrinter(service)
             } catch (e: InnerPrinterException) {
-                e.printStackTrace()
+                Timber.e(e)
                 false
             }.let {
                 connectionState.value = when (it) {
@@ -52,14 +53,14 @@ class SunmiPrintService : PrintService() {
         }
     }
 
-    override fun initPrinterService(context: Context) {
+    init {
         try {
             serviceVersion = getServiceVersion(context)
             if (!InnerPrinterManager.getInstance().bindService(context, innerPrinterCallback)) {
                 connectionState.value = PrinterConnectionState.PrinterNotAvailable
             }
         } catch (e: InnerPrinterException) {
-            e.printStackTrace()
+            Timber.e(e)
         }
     }
 
@@ -73,7 +74,7 @@ class SunmiPrintService : PrintService() {
                 )
             }
         } catch (e: PackageManager.NameNotFoundException) {
-            e.printStackTrace()
+            Timber.e(e)
         }
 
         return PrinterServiceVersion.Unknown

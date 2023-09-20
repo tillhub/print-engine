@@ -1,7 +1,5 @@
 package de.tillhub.printengine.pax
 
-import android.content.Context
-import android.graphics.Bitmap
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.Printer
 import de.tillhub.printengine.analytics.PrintAnalytics
@@ -13,29 +11,21 @@ import timber.log.Timber
  * Implementation of a Pax A920 [Printer].
  */
 class PaxPrinter(
-    private val paxPrintService: PrintService = PaxPrintService(),
-    private val analytics: PrintAnalytics
+    private val printService: PrintService,
+    private val analytics: PrintAnalytics?
 ) : Printer {
 
     private var enabled: Boolean = true
     private var printingIntensity: PrintingIntensity = PrintingIntensity.DEFAULT
 
-    override fun connect(context: Context) {
-        paxPrintService.initPrinterService(context)
+    override fun setEnabled(enabled: Boolean) {
+        this.enabled = enabled
     }
 
-    override fun observeConnection(): Flow<PrinterConnectionState> = paxPrintService.printerConnectionState
-
-    override fun enable() {
-        enabled = true
-    }
-
-    override fun disable() {
-        enabled = false
-    }
+    override fun observeConnection(): Flow<PrinterConnectionState> = printService.printerConnectionState
 
     override fun getPrinterState(): PrinterState =
-        paxPrintService.withPrinterOrDefault(default = PrinterState.Error.Unknown) {
+        printService.withPrinterOrDefault(default = PrinterState.Error.Unknown) {
             it.getPrinterState()
         }
 
@@ -44,7 +34,7 @@ class PaxPrinter(
     }
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
-        paxPrintService.withPrinterCatching {
+        printService.withPrinterCatching {
             it.getPrinterInfo().let { info ->
                 PrinterInfo(
                     info.serialNumber,
@@ -61,105 +51,38 @@ class PaxPrinter(
             logWarning("getting printer info")
         }
 
-    override suspend fun printText(text: String): PrinterResult<Unit> =
-        paxPrintService.withPrinterCatching {
+    override suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit> =
+        printService.withPrinterCatching { controller ->
             logInfo(
                 """receipt: START #################
-                   |$text
+                   |${job.description}
                    |receipt END #################
                    |""".trimMargin()
             )
-            if (enabled) {
-                it.setIntensity(printingIntensity)
-                it.setFontSize(it.getPrinterInfo().printingFontType)
-                it.printText(text)
-                it.feedPaper()
-                it.start()
+            if (enabled && job.isNotEmpty) {
+                controller.setIntensity(printingIntensity)
+                controller.setFontSize(controller.getPrinterInfo().printingFontType)
+                job.commands.forEach { command ->
+                    when (command) {
+                        is PrintCommand.Barcode -> controller.printBarcode(command.barcode)
+                        is PrintCommand.Image -> controller.printImage(command.image)
+                        is PrintCommand.QrCode -> controller.printQr(command.code)
+                        is PrintCommand.RawData -> controller.sendRawData(command.data)
+                        is PrintCommand.Text -> controller.printText(command.text)
+                        PrintCommand.CutPaper -> controller.cutPaper()
+                        PrintCommand.FeedPaper -> controller.feedPaper()
+                    }
+                }
+                analytics?.logPrintReceipt(job.description)
+                controller.start()
             }
         }.doOnError {
-            logWarning("printing text '$text'")
-        }
-
-    override suspend fun printReceipt(text: String, headerImage: Bitmap?): PrinterResult<Unit> =
-        paxPrintService.withPrinterCatching { printer ->
-            logInfo(
-                """receipt: START #################
-                   |$text
-                   |receipt END #################
-                   |""".trimMargin()
-            )
-            if (enabled) {
-                printer.setIntensity(printingIntensity)
-                printer.setFontSize(printer.getPrinterInfo().printingFontType)
-                headerImage?.let { printer.printImage(it) }
-                printer.printText(text)
-                printer.feedPaper()
-                printer.start()
-                analytics.logPrintReceipt(text)
-            }
-        }.doOnError {
-            logWarning("printing text '$text'")
-            analytics.logErrorPrintReceipt("printing text '$text'")
-        }
-
-    override suspend fun printReceipt(
-        rawReceiptText: String,
-        barcode: String,
-        headerImage: Bitmap?,
-        footerImage: Bitmap?,
-        signatureQr: String?
-    ): PrinterResult<Unit> =
-        paxPrintService.withPrinterCatching { printer ->
-            logInfo(
-                """receipt: START #################
-                   |$rawReceiptText
-                   |receipt SIGNATURE QR #################
-                   |$signatureQr
-                   |receipt BARCODE #################
-                   |$barcode
-                   |receipt END #################
-                   |""".trimMargin()
-            )
-            if (enabled) {
-                printer.setIntensity(printingIntensity)
-                printer.setFontSize(printer.getPrinterInfo().printingFontType)
-                headerImage?.let { printer.printImage(it) }
-                printer.printText(rawReceiptText)
-                signatureQr?.let { printer.printQr(it) }
-                footerImage?.let { printer.printImage(it) }
-                printer.printBarcode(barcode)
-                printer.feedPaper()
-                printer.start()
-                analytics.logPrintReceipt(rawReceiptText)
-            }
-        }.doOnError {
-            logWarning("printing receipt '$rawReceiptText'")
-            analytics.logErrorPrintReceipt("printing receipt '$rawReceiptText'")
-        }
-
-    override suspend fun printReceipt(receipt: RawReceipt): PrinterResult<Unit> =
-        paxPrintService.withPrinterCatching { printer ->
-            logInfo(
-                """receipt: START #################
-                   |${receipt.rawData.bytes.toString(Charsets.UTF_8)}
-                   |receipt END #################
-                   |""".trimMargin()
-            )
-            if (enabled) {
-                printer.setIntensity(printingIntensity)
-                printer.setFontSize(printer.getPrinterInfo().printingFontType)
-                printer.sendRawData(receipt.rawData)
-                printer.feedPaper()
-                printer.start()
-                analytics.logPrintReceipt(receipt.rawData.bytes.toString(Charsets.UTF_8))
-            }
-        }.doOnError {
-            logWarning("printing receipt '${receipt.rawData}'")
-            analytics.logErrorPrintReceipt("printing receipt '${receipt.rawData}'")
+            logWarning("printing job '${job.description}'")
+            analytics?.logErrorPrintReceipt("printing text '${job.description}'")
         }
 
     override suspend fun feedPaper(): PrinterResult<Unit> =
-        paxPrintService.withPrinterCatching {
+        printService.withPrinterCatching {
             if (enabled) {
                 it.feedPaper()
             }
@@ -168,7 +91,7 @@ class PaxPrinter(
         }
 
     override suspend fun cutPaper(): PrinterResult<Unit> =
-        paxPrintService.withPrinterCatching {
+        printService.withPrinterCatching {
             if (enabled) {
                 it.cutPaper()
             }

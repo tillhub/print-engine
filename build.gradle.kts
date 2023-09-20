@@ -1,23 +1,14 @@
 plugins {
-    kotlin(Dependencies.KotlinPlugins.ANDROID)
-    kotlin(Dependencies.KotlinPlugins.KAPT)
-    id(Dependencies.Plugins.LIBRARY)
-    id(Dependencies.Plugins.DETEKT) version Versions.Plugins.DETEKT
-    id(Dependencies.Plugins.PUBLISH)
-}
-
-repositories {
-    google()
-    mavenCentral()
-    gradlePluginPortal()
+    id("com.android.library")
+    id("kotlin-android")
+    id("maven-publish")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 android {
     compileSdk = ConfigData.targetSdkVersion
-
     defaultConfig {
         minSdk = ConfigData.minSdkVersion
-        targetSdk = ConfigData.targetSdkVersion
         ndk {
             abiFilters.add("armeabi-v7a")
         }
@@ -40,6 +31,7 @@ android {
     compileOptions {
         sourceCompatibility = ConfigData.JAVA_VERSION
         targetCompatibility = ConfigData.JAVA_VERSION
+        isCoreLibraryDesugaringEnabled = true
     }
 
     tasks.withType<Test> {
@@ -49,6 +41,9 @@ android {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
             jvmTarget = ConfigData.JVM_TARGET
+            freeCompilerArgs = listOf(
+                "-Xstring-concat=inline"
+            )
         }
     }
 
@@ -57,25 +52,28 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    namespace = "de.tillhub.printengine"
 }
 
 dependencies {
     // Core Dependencies
-    implementDependencyGroup(Dependencies.Groups.CORE)
+    implementation(libs.bundles.core)
+    coreLibraryDesugaring(libs.android.desugarJdkLibs)
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     // Pax Dependencies
-    implementation(Dependencies.Google.ZXING)
+    implementation(libs.google.zxing)
 
     // Sunmi Dependencies
-    implementation(Dependencies.Sunmi.PRINTER)
+    implementation(libs.sunmi.printer)
 
     // Utils
-    implementation(Dependencies.Tools.TIMBER)
+    implementation(libs.timber)
+    detektPlugins(libs.detekt.formatting)
 
     // Unit tests
-    implementDependencyGroup(Dependencies.Groups.TEST_LIBRARIES)
-    implementDependencyGroup(Dependencies.Groups.TEST_ROBOLECTRIC)
+    testImplementation(libs.bundles.testing)
+    testImplementation(libs.bundles.robolectric)
 }
 
 afterEvaluate {
