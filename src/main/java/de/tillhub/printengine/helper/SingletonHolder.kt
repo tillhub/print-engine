@@ -1,4 +1,4 @@
-package de.tillhub.printengine.di
+package de.tillhub.printengine.helper
 
 open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
     private var creator: ((A) -> T)? = creator

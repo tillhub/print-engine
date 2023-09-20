@@ -41,6 +41,9 @@
 -keep class de.tillhub.printengine.data.** {
     *;
 }
+-keep class de.tillhub.printengine.helper.SingletonHolder {
+    *;
+}
 
 -keep class com.pax.** {
     *;

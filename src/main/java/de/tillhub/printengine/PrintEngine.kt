@@ -3,7 +3,7 @@ package de.tillhub.printengine
 import android.content.Context
 import de.tillhub.printengine.analytics.PrintAnalytics
 import de.tillhub.printengine.data.PrinterManufacturer
-import de.tillhub.printengine.di.SingletonHolder
+import de.tillhub.printengine.helper.SingletonHolder
 import de.tillhub.printengine.emulated.EmulatedPrinter
 import de.tillhub.printengine.pax.PaxPrintService
 import de.tillhub.printengine.pax.PaxPrinter
