@@ -1,9 +1,12 @@
 package de.tillhub.printengine.helper
 
+import androidx.annotation.Keep
+
 open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
     private var creator: ((A) -> T)? = creator
     @Volatile private var instance: T? = null
 
+    @Keep
     fun getInstance(arg: A): T {
         val checkInstance = instance
         if (checkInstance != null) {
