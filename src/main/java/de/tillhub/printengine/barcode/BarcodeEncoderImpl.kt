@@ -1,4 +1,4 @@
-package de.tillhub.printengine.pax.barcode
+package de.tillhub.printengine.barcode
 
 import android.graphics.Bitmap
 import com.google.zxing.EncodeHintType
@@ -40,14 +40,6 @@ class BarcodeEncoderImpl : BarcodeEncoder {
 
         return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
             setPixels(pixels, 0, width, 0, 0, width, height)
-        }
-    }
-
-    override fun formatCode(content: String, space: Int): String {
-        return if (space < content.length) content.take(space)
-        else {
-            val padStart = (space - content.length) / 2
-            (" ".repeat(padStart) + content).padEnd(space)
         }
     }
 

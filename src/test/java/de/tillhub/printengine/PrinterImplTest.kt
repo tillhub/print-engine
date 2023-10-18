@@ -1,19 +1,33 @@
-package de.tillhub.printengine.sunmi
+package de.tillhub.printengine
 
 import android.graphics.Bitmap
-import de.tillhub.printengine.PrintService
-import de.tillhub.printengine.Printer
-import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.analytics.PrintAnalytics
-import de.tillhub.printengine.data.*
+import de.tillhub.printengine.data.PrintCommand
+import de.tillhub.printengine.data.PrintJob
+import de.tillhub.printengine.data.PrinterConnectionState
+import de.tillhub.printengine.data.PrinterInfo
+import de.tillhub.printengine.data.PrinterResult
+import de.tillhub.printengine.data.PrinterServiceVersion
+import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.data.PrintingFontType
+import de.tillhub.printengine.data.PrintingIntensity
+import de.tillhub.printengine.data.PrintingPaperSpec
+import de.tillhub.printengine.data.RawPrinterData
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
-import io.mockk.*
+import io.mockk.Ordering
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 
 @RobolectricTest
-class SunmiPrinterTest : DescribeSpec({
+class PrinterImplTest : DescribeSpec({
 
     lateinit var bitmap: Bitmap
     lateinit var footerBitmap: Bitmap
@@ -29,8 +43,9 @@ class SunmiPrinterTest : DescribeSpec({
 
     beforeTest {
         controller = mockk {
-            every { getPrinterState() } returns PrinterState.Connected
+            every { observePrinterState() } returns MutableStateFlow(PrinterState.Connected)
             every { setFontSize(any()) } just Runs
+            every { setIntensity(any()) } just Runs
             every { printText(any()) } just Runs
             every { printImage(any()) } just Runs
             every { printBarcode(any()) } just Runs
@@ -38,6 +53,7 @@ class SunmiPrinterTest : DescribeSpec({
             every { sendRawData(any()) } just Runs
             every { feedPaper() } just Runs
             every { cutPaper() } just Runs
+            every { start() } just Runs
             coEvery { getPrinterInfo() } returns PrinterInfo(
                 serialNumber = "n/a",
                 deviceModel = "P9 pro",
@@ -56,7 +72,7 @@ class SunmiPrinterTest : DescribeSpec({
             every { logPrintReceipt(any()) } just Runs
             every { logErrorPrintReceipt(any()) } just Runs
         }
-        printer = SunmiPrinter(service, analytics)
+        printer = PrinterImpl(service, analytics)
     }
 
     afterSpec {
@@ -72,8 +88,8 @@ class SunmiPrinterTest : DescribeSpec({
             printer.observeConnection() shouldBe flow
         }
 
-        it("getPrinterState") {
-            printer.getPrinterState() shouldBe PrinterState.Connected
+        it("observePrinterState") {
+            printer.observePrinterState().first() shouldBe PrinterState.Connected
         }
 
         it("getPrinterInfo") {
@@ -107,9 +123,35 @@ class SunmiPrinterTest : DescribeSpec({
                 )
             )
 
-            verify {
+            verify(ordering = Ordering.ORDERED) {
+                controller.setIntensity(PrintingIntensity.DEFAULT)
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printText("text_to_print")
+                controller.feedPaper()
+                controller.start()
+                analytics.logPrintReceipt("text_to_print\n" +
+                        "-----FEED PAPER-----"
+                )
+            }
+        }
+
+        it("printText with DARK Intensity") {
+            printer.setPrintingIntensity(PrintingIntensity.DARK)
+            printer.startPrintJob(
+                PrintJob(
+                    listOf(
+                        PrintCommand.Text("text_to_print"),
+                        PrintCommand.FeedPaper
+                    )
+                )
+            )
+
+            verify(ordering = Ordering.ORDERED) {
+                controller.setIntensity(PrintingIntensity.DARK)
+                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+                controller.printText("text_to_print")
+                controller.feedPaper()
+                controller.start()
             }
         }
 
@@ -118,19 +160,19 @@ class SunmiPrinterTest : DescribeSpec({
                 PrintJob(
                     listOf(
                         PrintCommand.Image(bitmap),
-                        PrintCommand.Text("receipt_to_print"),
-                        PrintCommand.FeedPaper
+                        PrintCommand.Text("receipt_to_print")
                     )
                 )
             )
 
-            verify {
+            verify(ordering = Ordering.ORDERED) {
+                controller.setIntensity(PrintingIntensity.DEFAULT)
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printImage(bitmap)
                 controller.printText("receipt_to_print")
+                controller.start()
                 analytics.logPrintReceipt("======IMAGE========\n" +
-                        "receipt_to_print\n" +
-                        "-----FEED PAPER-----")
+                        "receipt_to_print")
             }
         }
 
@@ -148,7 +190,8 @@ class SunmiPrinterTest : DescribeSpec({
                 )
             )
 
-            verify {
+            verify(ordering = Ordering.ORDERED) {
+                controller.setIntensity(PrintingIntensity.DEFAULT)
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printImage(bitmap)
                 controller.printText("raw_receipt_text")
@@ -156,6 +199,7 @@ class SunmiPrinterTest : DescribeSpec({
                 controller.printBarcode("barcode")
                 controller.printImage(footerBitmap)
                 controller.feedPaper()
+                controller.start()
                 analytics.logPrintReceipt("======IMAGE========\n" +
                         "raw_receipt_text\n" +
                         "==QR: signature_qr_code ==\n" +
@@ -170,17 +214,17 @@ class SunmiPrinterTest : DescribeSpec({
             printer.startPrintJob(
                 PrintJob(
                     listOf(
-                        PrintCommand.RawData(rawPrinterData),
-                        PrintCommand.FeedPaper
+                        PrintCommand.RawData(rawPrinterData)
                     )
                 )
             )
 
-            verify {
+            verify(ordering = Ordering.ORDERED) {
+                controller.setIntensity(PrintingIntensity.DEFAULT)
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.sendRawData(rawPrinterData)
-                analytics.logPrintReceipt("raw_data\n" +
-                        "-----FEED PAPER-----")
+                controller.start()
+                analytics.logPrintReceipt("raw_data")
             }
         }
 

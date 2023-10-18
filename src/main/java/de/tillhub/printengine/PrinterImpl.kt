@@ -1,35 +1,50 @@
-package de.tillhub.printengine.sunmi
+package de.tillhub.printengine
 
-import de.tillhub.printengine.PrintService
-import de.tillhub.printengine.Printer
 import de.tillhub.printengine.analytics.PrintAnalytics
-import de.tillhub.printengine.data.*
-import kotlinx.coroutines.flow.Flow
+import de.tillhub.printengine.data.PrintCommand
+import de.tillhub.printengine.data.PrintJob
+import de.tillhub.printengine.data.PrinterConnectionState
+import de.tillhub.printengine.data.PrinterInfo
+import de.tillhub.printengine.data.PrinterResult
+import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.data.PrintingIntensity
+import de.tillhub.printengine.data.doOnError
+import de.tillhub.printengine.pax.PaxPrintService
+import de.tillhub.printengine.sunmi.SunmiPrintService
+import de.tillhub.printengine.verifone.VerifonePrintService
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 
-/**
- * Implementation of a Sunmi [Printer].
- */
-class SunmiPrinter(
+class PrinterImpl(
     private val printService: PrintService,
     private val analytics: PrintAnalytics?
 ) : Printer {
 
-    private var enabled: Boolean = true
+    init {
+        when (printService) {
+            is PaxPrintService -> logInfo("PaxPrintService initialized")
+            is SunmiPrintService -> logInfo("SunmiPrintService initialized")
+            is VerifonePrintService -> logInfo("VerifonePrintService initialized")
+        }
+    }
 
-    override fun observeConnection(): Flow<PrinterConnectionState> = printService.printerConnectionState
+    private var enabled: Boolean = true
+    private var printingIntensity: PrintingIntensity = PrintingIntensity.DEFAULT
 
     override fun setEnabled(enabled: Boolean) {
         this.enabled = enabled
     }
 
-    override fun getPrinterState(): PrinterState =
-        printService.withPrinterOrDefault(default = PrinterState.Error.Unknown) {
-            it.getPrinterState()
+    override fun observeConnection(): StateFlow<PrinterConnectionState> = printService.printerConnectionState
+
+    override fun observePrinterState(): StateFlow<PrinterState> =
+        printService.withPrinterOrDefault(default = MutableStateFlow(PrinterState.Error.Unknown)) {
+            it.observePrinterState()
         }
 
     override fun setPrintingIntensity(intensity: PrintingIntensity) {
-        // not needed for sunmi devices
+        printingIntensity = intensity
     }
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
@@ -59,6 +74,7 @@ class SunmiPrinter(
                    |""".trimMargin()
             )
             if (enabled && job.isNotEmpty) {
+                controller.setIntensity(printingIntensity)
                 controller.setFontSize(controller.getPrinterInfo().printingFontType)
                 job.commands.forEach { command ->
                     when (command) {
@@ -71,6 +87,7 @@ class SunmiPrinter(
                         PrintCommand.FeedPaper -> controller.feedPaper()
                     }
                 }
+                controller.start()
                 analytics?.logPrintReceipt(job.description)
             }
         }.doOnError {

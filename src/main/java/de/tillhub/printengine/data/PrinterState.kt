@@ -39,6 +39,12 @@ sealed class PrinterState {
         /** Failed to upgrade the printer firmware */
         object FirmwareUpgradeFailed : Error()
 
+        /** Paper jammed */
+        object PaperJam : Error()
+
+        /** Battery or voltage is too low */
+        object VoltageTooLow : Error()
+
         /** Unknown error state */
         object Unknown : Error()
 
@@ -50,12 +56,15 @@ sealed class PrinterState {
 
         object Malfunctions : Error()
 
-        object VoltageTooLow : Error()
-
         object PrintingUnfinished : Error()
 
         object NotInstalledFontLibrary : Error()
 
         object DataPackageTooLong : Error()
+
+        /**
+         * Verifone specific
+         */
+        object InternalError : Error()
     }
 }

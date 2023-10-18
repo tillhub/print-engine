@@ -7,15 +7,15 @@ import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.PrinterResult
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrintingPaperSpec
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Represents one printer and allows to manage the printers connection issue print commands.
  */
 interface Printer {
     fun setEnabled(enabled: Boolean)
-    fun observeConnection(): Flow<PrinterConnectionState>
-    fun getPrinterState(): PrinterState
+    fun observeConnection(): StateFlow<PrinterConnectionState>
+    fun observePrinterState(): StateFlow<PrinterState>
     fun setPrintingIntensity(intensity: PrintingIntensity)
     suspend fun getPrinterInfo(): PrinterResult<PrinterInfo>
 

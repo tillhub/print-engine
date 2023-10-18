@@ -1,4 +1,4 @@
-package de.tillhub.printengine.pax.barcode
+package de.tillhub.printengine.barcode
 
 enum class BarcodeType {
     CODE_128,

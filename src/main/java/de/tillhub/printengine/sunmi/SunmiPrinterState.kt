@@ -1,5 +1,7 @@
 package de.tillhub.printengine.sunmi
 
+import de.tillhub.printengine.data.PrinterState
+
 /**
  * State of the printer when connected as defined by Sunmi.
  */
@@ -18,6 +20,22 @@ enum class SunmiPrinterState(val code: Int) {
     FirmwareUpgradeFailed(507);
 
     companion object {
-        fun fromCode(code: Int): SunmiPrinterState = values().firstOrNull { it.code == code } ?: Unknown
+        fun fromCode(code: Int): SunmiPrinterState =
+            values().firstOrNull { it.code == code } ?: Unknown
+        fun convert(state: SunmiPrinterState): PrinterState =
+            when (state) {
+                Unknown -> PrinterState.Error.Unknown
+                Connected -> PrinterState.Connected
+                Preparing -> PrinterState.Preparing
+                AbnormalCommunication -> PrinterState.Error.AbnormalCommunication
+                OutOfPaper -> PrinterState.Error.OutOfPaper
+                Overheated -> PrinterState.Error.Overheated
+                CoverNotClosed -> PrinterState.Error.CoverNotClosed
+                PaperCutterAbnormal -> PrinterState.Error.PaperCutterAbnormal
+                PaperCutterRecovered -> PrinterState.Connected
+                BlackMarkNotFound -> PrinterState.Error.BlackMarkNotFound
+                NotDetected -> PrinterState.PrinterNotDetected
+                FirmwareUpgradeFailed -> PrinterState.Error.FirmwareUpgradeFailed
+            }
     }
 }

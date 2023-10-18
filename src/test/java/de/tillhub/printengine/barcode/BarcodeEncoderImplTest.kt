@@ -1,4 +1,4 @@
-package de.tillhub.printengine.pax.barcode
+package de.tillhub.printengine.barcode
 
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
@@ -56,12 +56,6 @@ class BarcodeEncoderImplTest : FunSpec({
                 result?.getPixel(x, y) shouldBe if (expectedResult.get(x, y)) BLACK else WHITE
             }
         }
-    }
-
-    test("formatCode") {
-        val result = barcodeEncoder.formatCode("barcode", 32)
-
-        result shouldBe "            barcode             "
     }
 }) {
     companion object {

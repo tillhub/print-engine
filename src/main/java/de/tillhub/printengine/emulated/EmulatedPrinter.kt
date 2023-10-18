@@ -2,8 +2,8 @@ package de.tillhub.printengine.emulated
 
 import de.tillhub.printengine.Printer
 import de.tillhub.printengine.data.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 
 /**
@@ -11,16 +11,22 @@ import timber.log.Timber
  */
 class EmulatedPrinter : Printer {
 
+    init {
+        logInfo("EmulatedPrintService initialized")
+    }
+
     override fun setEnabled(enabled: Boolean) {
         if (enabled) logInfo("printer enabled")
         else logInfo("printer disabled")
     }
 
-    override fun observeConnection(): Flow<PrinterConnectionState> = flow {
-        emit(PrinterConnectionState.PrinterNotAvailable)
+    override fun observeConnection(): StateFlow<PrinterConnectionState> {
+        return MutableStateFlow(PrinterConnectionState.PrinterNotAvailable)
     }
 
-    override fun getPrinterState(): PrinterState = PrinterState.PrinterNotDetected
+    override fun observePrinterState(): StateFlow<PrinterState> {
+        return MutableStateFlow(PrinterState.PrinterNotDetected)
+    }
 
     override fun setPrintingIntensity(intensity: PrintingIntensity) {
         logInfo("setting printer intensity to: ${intensity.name}")
