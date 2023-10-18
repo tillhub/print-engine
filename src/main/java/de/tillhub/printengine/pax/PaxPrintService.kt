@@ -7,7 +7,7 @@ import com.pax.neptunelite.api.NeptuneLiteUser
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.PrinterConnectionState
-import de.tillhub.printengine.pax.barcode.BarcodeEncoderImpl
+import de.tillhub.printengine.barcode.BarcodeEncoderImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber

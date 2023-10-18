@@ -2,6 +2,7 @@ package de.tillhub.printengine.sunmi
 
 import android.graphics.Bitmap
 import android.os.RemoteException
+import com.sunmi.peripheral.printer.InnerResultCallback
 import com.sunmi.peripheral.printer.SunmiPrinterService
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.PrinterInfo
@@ -11,6 +12,8 @@ import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingIntensity
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -23,74 +26,74 @@ class SunmiPrinterController(
     private val serviceVersion: PrinterServiceVersion
 ) : PrinterController {
 
-    override fun sendRawData(data: RawPrinterData) {
-        printerService.sendRAWData(data.bytes, null)
+    private var printerState: MutableStateFlow<PrinterState> = MutableStateFlow(PrinterState.PrinterNotDetected)
+
+    private val printListener: InnerResultCallback by lazy {
+        object : InnerResultCallback() {
+            override fun onRunResult(isSuccess: Boolean) {
+                printerState.value = PrinterState.Connected
+            }
+
+            override fun onReturnString(result: String?) {
+                printerState.value = PrinterState.Connected
+            }
+
+            override fun onRaiseException(code: Int, msg: String?) {
+                printerState.value = getPrinterState(code)
+            }
+
+            override fun onPrintResult(code: Int, msg: String?) {
+                printerState.value = getPrinterState(code)
+            }
+        }
     }
 
-    /**
-     * Gets the real-time state of the printer, which can be used before each printing.
-     */
-    @Suppress("ComplexMethod")
-    override fun getPrinterState(): PrinterState = try {
-        printerService.updatePrinterState().let { when (SunmiPrinterState.fromCode(it)) {
-            SunmiPrinterState.Unknown -> PrinterState.Error.Unknown
-            SunmiPrinterState.Connected -> PrinterState.Connected
-            SunmiPrinterState.Preparing -> PrinterState.Preparing
-            SunmiPrinterState.AbnormalCommunication -> PrinterState.Error.AbnormalCommunication
-            SunmiPrinterState.OutOfPaper -> PrinterState.Error.OutOfPaper
-            SunmiPrinterState.Overheated -> PrinterState.Error.Overheated
-            SunmiPrinterState.CoverNotClosed -> PrinterState.Error.CoverNotClosed
-            SunmiPrinterState.PaperCutterAbnormal -> PrinterState.Error.PaperCutterAbnormal
-            SunmiPrinterState.PaperCutterRecovered -> PrinterState.Connected
-            SunmiPrinterState.BlackMarkNotFound -> PrinterState.Error.BlackMarkNotFound
-            SunmiPrinterState.NotDetected -> PrinterState.PrinterNotDetected
-            SunmiPrinterState.FirmwareUpgradeFailed -> PrinterState.Error.FirmwareUpgradeFailed
-        } }
-    } catch (e: RemoteException) {
-        Timber.e(e)
-        PrinterState.Error.Unknown
+    override fun sendRawData(data: RawPrinterData) {
+        printerService.sendRAWData(data.bytes, printListener)
     }
+
+    override fun observePrinterState(): StateFlow<PrinterState> = printerState
 
     override fun setFontSize(fontSize: PrintingFontType) {
-        printerService.setFontSize(fontSize.toFloatSize(), null)
+        printerService.setFontSize(fontSize.toFloatSize(), printListener)
     }
 
     override fun printText(text: String) {
-        printerService.printText(text, null)
-        printerService.lineWrap(1, null)
+        printerService.printText(text, printListener)
+        printerService.lineWrap(1, printListener)
     }
 
     override fun printBarcode(barcode: String) {
-        printerService.setAlignment(Alignment.CENTER.value, null)
+        printerService.setAlignment(Alignment.CENTER.value, printListener)
         printerService.printBarCode(
             barcode,
             BarcodeType.CODE128.value,
             BARCODE_HEIGHT,
             BARCODE_WIDTH,
             BarcodeTextPosition.UNDER.value,
-            null
+            printListener
         )
-        printerService.setAlignment(Alignment.LEFT.value, null)
-        printerService.lineWrap(1, null)
+        printerService.setAlignment(Alignment.LEFT.value, printListener)
+        printerService.lineWrap(1, printListener)
     }
 
     override fun printQr(qrData: String) {
-        printerService.setAlignment(Alignment.CENTER.value, null)
+        printerService.setAlignment(Alignment.CENTER.value, printListener)
         printerService.printQRCode(
             qrData,
             QRCodeModuleSize.XXXSMALL.value,
             QRCodeErrorLevel.L.value,
-            null
+            printListener
         )
-        printerService.setAlignment(Alignment.LEFT.value, null)
-        printerService.lineWrap(1, null)
+        printerService.setAlignment(Alignment.LEFT.value, printListener)
+        printerService.lineWrap(1, printListener)
     }
 
     override fun printImage(image: Bitmap) {
-        printerService.setAlignment(Alignment.CENTER.value, null)
-        printerService.printBitmapCustom(image, ImagePrintingMethod.GRAYSCALE.value, null)
-        printerService.setAlignment(Alignment.LEFT.value, null)
-        printerService.lineWrap(1, null)
+        printerService.setAlignment(Alignment.CENTER.value, printListener)
+        printerService.printBitmapCustom(image, ImagePrintingMethod.GRAYSCALE.value, printListener)
+        printerService.setAlignment(Alignment.LEFT.value, printListener)
+        printerService.lineWrap(1, printListener)
     }
 
     override suspend fun getPrinterInfo(): PrinterInfo = printerService.let {
@@ -138,7 +141,7 @@ class SunmiPrinterController(
      */
     override fun feedPaper() {
         try {
-            printerService.autoOutPaper(null)
+            printerService.autoOutPaper(printListener)
         } catch (e: RemoteException) {
             Timber.e(e)
             print3Line()
@@ -148,14 +151,14 @@ class SunmiPrinterController(
     /**
      * Paper feed three lines. Not disabled when line spacing is set to 0.
      */
-    private fun print3Line() = printerService.lineWrap(THREE_LINES, null)
+    private fun print3Line() = printerService.lineWrap(THREE_LINES, printListener)
 
     /**
      * Printer cuts paper and throws exception on machines without a cutter
      */
     override fun cutPaper() {
         try {
-            printerService.cutPaper(null)
+            printerService.cutPaper(printListener)
         } catch (e: RemoteException) {
             Timber.e(e)
             // not handled
@@ -169,6 +172,13 @@ class SunmiPrinterController(
     override fun start() {
         // not needed for sunmi devices
     }
+
+    /**
+     * Gets the real-time state of the printer, which can be used before each printing.
+     */
+    @Suppress("ComplexMethod")
+    private fun getPrinterState(code: Int): PrinterState =
+        SunmiPrinterState.convert(SunmiPrinterState.fromCode(code))
 
     companion object {
         const val THREE_LINES = 3

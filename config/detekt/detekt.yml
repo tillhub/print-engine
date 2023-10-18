@@ -306,6 +306,7 @@ formatting:
     continuationIndentSize: 4
   MaximumLineLength:
     active: true
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     maxLineLength: 120
     ignoreBackTickedIdentifier: false
   ModifierOrdering:
@@ -678,6 +679,7 @@ style:
     active: false
   MaxLineLength:
     active: true
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     maxLineLength: 120
     excludePackageStatements: true
     excludeImportStatements: true
