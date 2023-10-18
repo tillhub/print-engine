@@ -14,9 +14,9 @@ object PaxUtils {
     }
 
     /**
-     * It splits text into chunks by 50 lines
+     * It splits text into chunks by chunkSize
      */
-    fun chunkForPrinting(text: String): List<String> {
+    fun chunkForPrinting(text: String, chunkSize: Int = MAX_PRINT_LINES): List<String> {
         val lines = text.split('\n')
 
         return mutableListOf<String>().apply {
@@ -24,7 +24,7 @@ object PaxUtils {
             lines.forEachIndexed { index, s ->
                 sb.append(s)
                 sb.append("\n")
-                if (index == (lines.size - 1) || (index + 1) % MAX_PRINT_LINES == 0) {
+                if (index == (lines.size - 1) || (index + 1) % chunkSize == 0) {
                     add(sb.toString())
                     sb.clear()
                 }
