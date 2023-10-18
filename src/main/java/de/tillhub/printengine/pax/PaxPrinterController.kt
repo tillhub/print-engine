@@ -13,8 +13,13 @@ import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingIntensity
-import de.tillhub.printengine.pax.barcode.BarcodeEncoder
-import de.tillhub.printengine.pax.barcode.BarcodeType
+import de.tillhub.printengine.barcode.BarcodeEncoder
+import de.tillhub.printengine.barcode.BarcodeType
+import de.tillhub.printengine.pax.PaxUtils.chunkForPrinting
+import de.tillhub.printengine.pax.PaxUtils.formatCode
+import de.tillhub.printengine.pax.PaxUtils.printTextOptimizer
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 
 /**
@@ -25,32 +30,13 @@ class PaxPrinterController(
     private val barcodeEncoder: BarcodeEncoder
 ) : PrinterController {
 
+    private var printerState: MutableStateFlow<PrinterState> = MutableStateFlow(PrinterState.PrinterNotDetected)
+
     private var fontSize: PrintingFontType? = null
 
     init {
         printerService.init()
-    }
-
-    /**
-     * Gets the real-time state of the printer, which can be used before each printing.
-     */
-    override fun getPrinterState(): PrinterState = try {
-        when (PaxPrinterState.fromCode(printerService.status)) {
-            PaxPrinterState.Unknown -> PrinterState.Error.Unknown
-            PaxPrinterState.Success -> PrinterState.Connected
-            PaxPrinterState.Busy -> PrinterState.Busy
-            PaxPrinterState.OutOfPaper -> PrinterState.Error.OutOfPaper
-            PaxPrinterState.FormatPrintDataPacketError -> PrinterState.Error.FormatPrintDataPacketError
-            PaxPrinterState.Malfunctions -> PrinterState.Error.Malfunctions
-            PaxPrinterState.Overheated -> PrinterState.Error.Overheated
-            PaxPrinterState.VoltageTooLow -> PrinterState.Error.VoltageTooLow
-            PaxPrinterState.PrintingUnfinished -> PrinterState.Error.PrintingUnfinished
-            PaxPrinterState.NotInstalledFontLibrary -> PrinterState.Error.NotInstalledFontLibrary
-            PaxPrinterState.DataPackageTooLong -> PrinterState.Error.DataPackageTooLong
-        }
-    } catch (e: PrinterDevException) {
-        Timber.e(e)
-        PrinterState.Error.Unknown
+        printerState.value = getPrinterState()
     }
 
     override suspend fun getPrinterInfo(): PrinterInfo =
@@ -77,11 +63,7 @@ class PaxPrinterController(
         if (chunks.size > 1) {
             chunks.forEach { chunk ->
                 printerService.printStr(chunk, CHARSET)
-                printerService.start()
-                printerService.init()
-                fontSize?.let {
-                    printerService.fontSet(it.toEFontTypeAscii(), it.toEFontTypeExtCode())
-                }
+                start()
             }
         } else {
             printerService.printStr(chunks[0], CHARSET)
@@ -92,7 +74,7 @@ class PaxPrinterController(
         barcodeEncoder.encodeAsBitmap(barcode, BarcodeType.CODE_128, BARCODE_WIDTH, BARCODE_HEIGHT)?.let { image ->
             printerService.step(PAPER_FEEDER_DIVIDER)
             printerService.printBitmap(image)
-            printerService.printStr(barcodeEncoder.formatCode(
+            printerService.printStr(formatCode(
                 content = barcode,
                 space = PrintingPaperSpec.PAX_PAPER_56MM.characterCount
             ), CHARSET)
@@ -103,7 +85,7 @@ class PaxPrinterController(
         barcodeEncoder.encodeAsBitmap(qrData, BarcodeType.QR_CODE, QR_CODE_SIZE, QR_CODE_SIZE)?.let { image ->
             printerService.step(PAPER_FEEDER_DIVIDER)
             printerService.printBitmap(image)
-            printerService.printStr(barcodeEncoder.formatCode(
+            printerService.printStr(formatCode(
                 content = qrData,
                 space = PrintingPaperSpec.PAX_PAPER_56MM.characterCount
             ), CHARSET)
@@ -117,6 +99,8 @@ class PaxPrinterController(
     override fun sendRawData(data: RawPrinterData) {
         printText(data.bytes.toString(Charsets.UTF_8))
     }
+
+    override fun observePrinterState(): StateFlow<PrinterState> = printerState
 
     /**
      *  Due to the distance between the paper hatch and the print head, the paper needs to be fed out automatically
@@ -161,30 +145,21 @@ class PaxPrinterController(
     override fun start() {
         printerService.start()
         printerService.init()
-        fontSize = null
+        fontSize?.let {
+            printerService.fontSet(it.toEFontTypeAscii(), it.toEFontTypeExtCode())
+        }
+        printerState.value = getPrinterState()
     }
 
     /**
-     * It fixes issues with pax printer printing non ASCII characters.
+     * Gets the real-time state of the printer, which can be used before each printing.
      */
-    private fun printTextOptimizer(text: String): String {
-        return text.replace("\\s€".toRegex(), "€")
-    }
-
-    private fun chunkForPrinting(text: String): List<String> {
-        val lines = text.split('\n')
-
-        return mutableListOf<String>().apply {
-            val sb = StringBuilder()
-            lines.forEachIndexed { index, s ->
-                sb.append(s)
-                sb.append("\n")
-                if (index == (lines.size - 1) || (index + 1) % MAX_PRINT_LINES == 0) {
-                    add(sb.toString())
-                    sb.clear()
-                }
-            }
-        }
+    private fun getPrinterState(): PrinterState = try {
+        val state = PaxPrinterState.fromCode(printerService.status)
+        PaxPrinterState.convert(state)
+    } catch (e: PrinterDevException) {
+        Timber.e(e)
+        PrinterState.Error.Unknown
     }
 
     companion object {
@@ -202,10 +177,6 @@ class PaxPrinterController(
         private const val BARCODE_HEIGHT = 150
         private const val BARCODE_WIDTH = 500
         private const val QR_CODE_SIZE = 500
-
-        // Max buffer size for printing is 2048 bytes.
-        // Max lines * paper width (32) should not go over the buffer size limit
-        private const val MAX_PRINT_LINES = 50
 
         private fun PrintingFontType.toEFontTypeAscii() =
             when (this) {

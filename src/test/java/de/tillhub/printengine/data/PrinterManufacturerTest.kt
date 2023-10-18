@@ -17,4 +17,9 @@ class PrinterManufacturerTest : FunSpec({
         ShadowBuild.setManufacturer("PAX")
         PrinterManufacturer.get() shouldBe PrinterManufacturer.PAX
     }
+
+    test("Verifone device") {
+        ShadowBuild.setManufacturer("Verifone")
+        PrinterManufacturer.get() shouldBe PrinterManufacturer.VERIFONE
+    }
 })

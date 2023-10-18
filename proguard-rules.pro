@@ -29,10 +29,10 @@
 -keep class de.tillhub.printengine.Printer$Companion {
     *;
 }
--keep class de.tillhub.printengine.pax.barcode.BarcodeEncoder {
+-keep class de.tillhub.printengine.barcode.BarcodeEncoder {
     *;
 }
--keep class de.tillhub.printengine.pax.barcode.BarcodeType {
+-keep class de.tillhub.printengine.barcode.BarcodeType {
     *;
 }
 -keep class de.tillhub.printengine.PrintEngine {
@@ -50,4 +50,7 @@
 }
 -keep public class com.sunmi.** {
     public protected *;
+}
+-keep class com.verifone.peripherals.** {
+    *;
 }

@@ -12,6 +12,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
 import io.mockk.*
+import kotlinx.coroutines.flow.first
 
 @RobolectricTest
 class SunmiPrinterControllerTest : FunSpec({
@@ -32,6 +33,7 @@ class SunmiPrinterControllerTest : FunSpec({
             every { printBitmapCustom(any(), any(), any()) } just Runs
             every { autoOutPaper(any()) } just Runs
             every { cutPaper(any()) } just Runs
+            every { updatePrinterState() } returns 1
         }
         serviceVersion = mockk()
         printerController = SunmiPrinterController(printerService, serviceVersion)
@@ -42,53 +44,19 @@ class SunmiPrinterControllerTest : FunSpec({
         printerController.sendRawData(rawData)
 
         verify(exactly = 1) {
-            printerService.sendRAWData(rawData.bytes, null)
+            printerService.sendRAWData(rawData.bytes, any())
         }
     }
 
-    test("getPrinterState") {
-        every { printerService.updatePrinterState() } returns -1
-        printerController.getPrinterState() shouldBe PrinterState.Error.Unknown
-
-        every { printerService.updatePrinterState() } returns 1
-        printerController.getPrinterState() shouldBe PrinterState.Connected
-
-        every { printerService.updatePrinterState() } returns 2
-        printerController.getPrinterState() shouldBe PrinterState.Preparing
-
-        every { printerService.updatePrinterState() } returns 3
-        printerController.getPrinterState() shouldBe PrinterState.Error.AbnormalCommunication
-
-        every { printerService.updatePrinterState() } returns 4
-        printerController.getPrinterState() shouldBe PrinterState.Error.OutOfPaper
-
-        every { printerService.updatePrinterState() } returns 5
-        printerController.getPrinterState() shouldBe PrinterState.Error.Overheated
-
-        every { printerService.updatePrinterState() } returns 6
-        printerController.getPrinterState() shouldBe PrinterState.Error.CoverNotClosed
-
-        every { printerService.updatePrinterState() } returns 7
-        printerController.getPrinterState() shouldBe PrinterState.Error.PaperCutterAbnormal
-
-        every { printerService.updatePrinterState() } returns 8
-        printerController.getPrinterState() shouldBe PrinterState.Connected
-
-        every { printerService.updatePrinterState() } returns 9
-        printerController.getPrinterState() shouldBe PrinterState.Error.BlackMarkNotFound
-
-        every { printerService.updatePrinterState() } returns 505
-        printerController.getPrinterState() shouldBe PrinterState.PrinterNotDetected
-
-        every { printerService.updatePrinterState() } returns 507
-        printerController.getPrinterState() shouldBe PrinterState.Error.FirmwareUpgradeFailed
+    test("observePrinterState") {
+        printerController.observePrinterState().first() shouldBe PrinterState.PrinterNotDetected
     }
 
     test("setFontSize") {
         printerController.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
 
         verify {
-            printerService.setFontSize(20F, null)
+            printerService.setFontSize(20F, any())
         }
     }
 
@@ -96,8 +64,8 @@ class SunmiPrinterControllerTest : FunSpec({
         printerController.printText("text_to_print")
 
         verify {
-            printerService.printText("text_to_print", null)
-            printerService.lineWrap(1, null)
+            printerService.printText("text_to_print", any())
+            printerService.lineWrap(1, any())
         }
     }
 
@@ -105,10 +73,10 @@ class SunmiPrinterControllerTest : FunSpec({
         printerController.printBarcode("barcode")
 
         verify(ordering = Ordering.ORDERED) {
-            printerService.setAlignment(1, null)
-            printerService.printBarCode("barcode", 8, 100, 2, 2, null)
-            printerService.setAlignment(0, null)
-            printerService.lineWrap(1, null)
+            printerService.setAlignment(1, any())
+            printerService.printBarCode("barcode", 8, 100, 2, 2, any())
+            printerService.setAlignment(0, any())
+            printerService.lineWrap(1, any())
         }
     }
 
@@ -116,10 +84,10 @@ class SunmiPrinterControllerTest : FunSpec({
         printerController.printQr("qr_code")
 
         verify(ordering = Ordering.ORDERED) {
-            printerService.setAlignment(1, null)
-            printerService.printQRCode("qr_code", 3, 0, null)
-            printerService.setAlignment(0, null)
-            printerService.lineWrap(1, null)
+            printerService.setAlignment(1, any())
+            printerService.printQRCode("qr_code", 3, 0, any())
+            printerService.setAlignment(0, any())
+            printerService.lineWrap(1, any())
         }
     }
 
@@ -128,10 +96,10 @@ class SunmiPrinterControllerTest : FunSpec({
         printerController.printImage(bitmap)
 
         verify(ordering = Ordering.ORDERED) {
-            printerService.setAlignment(1, null)
-            printerService.printBitmapCustom(bitmap, 2, null)
-            printerService.setAlignment(0, null)
-            printerService.lineWrap(1, null)
+            printerService.setAlignment(1, any())
+            printerService.printBitmapCustom(bitmap, 2, any())
+            printerService.setAlignment(0, any())
+            printerService.lineWrap(1, any())
         }
     }
 
@@ -139,7 +107,7 @@ class SunmiPrinterControllerTest : FunSpec({
         printerController.feedPaper()
 
         verify {
-            printerService.autoOutPaper(null)
+            printerService.autoOutPaper(any())
         }
     }
 
@@ -149,7 +117,7 @@ class SunmiPrinterControllerTest : FunSpec({
         printerController.feedPaper()
 
         verify {
-            printerService.lineWrap(3, null)
+            printerService.lineWrap(3, any())
         }
     }
 
@@ -157,7 +125,7 @@ class SunmiPrinterControllerTest : FunSpec({
         printerController.cutPaper()
 
         verify {
-            printerService.cutPaper(null)
+            printerService.cutPaper(any())
         }
     }
 })
