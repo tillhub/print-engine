@@ -3,16 +3,14 @@ package de.tillhub.printengine
 import de.tillhub.printengine.analytics.PrintAnalytics
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
-import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterResult
+import de.tillhub.printengine.data.PrinterSettings
 import de.tillhub.printengine.data.PrinterState
-import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.doOnError
 import de.tillhub.printengine.pax.PaxPrintService
 import de.tillhub.printengine.sunmi.SunmiPrintService
 import de.tillhub.printengine.verifone.VerifonePrintService
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 
@@ -29,23 +27,11 @@ class PrinterImpl(
         }
     }
 
-    private var enabled: Boolean = true
-    private var printingIntensity: PrintingIntensity = PrintingIntensity.DEFAULT
-
-    override fun setEnabled(enabled: Boolean) {
-        this.enabled = enabled
+    override val settings: PrinterSettings by lazy {
+        PrinterSettings()
     }
 
-    override fun observeConnection(): StateFlow<PrinterConnectionState> = printService.printerConnectionState
-
-    override fun observePrinterState(): StateFlow<PrinterState> =
-        printService.withPrinterOrDefault(default = MutableStateFlow(PrinterState.Error.Unknown)) {
-            it.observePrinterState()
-        }
-
-    override fun setPrintingIntensity(intensity: PrintingIntensity) {
-        printingIntensity = intensity
-    }
+    override fun observePrinterState(): StateFlow<PrinterState> = printService.printerState
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
         printService.withPrinterCatching {
@@ -73,8 +59,8 @@ class PrinterImpl(
                    |receipt END #################
                    |""".trimMargin()
             )
-            if (enabled && job.isNotEmpty) {
-                controller.setIntensity(printingIntensity)
+            if (settings.enabled && job.isNotEmpty) {
+                controller.setIntensity(settings.printingIntensity)
                 controller.setFontSize(controller.getPrinterInfo().printingFontType)
                 job.commands.forEach { command ->
                     when (command) {
@@ -93,24 +79,6 @@ class PrinterImpl(
         }.doOnError {
             logWarning("printing job '${job.description}'")
             analytics?.logErrorPrintReceipt("printing text '${job.description}'")
-        }
-
-    override suspend fun feedPaper(): PrinterResult<Unit> =
-        printService.withPrinterCatching {
-            if (enabled) {
-                it.feedPaper()
-            }
-        }.doOnError {
-            logWarning("feeding paper")
-        }
-
-    override suspend fun cutPaper(): PrinterResult<Unit> =
-        printService.withPrinterCatching {
-            if (enabled) {
-                it.cutPaper()
-            }
-        }.doOnError {
-            logWarning("cutting paper")
         }
 
     private fun logInfo(message: String) {

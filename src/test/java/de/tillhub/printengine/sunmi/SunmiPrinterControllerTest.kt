@@ -12,6 +12,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
 import io.mockk.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @RobolectricTest
@@ -19,6 +20,7 @@ class SunmiPrinterControllerTest : FunSpec({
 
     lateinit var printerService: SunmiPrinterService
     lateinit var serviceVersion: PrinterServiceVersion
+    lateinit var printerState: MutableStateFlow<PrinterState>
     lateinit var printerController: PrinterController
 
     beforeTest {
@@ -36,7 +38,8 @@ class SunmiPrinterControllerTest : FunSpec({
             every { updatePrinterState() } returns 1
         }
         serviceVersion = mockk()
-        printerController = SunmiPrinterController(printerService, serviceVersion)
+        printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
+        printerController = SunmiPrinterController(printerService, serviceVersion, printerState)
     }
 
     test("sendRawData") {
@@ -49,7 +52,7 @@ class SunmiPrinterControllerTest : FunSpec({
     }
 
     test("observePrinterState") {
-        printerController.observePrinterState().first() shouldBe PrinterState.PrinterNotDetected
+        printerController.observePrinterState().first() shouldBe PrinterState.CheckingForPrinter
     }
 
     test("setFontSize") {

@@ -24,13 +24,13 @@ enum class PaxPrinterState(val code: Int) {
                 Success -> PrinterState.Connected
                 Busy -> PrinterState.Busy
                 OutOfPaper -> PrinterState.Error.OutOfPaper
-                FormatPrintDataPacketError -> PrinterState.Error.FormatPrintDataPacketError
+                FormatPrintDataPacketError -> PrinterState.Error.Pax.FormatPrintDataPacketError
                 Malfunctions -> PrinterState.Error.Malfunctions
                 Overheated -> PrinterState.Error.Overheated
                 VoltageTooLow -> PrinterState.Error.VoltageTooLow
                 PrintingUnfinished -> PrinterState.Error.PrintingUnfinished
-                NotInstalledFontLibrary -> PrinterState.Error.NotInstalledFontLibrary
-                DataPackageTooLong -> PrinterState.Error.DataPackageTooLong
+                NotInstalledFontLibrary -> PrinterState.Error.Pax.NotInstalledFontLibrary
+                DataPackageTooLong -> PrinterState.Error.Pax.DataPackageTooLong
             }
     }
 }

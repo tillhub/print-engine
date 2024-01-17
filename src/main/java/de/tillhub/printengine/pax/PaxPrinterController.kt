@@ -27,10 +27,9 @@ import timber.log.Timber
  */
 class PaxPrinterController(
     private val printerService: IPrinter,
+    private val printerState: MutableStateFlow<PrinterState>,
     private val barcodeEncoder: BarcodeEncoder
 ) : PrinterController {
-
-    private var printerState: MutableStateFlow<PrinterState> = MutableStateFlow(PrinterState.PrinterNotDetected)
 
     private var fontSize: PrintingFontType? = null
 

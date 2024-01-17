@@ -20,10 +20,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 class VerifonePrintController(
     private val printManager: DirectPrintManager,
-    private val barcodeEncoder: BarcodeEncoder
+    private val printerState: MutableStateFlow<PrinterState>,
+    private val barcodeEncoder: BarcodeEncoder,
 ) : PrinterController {
-
-    private var printerState: MutableStateFlow<PrinterState> = MutableStateFlow(PrinterState.PrinterNotDetected)
 
     private val printListener: DirectPrintManager.DirectPrintListener by lazy {
         object : DirectPrintManager.DirectPrintListener() {

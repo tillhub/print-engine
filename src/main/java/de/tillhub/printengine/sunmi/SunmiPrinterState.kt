@@ -34,7 +34,7 @@ enum class SunmiPrinterState(val code: Int) {
                 PaperCutterAbnormal -> PrinterState.Error.PaperCutterAbnormal
                 PaperCutterRecovered -> PrinterState.Connected
                 BlackMarkNotFound -> PrinterState.Error.BlackMarkNotFound
-                NotDetected -> PrinterState.PrinterNotDetected
+                NotDetected -> PrinterState.Error.NotAvailable
                 FirmwareUpgradeFailed -> PrinterState.Error.FirmwareUpgradeFailed
             }
     }

@@ -13,7 +13,7 @@ object VerifonePrinterState {
             Printer.STATUS_LOW_BATTERY -> PrinterState.Error.VoltageTooLow
             Printer.STATUS_FUSE -> PrinterState.Error.Malfunctions
             Printer.STATUS_INTERNAL_ERROR,
-            Printer.STATUS_ERROR -> PrinterState.Error.InternalError
+            Printer.STATUS_ERROR -> PrinterState.Error.Verifone.InternalError
             else -> PrinterState.Error.Unknown
         }
 }

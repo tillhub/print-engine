@@ -17,6 +17,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @RobolectricTest
@@ -24,6 +25,7 @@ class PaxPrinterControllerTest : FunSpec({
 
     lateinit var bitmap: Bitmap
     lateinit var printerService: IPrinter
+    lateinit var printerState: MutableStateFlow<PrinterState>
     lateinit var barcodeEncoder: BarcodeEncoder
     lateinit var printerController: PrinterController
 
@@ -43,10 +45,11 @@ class PaxPrinterControllerTest : FunSpec({
             every { start() } returns 0
             every { status } returns 0
         }
+        printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
         barcodeEncoder = mockk {
             every { encodeAsBitmap(any(), any(), any(), any()) } returns bitmap
         }
-        printerController = PaxPrinterController(printerService, barcodeEncoder)
+        printerController = PaxPrinterController(printerService, printerState, barcodeEncoder)
     }
 
     afterSpec {
@@ -67,7 +70,7 @@ class PaxPrinterControllerTest : FunSpec({
 
         every { printerService.status } returns 3
         printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.FormatPrintDataPacketError
+        printerController.observePrinterState().first() shouldBe PrinterState.Error.Pax.FormatPrintDataPacketError
 
         every { printerService.status } returns 4
         printerController.start()
@@ -87,11 +90,11 @@ class PaxPrinterControllerTest : FunSpec({
 
         every { printerService.status } returns 252
         printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.NotInstalledFontLibrary
+        printerController.observePrinterState().first() shouldBe PrinterState.Error.Pax.NotInstalledFontLibrary
 
         every { printerService.status } returns 254
         printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.DataPackageTooLong
+        printerController.observePrinterState().first() shouldBe PrinterState.Error.Pax.DataPackageTooLong
     }
 
     test("getPrinterInfo") {

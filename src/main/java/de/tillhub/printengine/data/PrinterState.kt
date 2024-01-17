@@ -4,20 +4,26 @@ package de.tillhub.printengine.data
  * State of the [Printer] in case a connection is established.
  */
 sealed class PrinterState {
+    /** Trying to find supported printer */
+    object CheckingForPrinter : PrinterState()
+
     /** The printer works normally / printer is running */
     object Connected : PrinterState()
 
     /** Preparing printer / printer found but still initializing */
     object Preparing : PrinterState()
 
-    /** Printer was not detected / does not exist */
-    object PrinterNotDetected : PrinterState()
-
     /** Printer found but operating */
     object Busy : PrinterState()
 
     /** Printer error */
     sealed class Error : PrinterState() {
+        /** Connection to printer has lost */
+        object ConnectionLost : Error()
+
+        /** Printer was not detected / does not exist */
+        object NotAvailable : PrinterState()
+
         /** Abnormal communication / printer hardware interface is abnormal */
         object AbnormalCommunication : Error()
 
@@ -48,23 +54,27 @@ sealed class PrinterState {
         /** Unknown error state */
         object Unknown : Error()
 
-        /**
-         * Pax A920 specific
-         */
-
-        object FormatPrintDataPacketError : Error()
+        /** Print job cannot continue, but could be resumed later. */
+        object PrintingUnfinished : Error()
 
         object Malfunctions : Error()
 
-        object PrintingUnfinished : Error()
+        /**
+         * Pax A920 specific
+         */
+        sealed class Pax : Error() {
+            object FormatPrintDataPacketError : Pax()
 
-        object NotInstalledFontLibrary : Error()
+            object NotInstalledFontLibrary : Pax()
 
-        object DataPackageTooLong : Error()
+            object DataPackageTooLong : Pax()
+        }
 
         /**
          * Verifone specific
          */
-        object InternalError : Error()
+        sealed class Verifone : Error() {
+            object InternalError : Verifone()
+        }
     }
 }

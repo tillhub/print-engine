@@ -9,8 +9,8 @@ import com.sunmi.peripheral.printer.InnerPrinterManager
 import com.sunmi.peripheral.printer.SunmiPrinterService
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.data.PrinterServiceVersion
+import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
@@ -24,12 +24,12 @@ class SunmiPrintService(context: Context) : PrintService() {
     override var printController: PrinterController? = null
     private var serviceVersion: PrinterServiceVersion = PrinterServiceVersion.Unknown
 
-    private val connectionState = MutableStateFlow<PrinterConnectionState>(PrinterConnectionState.CheckingForPrinter)
-    override val printerConnectionState: StateFlow<PrinterConnectionState> = connectionState
+    private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
+    override val printerState: StateFlow<PrinterState> = connectionState
 
     private val innerPrinterCallback: InnerPrinterCallback = object : InnerPrinterCallback() {
         override fun onConnected(service: SunmiPrinterService) {
-            printController = SunmiPrinterController(service, serviceVersion)
+            printController = SunmiPrinterController(service, serviceVersion, connectionState)
 
             // Check the printer connection, as some devices do not have a printer but need to be connected to the
             // cash drawer through a print service.
@@ -40,8 +40,8 @@ class SunmiPrintService(context: Context) : PrintService() {
                 false
             }.let {
                 connectionState.value = when (it) {
-                    true -> PrinterConnectionState.PrinterConnected
-                    false -> PrinterConnectionState.PrinterNotAvailable
+                    true -> PrinterState.Connected
+                    false -> PrinterState.Error.NotAvailable
                 }
             }
         }
@@ -49,7 +49,7 @@ class SunmiPrintService(context: Context) : PrintService() {
         override fun onDisconnected() {
             printController = null
             serviceVersion = PrinterServiceVersion.Unknown
-            connectionState.value = PrinterConnectionState.PrinterConnectionLost
+            connectionState.value = PrinterState.Error.ConnectionLost
         }
     }
 
@@ -57,7 +57,7 @@ class SunmiPrintService(context: Context) : PrintService() {
         try {
             serviceVersion = getServiceVersion(context)
             if (!InnerPrinterManager.getInstance().bindService(context, innerPrinterCallback)) {
-                connectionState.value = PrinterConnectionState.PrinterNotAvailable
+                connectionState.value = PrinterState.Error.NotAvailable
             }
         } catch (e: InnerPrinterException) {
             Timber.e(e)

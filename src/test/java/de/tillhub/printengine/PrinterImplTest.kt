@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import de.tillhub.printengine.analytics.PrintAnalytics
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
-import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterResult
 import de.tillhub.printengine.data.PrinterServiceVersion
@@ -67,6 +66,7 @@ class PrinterImplTest : DescribeSpec({
         }
         service = mockk {
             every { printController } returns controller
+            every { printerState } returns MutableStateFlow(PrinterState.Connected)
         }
         analytics = mockk {
             every { logPrintReceipt(any()) } just Runs
@@ -80,13 +80,6 @@ class PrinterImplTest : DescribeSpec({
     }
 
     describe("independent") {
-
-        it("observeConnection") {
-            val flow = MutableStateFlow(PrinterConnectionState.PrinterConnected)
-            every { service.printerConnectionState } returns flow
-
-            printer.observeConnection() shouldBe flow
-        }
 
         it("observePrinterState") {
             printer.observePrinterState().first() shouldBe PrinterState.Connected
@@ -110,7 +103,7 @@ class PrinterImplTest : DescribeSpec({
 
     describe("printer enabled") {
         beforeTest {
-            printer.setEnabled(true)
+            printer.settings.enabled = true
         }
 
         it("printText") {
@@ -136,7 +129,7 @@ class PrinterImplTest : DescribeSpec({
         }
 
         it("printText with DARK Intensity") {
-            printer.setPrintingIntensity(PrintingIntensity.DARK)
+            printer.settings.printingIntensity = PrintingIntensity.DARK
             printer.startPrintJob(
                 PrintJob(
                     listOf(
@@ -227,27 +220,11 @@ class PrinterImplTest : DescribeSpec({
                 analytics.logPrintReceipt("raw_data")
             }
         }
-
-        it("feedPaper") {
-            printer.feedPaper()
-
-            verify {
-                controller.feedPaper()
-            }
-        }
-
-        it("cutPaper") {
-            printer.cutPaper()
-
-            verify {
-                controller.cutPaper()
-            }
-        }
     }
 
     describe("printer disabled") {
         beforeTest {
-            printer.setEnabled(false)
+            printer.settings.enabled = false
         }
 
         it("printText") {
@@ -317,22 +294,6 @@ class PrinterImplTest : DescribeSpec({
             verify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.sendRawData(any())
-            }
-        }
-
-        it("feedPaper") {
-            printer.feedPaper()
-
-            verify(inverse = true) {
-                controller.feedPaper()
-            }
-        }
-
-        it("cutPaper") {
-            printer.cutPaper()
-
-            verify(inverse = true) {
-                controller.cutPaper()
             }
         }
     }

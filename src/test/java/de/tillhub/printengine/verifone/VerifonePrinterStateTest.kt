@@ -14,8 +14,8 @@ class VerifonePrinterStateTest : FunSpec({
      VerifonePrinterState.convert(Printer.STATUS_VOLTAGE_ERROR) shouldBe PrinterState.Error.VoltageTooLow
      VerifonePrinterState.convert(Printer.STATUS_LOW_BATTERY) shouldBe PrinterState.Error.VoltageTooLow
      VerifonePrinterState.convert(Printer.STATUS_FUSE) shouldBe PrinterState.Error.Malfunctions
-     VerifonePrinterState.convert(Printer.STATUS_INTERNAL_ERROR) shouldBe PrinterState.Error.InternalError
-     VerifonePrinterState.convert(Printer.STATUS_ERROR) shouldBe PrinterState.Error.InternalError
+     VerifonePrinterState.convert(Printer.STATUS_INTERNAL_ERROR) shouldBe PrinterState.Error.Verifone.InternalError
+     VerifonePrinterState.convert(Printer.STATUS_ERROR) shouldBe PrinterState.Error.Verifone.InternalError
      VerifonePrinterState.convert(1234567890) shouldBe PrinterState.Error.Unknown
     }
 })

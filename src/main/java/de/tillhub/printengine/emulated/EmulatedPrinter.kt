@@ -15,21 +15,12 @@ class EmulatedPrinter : Printer {
         logInfo("EmulatedPrintService initialized")
     }
 
-    override fun setEnabled(enabled: Boolean) {
-        if (enabled) logInfo("printer enabled")
-        else logInfo("printer disabled")
-    }
-
-    override fun observeConnection(): StateFlow<PrinterConnectionState> {
-        return MutableStateFlow(PrinterConnectionState.PrinterNotAvailable)
+    override val settings: PrinterSettings by lazy {
+        PrinterSettings()
     }
 
     override fun observePrinterState(): StateFlow<PrinterState> {
-        return MutableStateFlow(PrinterState.PrinterNotDetected)
-    }
-
-    override fun setPrintingIntensity(intensity: PrintingIntensity) {
-        logInfo("setting printer intensity to: ${intensity.name}")
+        return MutableStateFlow(PrinterState.Error.NotAvailable)
     }
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> {
@@ -55,16 +46,6 @@ class EmulatedPrinter : Printer {
                    |receipt END #################
                    |""".trimMargin()
         )
-        return PrinterResult.Success(Unit)
-    }
-
-    override suspend fun feedPaper(): PrinterResult<Unit> {
-        logInfo("feeding paper")
-        return PrinterResult.Success(Unit)
-    }
-
-    override suspend fun cutPaper(): PrinterResult<Unit> {
-        logInfo("cut paper")
         return PrinterResult.Success(Unit)
     }
 
