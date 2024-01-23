@@ -32,7 +32,7 @@ class SunmiPrinterStateTest : FunSpec({
      SunmiPrinterState.convert(SunmiPrinterState.PaperCutterAbnormal) shouldBe PrinterState.Error.PaperCutterAbnormal
      SunmiPrinterState.convert(SunmiPrinterState.PaperCutterRecovered) shouldBe PrinterState.Connected
      SunmiPrinterState.convert(SunmiPrinterState.BlackMarkNotFound) shouldBe PrinterState.Error.BlackMarkNotFound
-     SunmiPrinterState.convert(SunmiPrinterState.NotDetected) shouldBe PrinterState.PrinterNotDetected
+     SunmiPrinterState.convert(SunmiPrinterState.NotDetected) shouldBe PrinterState.Error.NotAvailable
      SunmiPrinterState.convert(SunmiPrinterState.FirmwareUpgradeFailed) shouldBe PrinterState.Error.FirmwareUpgradeFailed
     }
 })

@@ -1,25 +1,12 @@
 package de.tillhub.printengine
 
-import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.data.PrinterResult
+import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.StateFlow
-import timber.log.Timber
 
 abstract class PrintService {
     abstract var printController: PrinterController?
-    abstract val printerConnectionState: StateFlow<PrinterConnectionState>
-
-    @Suppress("TooGenericExceptionCaught")
-    inline fun <T> withPrinterOrDefault(default: T, body: (PrinterController) -> T): T {
-        return printController?.let {
-            try {
-                body(it)
-            } catch (e: Exception) {
-                Timber.e(e)
-                default
-            }
-        } ?: default
-    }
+    abstract val printerState: StateFlow<PrinterState>
 
     @Suppress("TooGenericExceptionCaught")
     inline fun <T> withPrinterCatching(body: (PrinterController) -> T): PrinterResult<T> {

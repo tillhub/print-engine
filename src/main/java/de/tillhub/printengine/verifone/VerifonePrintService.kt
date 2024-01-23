@@ -4,28 +4,28 @@ import android.content.Context
 import com.verifone.peripherals.DirectPrintManager
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.barcode.BarcodeEncoderImpl
+import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class VerifonePrintService(context: Context) : PrintService() {
 
-    private val connectionState = MutableStateFlow<PrinterConnectionState>(PrinterConnectionState.CheckingForPrinter)
-    override val printerConnectionState: StateFlow<PrinterConnectionState> = connectionState
+    private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
+    override val printerState: StateFlow<PrinterState> = connectionState
 
     private val connectionListener = object : DirectPrintManager.DirectPrintServiceListener {
         override fun onPrintServiceReady() {
-            connectionState.value = PrinterConnectionState.PrinterConnected
+            connectionState.value = PrinterState.Connected
             printManager.defaultPrinter.paperWidth = 30
         }
 
         override fun onPrintServiceDisconnected() {
-            connectionState.value = PrinterConnectionState.PrinterConnectionLost
+            connectionState.value = PrinterState.Error.ConnectionLost
         }
 
         override fun onPrintServiceDied() {
-            connectionState.value = PrinterConnectionState.PrinterNotAvailable
+            connectionState.value = PrinterState.Error.NotAvailable
         }
     }
 
@@ -34,5 +34,9 @@ class VerifonePrintService(context: Context) : PrintService() {
             ?: throw IllegalStateException("Error occurred, DirectPrintManager is null")
     }
 
-    override var printController: PrinterController? = VerifonePrintController(printManager, BarcodeEncoderImpl())
+    override var printController: PrinterController? = VerifonePrintController(
+        printManager = printManager,
+        printerState = connectionState,
+        barcodeEncoder = BarcodeEncoderImpl()
+    )
 }

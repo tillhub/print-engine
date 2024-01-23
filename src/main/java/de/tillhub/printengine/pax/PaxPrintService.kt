@@ -6,8 +6,8 @@ import com.pax.dal.exceptions.PrinterDevException
 import com.pax.neptunelite.api.NeptuneLiteUser
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.PrinterConnectionState
 import de.tillhub.printengine.barcode.BarcodeEncoderImpl
+import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
@@ -24,20 +24,24 @@ class PaxPrintService(context: Context) : PrintService() {
     }
     override var printController: PrinterController? = null
 
-    private val connectionState = MutableStateFlow<PrinterConnectionState>(PrinterConnectionState.CheckingForPrinter)
-    override val printerConnectionState: StateFlow<PrinterConnectionState> = connectionState
+    private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
+    override val printerState: StateFlow<PrinterState> = connectionState
 
     init {
         @Suppress("TooGenericExceptionCaught")
         try {
-            printController = PaxPrinterController(dal.printer, BarcodeEncoderImpl())
-            connectionState.value = PrinterConnectionState.PrinterConnected
+            printController = PaxPrinterController(
+                printerService = dal.printer,
+                printerState = connectionState,
+                barcodeEncoder = BarcodeEncoderImpl()
+            )
+            connectionState.value = PrinterState.Connected
         } catch (e: PrinterDevException) { // Printer Initialization
             Timber.e(e)
-            connectionState.value = PrinterConnectionState.PrinterNotAvailable
+            connectionState.value = PrinterState.Error.NotAvailable
         } catch (e: Exception) {
             Timber.e(e)
-            connectionState.value = PrinterConnectionState.PrinterNotAvailable
+            connectionState.value = PrinterState.Error.NotAvailable
         }
     }
 }

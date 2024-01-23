@@ -21,6 +21,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @RobolectricTest
@@ -28,6 +29,7 @@ class VerifonePrintControllerTest : FunSpec({
 
     lateinit var bitmap: Bitmap
     lateinit var printManager: DirectPrintManager
+    lateinit var printerState: MutableStateFlow<PrinterState>
     lateinit var barcodeEncoder: BarcodeEncoder
     lateinit var printerController: PrinterController
 
@@ -40,10 +42,11 @@ class VerifonePrintControllerTest : FunSpec({
             every { printString(any(), any(), any()) } just Runs
             every { printBitmap(any(), any(), any()) } just Runs
         }
+        printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
         barcodeEncoder = mockk {
             every { encodeAsBitmap(any(), any(), any(), any()) } returns bitmap
         }
-        printerController = VerifonePrintController(printManager, barcodeEncoder)
+        printerController = VerifonePrintController(printManager, printerState, barcodeEncoder)
     }
 
     afterSpec {
@@ -60,7 +63,7 @@ class VerifonePrintControllerTest : FunSpec({
     }
 
     test("observePrinterState") {
-        printerController.observePrinterState().first() shouldBe PrinterState.PrinterNotDetected
+        printerController.observePrinterState().first() shouldBe PrinterState.CheckingForPrinter
     }
 
     test("printText") {

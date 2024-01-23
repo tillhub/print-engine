@@ -5,8 +5,7 @@ object ConfigData {
     const val applicationId = "de.tillhub.printengine"
     const val minSdkVersion = 21
     const val targetSdkVersion = 34
-    const val versionCode = 17
-    const val versionName = "1.5.0"
+    const val versionName = "1.6.0"
 
     val JAVA_VERSION = JavaVersion.VERSION_17
     val JVM_TARGET = JAVA_VERSION.toString()

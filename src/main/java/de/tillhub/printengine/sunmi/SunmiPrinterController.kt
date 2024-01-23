@@ -23,10 +23,9 @@ import kotlin.coroutines.suspendCoroutine
  */
 class SunmiPrinterController(
     private val printerService: SunmiPrinterService,
-    private val serviceVersion: PrinterServiceVersion
+    private val serviceVersion: PrinterServiceVersion,
+    private val printerState: MutableStateFlow<PrinterState>
 ) : PrinterController {
-
-    private var printerState: MutableStateFlow<PrinterState> = MutableStateFlow(PrinterState.PrinterNotDetected)
 
     private val printListener: InnerResultCallback by lazy {
         object : InnerResultCallback() {
