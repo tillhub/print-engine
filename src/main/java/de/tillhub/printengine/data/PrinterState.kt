@@ -22,7 +22,7 @@ sealed class PrinterState {
         object ConnectionLost : Error()
 
         /** Printer was not detected / does not exist */
-        object NotAvailable : PrinterState()
+        object NotAvailable : Error()
 
         /** Abnormal communication / printer hardware interface is abnormal */
         object AbnormalCommunication : Error()
