@@ -54,3 +54,8 @@
 -keep class com.verifone.peripherals.** {
     *;
 }
+
+-dontwarn com.verifone.peripherals.CashDrawer
+-dontwarn com.verifone.peripherals.Scanner
+-dontwarn com.verifone.utilities.BaseParcel$ParcelCreator
+-dontwarn com.verifone.utilities.BaseParcel
