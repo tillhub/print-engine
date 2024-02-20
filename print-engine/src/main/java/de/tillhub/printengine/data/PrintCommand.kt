@@ -13,9 +13,9 @@ sealed class PrintCommand {
      *  the paper needs to be fed out automatically
      *  But if the Api does not support it, it will be replaced by printing three lines
      */
-    object FeedPaper : PrintCommand()
+    data object FeedPaper : PrintCommand()
     /**
      *  Printer cuts paper and throws exception on machines without a cutter
      */
-    object CutPaper : PrintCommand()
+    data object CutPaper : PrintCommand()
 }
