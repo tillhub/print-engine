@@ -36,8 +36,9 @@ object PaxUtils {
      * Centers content in space width.
      */
     fun formatCode(content: String, space: Int): String {
-        return if (space < content.length) content.take(space)
-        else {
+        return if (space < content.length) {
+            content.take(space)
+        } else {
             val padStart = (space - content.length) / 2
             (" ".repeat(padStart) + content).padEnd(space)
         }

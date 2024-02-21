@@ -142,6 +142,7 @@ class PaxPrinterController(
      * Start printer and prints data in buffer.This is synchronous interface.
      */
     override fun start() {
+        printerState.value = PrinterState.Busy
         printerService.start()
         printerService.init()
         fontSize?.let {

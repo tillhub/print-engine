@@ -80,9 +80,9 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun StateText() {
-        val myText by printerState
+        val value by printerState
         Text(
-            text = "Printer state: $myText",
+            text = "Printer state: $value",
             textAlign = TextAlign.Center
         )
     }
