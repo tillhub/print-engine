@@ -1,5 +1,9 @@
 package de.tillhub.printengine.verifone
 
+import android.graphics.Bitmap
+import android.util.Base64
+import java.io.ByteArrayOutputStream
+
 object VerifoneUtils {
 
     fun transformToHtml(text: String): String =
@@ -15,4 +19,36 @@ object VerifoneUtils {
         "<table style='width:100%' border=\"0\">" +
             "<tr><td style=\"text-align: center;\">$text</td></tr>" +
         "</table>"
+
+    fun transformToHtml(image: Bitmap): String =
+        "<tr><td style=\"text-align: center;\">" +
+            "<img src=\"data:image/png;base64, ${ encodeImage(image) }\" alt=\"Red dot\" />" +
+        "</td></tr>"
+
+    fun wrapTableRows(text: String): String =
+        "<html>" +
+            "<body>" +
+                "<table style='width:100%' border=\"0\">" +
+                    text +
+                "</table>" +
+            "</body>" +
+        "</html>"
+
+    fun transformToTableRowHtml(text: String): String =
+        "<tr><td style=\"font-family: monospace; letter-spacing: 0px; font-size: 20px;\">" +
+            text +
+        "</td></tr>"
+
+    fun transformToCenteredTableRowHtml(text: String): String =
+        "<tr><td style=\"font-family: monospace; letter-spacing: 0px; font-size: 20px; text-align: center;\">" +
+            text +
+        "</td></tr>"
+
+    private fun encodeImage(image: Bitmap): String = ByteArrayOutputStream().let { stream ->
+        image.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, stream)
+        val b = stream.toByteArray()
+        Base64.encodeToString(b, Base64.DEFAULT)
+    }
+
+    private const val JPEG_QUALITY = 100
 }
