@@ -107,7 +107,7 @@ class VerifonePrintController(
 
     override fun feedPaper() {
         if (batchPrint) {
-            batchSB.append("\n")
+            batchSB.append("\n\n\n")
         } else {
             printManager.printString(printListener, "", Printer.PRINTER_NO_CUT)
         }

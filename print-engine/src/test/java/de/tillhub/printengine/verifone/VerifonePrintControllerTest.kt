@@ -231,7 +231,7 @@ class VerifonePrintControllerTest : DescribeSpec({
         }
 
         it("feedPaper") {
-            val payload = VerifoneUtils.transformToHtml("\n")
+            val payload = VerifoneUtils.transformToHtml("\n\n\n")
 
             printerController.feedPaper()
             printerController.start()
@@ -249,7 +249,7 @@ class VerifonePrintControllerTest : DescribeSpec({
             val payload3 = VerifoneUtils.transformToHtml(
                 VerifoneUtils.singleLineCenteredText("qr_code") + "\n"
             )
-            val payload4 = VerifoneUtils.transformToHtml("end line\n\n")
+            val payload4 = VerifoneUtils.transformToHtml("end line\n\n\n\n")
 
             printerController.printText("start line")
             printerController.printBarcode("barcode")
@@ -278,7 +278,7 @@ class VerifonePrintControllerTest : DescribeSpec({
             val payload3 = VerifoneUtils.transformToHtml(
                 VerifoneUtils.singleLineCenteredText("qr_code") + "\n"
             )
-            val payload4 = VerifoneUtils.transformToHtml("end line\n\n")
+            val payload4 = VerifoneUtils.transformToHtml("end line\n\n\n\n")
 
             printerController.printText("start line")
             printerController.printBarcode("barcode")
