@@ -14,10 +14,7 @@ import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
 import de.tillhub.printengine.verifone.VerifoneUtils.singleLineCenteredText
-import de.tillhub.printengine.verifone.VerifoneUtils.transformToCenteredTableRowHtml
 import de.tillhub.printengine.verifone.VerifoneUtils.transformToHtml
-import de.tillhub.printengine.verifone.VerifoneUtils.transformToTableRowHtml
-import de.tillhub.printengine.verifone.VerifoneUtils.wrapTableRows
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -76,7 +73,7 @@ class VerifonePrintController(
 
     override fun printText(text: String) {
         if (batchPrint) {
-            batchSB.append(transformToTableRowHtml(text))
+            batchSB.append(text).append("\n")
         } else {
             printManager.printString(
                 printListener,
@@ -89,36 +86,28 @@ class VerifonePrintController(
     override fun printBarcode(barcode: String) {
         barcodeEncoder.encodeAsBitmap(barcode, BarcodeType.CODE_128, BARCODE_WIDTH, BARCODE_HEIGHT)?.let { image ->
             printImage(image)
-            if (batchPrint) {
-                batchSB.append(transformToCenteredTableRowHtml(barcode))
-            } else {
-                printText(singleLineCenteredText(barcode))
-            }
+            printText(singleLineCenteredText(barcode))
         }
     }
 
     override fun printQr(qrData: String) {
         barcodeEncoder.encodeAsBitmap(qrData, BarcodeType.QR_CODE, QR_CODE_SIZE, QR_CODE_SIZE)?.let { image ->
             printImage(image)
-            if (batchPrint) {
-                batchSB.append(transformToCenteredTableRowHtml(qrData))
-            } else {
-                printText(singleLineCenteredText(qrData))
-            }
+            printText(singleLineCenteredText(qrData))
         }
     }
 
     override fun printImage(image: Bitmap) {
-        if (batchPrint) {
-            batchSB.append(transformToHtml(image))
-        } else {
-            printManager.printBitmap(printListener, image, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+        if (batchPrint && batchSB.isNotEmpty()) {
+            printBatchedString()
         }
+
+        printManager.printBitmap(printListener, image, Printer.PRINTER_NO_CUTTER_LINE_FEED)
     }
 
     override fun feedPaper() {
         if (batchPrint) {
-            batchSB.append(transformToTableRowHtml(""))
+            batchSB.append("\n")
         } else {
             printManager.printString(printListener, "", Printer.PRINTER_NO_CUT)
         }
@@ -138,19 +127,14 @@ class VerifonePrintController(
 
     override fun start() {
         if (batchPrint) {
-            val payload = batchSB.toString()
+            if (batchSB.isNotEmpty()) {
+                printBatchedString()
+            }
 
-            printManager.printString(
-                printListener,
-                wrapTableRows(payload),
-                if (useCutter) {
-                    Printer.PRINTER_FULL_CUT
-                } else {
-                    Printer.PRINTER_NO_CUTTER_LINE_FEED
-                }
-            )
+            if (useCutter) {
+                printManager.printString(printListener, "", Printer.PRINTER_FULL_CUT)
+            }
 
-            batchSB.clear()
             useCutter = false
         }
     }
@@ -166,6 +150,17 @@ class VerifonePrintController(
             printedDistance = 0,
             serviceVersion = PrinterServiceVersion.Unknown
         )
+
+    private fun printBatchedString() {
+        val payload = batchSB.toString()
+
+        printManager.printString(
+            printListener,
+            transformToHtml(payload),
+            Printer.PRINTER_NO_CUTTER_LINE_FEED
+        )
+        batchSB.clear()
+    }
 
     companion object {
         private const val BARCODE_HEIGHT = 140

@@ -169,9 +169,7 @@ class VerifonePrintControllerTest : DescribeSpec({
         }
 
         it("sendRawData") {
-            val payload = VerifoneUtils.wrapTableRows(
-                VerifoneUtils.transformToTableRowHtml("raw_data")
-            )
+            val payload = VerifoneUtils.transformToHtml("raw_data\n")
 
             val rawData = RawPrinterData("raw_data".toByteArray())
             printerController.sendRawData(rawData)
@@ -183,9 +181,7 @@ class VerifonePrintControllerTest : DescribeSpec({
         }
 
         it("printText") {
-            val payload = VerifoneUtils.wrapTableRows(
-                VerifoneUtils.transformToTableRowHtml("text_to_print")
-            )
+            val payload = VerifoneUtils.transformToHtml("text_to_print\n")
 
             printerController.printText("text_to_print")
             printerController.start()
@@ -196,9 +192,8 @@ class VerifonePrintControllerTest : DescribeSpec({
         }
 
         it("printBarcode") {
-            val payload = VerifoneUtils.wrapTableRows(
-                VerifoneUtils.transformToHtml(bitmap) +
-                VerifoneUtils.transformToCenteredTableRowHtml("barcode")
+            val payload = VerifoneUtils.transformToHtml(
+                VerifoneUtils.singleLineCenteredText("barcode") + "\n"
             )
 
             printerController.printBarcode("barcode")
@@ -206,14 +201,14 @@ class VerifonePrintControllerTest : DescribeSpec({
 
             verify(ordering = Ordering.ORDERED) {
                 barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 420, 140)
+                printManager.printBitmap(any(), bitmap, Printer.PRINTER_NO_CUTTER_LINE_FEED)
                 printManager.printString(any(), payload, Printer.PRINTER_NO_CUTTER_LINE_FEED)
             }
         }
 
         it("printQr") {
-            val payload = VerifoneUtils.wrapTableRows(
-                VerifoneUtils.transformToHtml(bitmap) +
-                VerifoneUtils.transformToCenteredTableRowHtml("qr_code")
+            val payload = VerifoneUtils.transformToHtml(
+                VerifoneUtils.singleLineCenteredText("qr_code") + "\n"
             )
 
             printerController.printQr("qr_code")
@@ -221,23 +216,22 @@ class VerifonePrintControllerTest : DescribeSpec({
 
             verify(ordering = Ordering.ORDERED) {
                 barcodeEncoder.encodeAsBitmap("qr_code", BarcodeType.QR_CODE, 420, 420)
+                printManager.printBitmap(any(), bitmap, Printer.PRINTER_NO_CUTTER_LINE_FEED)
                 printManager.printString(any(), payload, Printer.PRINTER_NO_CUTTER_LINE_FEED)
             }
         }
 
         it("printImage") {
-            val payload = VerifoneUtils.wrapTableRows(VerifoneUtils.transformToHtml(bitmap))
-
             printerController.printImage(bitmap)
             printerController.start()
 
             verify(exactly = 1) {
-                printManager.printString(any(), payload, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printBitmap(any(), bitmap, Printer.PRINTER_NO_CUTTER_LINE_FEED)
             }
         }
 
         it("feedPaper") {
-            val payload = VerifoneUtils.wrapTableRows(VerifoneUtils.transformToTableRowHtml(""))
+            val payload = VerifoneUtils.transformToHtml("\n")
 
             printerController.feedPaper()
             printerController.start()
@@ -248,16 +242,14 @@ class VerifonePrintControllerTest : DescribeSpec({
         }
 
         it("full print, no cut") {
-            val payload = VerifoneUtils.wrapTableRows(
-                VerifoneUtils.transformToTableRowHtml("start line") +
-                VerifoneUtils.transformToHtml(bitmap) +
-                VerifoneUtils.transformToCenteredTableRowHtml("barcode") +
-                VerifoneUtils.transformToHtml(bitmap) +
-                VerifoneUtils.transformToCenteredTableRowHtml("qr_code") +
-                VerifoneUtils.transformToHtml(bitmap) +
-                VerifoneUtils.transformToTableRowHtml("end line") +
-                VerifoneUtils.transformToTableRowHtml("")
+            val payload1 = VerifoneUtils.transformToHtml("start line\n")
+            val payload2 = VerifoneUtils.transformToHtml(
+                VerifoneUtils.singleLineCenteredText("barcode") + "\n"
             )
+            val payload3 = VerifoneUtils.transformToHtml(
+                VerifoneUtils.singleLineCenteredText("qr_code") + "\n"
+            )
+            val payload4 = VerifoneUtils.transformToHtml("end line\n\n")
 
             printerController.printText("start line")
             printerController.printBarcode("barcode")
@@ -267,22 +259,26 @@ class VerifonePrintControllerTest : DescribeSpec({
             printerController.feedPaper()
             printerController.start()
 
-            verify(exactly = 1) {
-                printManager.printString(any(), payload, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+            verify(Ordering.ORDERED) {
+                printManager.printString(any(), payload1, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printBitmap(any(), bitmap, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printString(any(), payload2, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printBitmap(any(), bitmap, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printString(any(), payload3, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printBitmap(any(), bitmap, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printString(any(), payload4, Printer.PRINTER_NO_CUTTER_LINE_FEED)
             }
         }
 
         it("full print, full cut") {
-            val payload = VerifoneUtils.wrapTableRows(
-                VerifoneUtils.transformToTableRowHtml("start line") +
-                VerifoneUtils.transformToHtml(bitmap) +
-                VerifoneUtils.transformToCenteredTableRowHtml("barcode") +
-                VerifoneUtils.transformToHtml(bitmap) +
-                VerifoneUtils.transformToCenteredTableRowHtml("qr_code") +
-                VerifoneUtils.transformToHtml(bitmap) +
-                VerifoneUtils.transformToTableRowHtml("end line") +
-                VerifoneUtils.transformToTableRowHtml("")
+            val payload1 = VerifoneUtils.transformToHtml("start line\n")
+            val payload2 = VerifoneUtils.transformToHtml(
+                VerifoneUtils.singleLineCenteredText("barcode") + "\n"
             )
+            val payload3 = VerifoneUtils.transformToHtml(
+                VerifoneUtils.singleLineCenteredText("qr_code") + "\n"
+            )
+            val payload4 = VerifoneUtils.transformToHtml("end line\n\n")
 
             printerController.printText("start line")
             printerController.printBarcode("barcode")
@@ -293,8 +289,15 @@ class VerifonePrintControllerTest : DescribeSpec({
             printerController.cutPaper()
             printerController.start()
 
-            verify(exactly = 1) {
-                printManager.printString(any(), payload, Printer.PRINTER_FULL_CUT)
+            verify(Ordering.ORDERED) {
+                printManager.printString(any(), payload1, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printBitmap(any(), bitmap, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printString(any(), payload2, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printBitmap(any(), bitmap, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printString(any(), payload3, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printBitmap(any(), bitmap, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printString(any(), payload4, Printer.PRINTER_NO_CUTTER_LINE_FEED)
+                printManager.printString(any(), "", Printer.PRINTER_FULL_CUT)
             }
         }
     }
