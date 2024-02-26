@@ -1,21 +1,32 @@
 [versions]
 # Define the dependency versions
-kotlin = "1.8.22"
-kotlinCoroutines = "1.7.1"
-androidGradlePlugin = "8.1.1"
+agp = "8.2.2"
+kotlin = "1.9.22"
+kotlinCoroutines = "1.7.3"
 core = "1.12.0"
 zxing = "3.5.0"
 sunmiPrinter = "1.0.19"
 timber = "5.0.1"
 androidDesugarJdkLibs = "1.2.2"
-detekt = "1.18.1"
+detekt = "1.23.3"
 
 junit = "4.13.2"
-mockk = "1.13.7"
+mockk = "1.13.8"
 robolectric = "4.10"
 kotest = "4.6.4"
 kotestRobolectric = "0.4.0"
 coreTest = "1.5.0"
+androidx-test-ext-junit = "1.1.5"
+espresso-core = "3.5.1"
+appcompat = "1.6.1"
+material = "1.11.0"
+
+
+lifecycle = "2.7.0"
+activity-compose = "1.8.2"
+compose-bom = "2024.02.00"
+material3 = "1.2.0"
+uiToolingPreviewAndroid = "1.6.1"
 
 [libraries]
 # Define the libraries
@@ -29,6 +40,15 @@ androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "cor
 
 google-zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 sunmi-printer = { group = "com.sunmi", name = "printerlibrary", version.ref = "sunmiPrinter" }
+
+activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3",version.ref = "material3" }
+
+androidx-lifecycle-common = { group = "androidx.lifecycle", name = "lifecycle-common", version.ref = "lifecycle" }
+androidx-lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime", version.ref = "lifecycle" }
 
 # Unit testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -45,10 +65,20 @@ kotest-robolectric = { group = "io.kotest.extensions", name = "kotest-extensions
 androidx-test-core = { group = "androidx.test", name = "core-ktx", version.ref = "coreTest" }
 
 # Dependencies of the included build-logic
-gradlePlugin-android = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
+gradlePlugin-android = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 gradlePlugin-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 gradlePlugin-detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 
 [bundles]
 core = [
@@ -70,4 +100,15 @@ robolectric = [
     "robolectric",
     "kotest.robolectric",
     "androidx.test.core"
+]
+compose = [
+    "activity.compose",
+    "compose.bom",
+    "compose.ui",
+    "compose.material3",
+    "compose-preview-android",
+]
+lifecycle = [
+    "androidx.lifecycle.common",
+    "androidx.lifecycle.runtime",
 ]
