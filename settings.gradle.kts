@@ -1,4 +1,4 @@
-rootProject.name = "Tillhub Print Engine"
+import java.net.URI
 
 pluginManagement {
     repositories {
@@ -6,24 +6,20 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
-    // Full support for sealed classes will land in Android Studio Hedgehog / AGP 8.2.
-    // when buildscript can be deleted
-    buildscript {
-        repositories {
-            mavenCentral()
-            maven {
-                url = uri("https://storage.googleapis.com/r8-releases/raw")
-            }
-        }
-        dependencies {
-            classpath("com.android.tools:r8:8.2.26")
-        }
-    }
 }
 
+@Suppress("UnstableApiUsage")
 dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = URI.create("https://jitpack.io")
+        }
     }
 }
+
+
+rootProject.name = "Tillhub Print Engine"
+include(":print-engine")
+include(":sample")
