@@ -13,6 +13,9 @@ import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
+import de.tillhub.printengine.verifone.VerifoneUtils.FEED_PAPER
+import de.tillhub.printengine.verifone.VerifoneUtils.generateImageHtml
+import de.tillhub.printengine.verifone.VerifoneUtils.monospaceText
 import de.tillhub.printengine.verifone.VerifoneUtils.singleLineCenteredText
 import de.tillhub.printengine.verifone.VerifoneUtils.transformToHtml
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +29,7 @@ class VerifonePrintController(
      * If this field is set to false each print command is handled separately.
      * If it is set to true the print commands are grouped and handled when start() is called
      */
-    private val batchPrint: Boolean = true
+    private val batchPrint: Boolean = BATCH_PRINT_DEFAULT
 ) : PrinterController {
 
     private val batchSB = StringBuilder()
@@ -67,17 +70,15 @@ class VerifonePrintController(
 
     override fun observePrinterState(): StateFlow<PrinterState> = printerState
 
-    override fun setFontSize(fontSize: PrintingFontType) {
-        // Not supported
-    }
+    override fun setFontSize(fontSize: PrintingFontType) = Unit // Not supported
 
     override fun printText(text: String) {
         if (batchPrint) {
-            batchSB.append(text).append("\n")
+            batchSB.appendLine(monospaceText(text))
         } else {
             printManager.printString(
                 printListener,
-                transformToHtml(text),
+                transformToHtml(monospaceText(text)),
                 Printer.PRINTER_NO_CUTTER_LINE_FEED
             )
         }
@@ -98,16 +99,16 @@ class VerifonePrintController(
     }
 
     override fun printImage(image: Bitmap) {
-        if (batchPrint && batchSB.isNotEmpty()) {
-            printBatchedString()
+        if (batchPrint) {
+            batchSB.append(generateImageHtml(image))
+        } else {
+            printManager.printBitmap(printListener, image, Printer.PRINTER_NO_CUTTER_LINE_FEED)
         }
-
-        printManager.printBitmap(printListener, image, Printer.PRINTER_NO_CUTTER_LINE_FEED)
     }
 
     override fun feedPaper() {
         if (batchPrint) {
-            batchSB.append("\n\n\n")
+            batchSB.append(FEED_PAPER)
         } else {
             printManager.printString(printListener, "", Printer.PRINTER_NO_CUT)
         }
@@ -121,20 +122,17 @@ class VerifonePrintController(
         }
     }
 
-    override fun setIntensity(intensity: PrintingIntensity) {
-        // Not supported
-    }
+    override fun setIntensity(intensity: PrintingIntensity) = Unit // Not supported
 
     override fun start() {
-        if (batchPrint) {
-            if (batchSB.isNotEmpty()) {
-                printBatchedString()
-            }
+        if (batchPrint && batchSB.isNotEmpty()) {
+            printManager.printString(
+                printListener,
+                transformToHtml(batchSB.toString()),
+                if (useCutter) Printer.PRINTER_FULL_CUT else Printer.PRINTER_NO_CUTTER_LINE_FEED
+            )
 
-            if (useCutter) {
-                printManager.printString(printListener, "", Printer.PRINTER_FULL_CUT)
-            }
-
+            batchSB.clear()
             useCutter = false
         }
     }
@@ -144,25 +142,15 @@ class VerifonePrintController(
             serialNumber = "n/a",
             deviceModel = "Verifone T630c",
             printerVersion = "n/a",
-            printerPaperSpec = PrintingPaperSpec.PAX_PAPER_56MM,
+            printerPaperSpec = PrintingPaperSpec.VERIFONE_PAPER_58MM,
             printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
             printerHead = "n/a",
             printedDistance = 0,
             serviceVersion = PrinterServiceVersion.Unknown
         )
 
-    private fun printBatchedString() {
-        val payload = batchSB.toString()
-
-        printManager.printString(
-            printListener,
-            transformToHtml(payload),
-            Printer.PRINTER_NO_CUTTER_LINE_FEED
-        )
-        batchSB.clear()
-    }
-
     companion object {
+        private const val BATCH_PRINT_DEFAULT = true
         private const val BARCODE_HEIGHT = 140
         private const val BARCODE_WIDTH = 420
         private const val QR_CODE_SIZE = 420
