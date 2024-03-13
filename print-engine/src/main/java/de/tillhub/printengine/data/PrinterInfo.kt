@@ -20,7 +20,8 @@ data class PrinterInfo(
 enum class PrintingPaperSpec(val characterCount: Int) {
     /** Printing paper width of 56 mm */
     PAX_PAPER_56MM(32),
-    SUNMI_PAPER_56MM(38)
+    SUNMI_PAPER_56MM(38),
+    VERIFONE_PAPER_58MM(32)
 }
 
 /**
