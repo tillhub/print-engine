@@ -6,7 +6,7 @@ package de.tillhub.printengine.data
 sealed class PrinterResult<out T> {
     data class Success<out T>(val value: T) : PrinterResult<T>()
     sealed class Error : PrinterResult<Nothing>() {
-        object PrinterNotConnected : Error()
+        data object PrinterNotConnected : Error()
         data class WithException(val error: Throwable) : Error()
     }
 }
