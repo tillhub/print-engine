@@ -2,22 +2,22 @@ package de.tillhub.printengine.pax
 
 import de.tillhub.printengine.data.PrinterState
 
-enum class PaxPrinterState(val code: Int) {
-    Unknown(-1),
-    Success(0),
-    Busy(1),
-    OutOfPaper(2),
-    FormatPrintDataPacketError(3),
-    Malfunctions(4),
-    Overheated(8),
-    VoltageTooLow(9),
-    PrintingUnfinished(240),
-    NotInstalledFontLibrary(252),
-    DataPackageTooLong(254);
+internal enum class PaxPrinterState(val code: Int) {
+    Unknown(code = -1),
+    Success(code = 0),
+    Busy(code = 1),
+    OutOfPaper(code = 2),
+    FormatPrintDataPacketError(code = 3),
+    Malfunctions(code = 4),
+    Overheated(code = 8),
+    VoltageTooLow(code = 9),
+    PrintingUnfinished(code = 240),
+    NotInstalledFontLibrary(code = 252),
+    DataPackageTooLong(code = 254);
 
     companion object {
         fun fromCode(code: Int): PaxPrinterState =
-            values().firstOrNull { it.code == code } ?: Unknown
+            entries.firstOrNull { it.code == code } ?: Unknown
         fun convert(state: PaxPrinterState): PrinterState =
             when (state) {
                 Unknown -> PrinterState.Error.Unknown

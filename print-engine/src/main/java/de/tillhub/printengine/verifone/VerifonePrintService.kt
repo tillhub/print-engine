@@ -9,7 +9,7 @@ import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class VerifonePrintService(context: Context) : PrintService() {
+internal class VerifonePrintService(context: Context) : PrintService() {
 
     private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
     override val printerState: StateFlow<PrinterState> = connectionState
@@ -17,7 +17,7 @@ class VerifonePrintService(context: Context) : PrintService() {
     private val connectionListener = object : DirectPrintManager.DirectPrintServiceListener {
         override fun onPrintServiceReady() {
             connectionState.value = PrinterState.Connected
-            printManager.defaultPrinter.paperWidth = 30
+            printManager.defaultPrinter.paperWidth = DEFAULT_PAPER_WIDTH
         }
 
         override fun onPrintServiceDisconnected() {
@@ -39,4 +39,8 @@ class VerifonePrintService(context: Context) : PrintService() {
         printerState = connectionState,
         barcodeEncoder = BarcodeEncoderImpl()
     )
+
+    companion object {
+        private const val DEFAULT_PAPER_WIDTH = 30
+    }
 }

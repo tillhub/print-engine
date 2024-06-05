@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-class PrinterImpl(
+internal class PrinterImpl(
     private val printService: PrintService,
     private val analytics: PrintAnalytics?,
     private val dispatcherProvider: DispatcherProvider = DispatcherProviderImp()
@@ -64,7 +64,8 @@ class PrinterImpl(
                     """receipt: START #################
                    |${job.description}
                    |receipt END #################
-                   |""".trimMargin()
+                   |
+                   """.trimMargin()
                 )
                 if (settings.enabled && job.isNotEmpty) {
                     controller.setIntensity(settings.printingIntensity)

@@ -3,7 +3,7 @@ package de.tillhub.printengine.pax
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class PaxUtilsTest : FunSpec({
+internal class PaxUtilsTest : FunSpec({
 
     test("printTextOptimizer") {
      val result = PaxUtils.printTextOptimizer(" €")
@@ -15,7 +15,13 @@ class PaxUtilsTest : FunSpec({
       text = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17",
       chunkSize = 4
      )
-     result shouldBe listOf("1\n2\n3\n4\n", "5\n6\n7\n8\n", "9\n10\n11\n12\n", "13\n14\n15\n16\n", "17\n")
+     result shouldBe listOf(
+         "1\n2\n3\n4\n",
+         "5\n6\n7\n8\n",
+         "9\n10\n11\n12\n",
+         "13\n14\n15\n16\n",
+         "17\n"
+     )
     }
 
     test("formatCode") {

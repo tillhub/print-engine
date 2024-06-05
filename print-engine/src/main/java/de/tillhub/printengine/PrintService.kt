@@ -4,7 +4,7 @@ import de.tillhub.printengine.data.PrinterResult
 import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.StateFlow
 
-abstract class PrintService {
+internal abstract class PrintService {
     abstract var printController: PrinterController?
     abstract val printerState: StateFlow<PrinterState>
 

@@ -10,7 +10,7 @@ import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
 
 @RobolectricTest
-class BarcodeEncoderImplTest : FunSpec({
+internal class BarcodeEncoderImplTest : FunSpec({
 
     val barcodeEncoder: BarcodeEncoder = BarcodeEncoderImpl()
 

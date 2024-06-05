@@ -5,7 +5,7 @@ import de.tillhub.printengine.data.PrinterState
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class VerifonePrinterStateTest : FunSpec({
+internal class VerifonePrinterStateTest : FunSpec({
 
     test("convert") {
      VerifonePrinterState.convert(Printer.STATUS_OUT_OF_PAPER) shouldBe PrinterState.Error.OutOfPaper

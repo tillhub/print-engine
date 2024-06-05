@@ -8,7 +8,7 @@ import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import timber.log.Timber
 
-class BarcodeEncoderImpl : BarcodeEncoder {
+internal class BarcodeEncoderImpl : BarcodeEncoder {
 
     override fun encodeAsBitmap(content: String, type: BarcodeType, imgWidth: Int, imgHeight: Int): Bitmap? {
         val hints = HashMap<EncodeHintType, Any>().apply {

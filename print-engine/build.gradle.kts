@@ -21,6 +21,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = false
+        }
         release {
             isMinifyEnabled = true
             proguardFiles(
@@ -54,7 +57,12 @@ android {
             isIncludeAndroidResources = true
         }
     }
+}
 
+detekt {
+    buildUponDefaultConfig = true // preconfigure defaults
+    allRules = false // activate all available (even unstable) rules.
+    config.setFrom("$projectDir/config/detekt.yml")
 }
 
 dependencies {
@@ -72,6 +80,7 @@ dependencies {
     // Utils
     implementation(libs.timber)
     detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.libraries)
 
     // Unit tests
     testImplementation(libs.bundles.testing)

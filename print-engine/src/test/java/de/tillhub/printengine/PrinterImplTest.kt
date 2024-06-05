@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @RobolectricTest
-class PrinterImplTest : DescribeSpec({
+internal class PrinterImplTest : DescribeSpec({
 
     lateinit var bitmap: Bitmap
     lateinit var footerBitmap: Bitmap
@@ -122,8 +122,9 @@ class PrinterImplTest : DescribeSpec({
                 controller.printText("text_to_print")
                 controller.feedPaper()
                 controller.start()
-                analytics.logPrintReceipt("text_to_print\n" +
-                        "-----FEED PAPER-----"
+                analytics.logPrintReceipt(
+                    "text_to_print\n" +
+                    "-----FEED PAPER-----"
                 )
             }
         }
@@ -164,8 +165,10 @@ class PrinterImplTest : DescribeSpec({
                 controller.printImage(bitmap)
                 controller.printText("receipt_to_print")
                 controller.start()
-                analytics.logPrintReceipt("======IMAGE========\n" +
-                        "receipt_to_print")
+                analytics.logPrintReceipt(
+                    "======IMAGE========\n" +
+                    "receipt_to_print"
+                )
             }
         }
 
@@ -193,12 +196,14 @@ class PrinterImplTest : DescribeSpec({
                 controller.printImage(footerBitmap)
                 controller.feedPaper()
                 controller.start()
-                analytics.logPrintReceipt("======IMAGE========\n" +
-                        "raw_receipt_text\n" +
-                        "==QR: signature_qr_code ==\n" +
-                        "==BC: barcode ==\n" +
-                        "======IMAGE========\n" +
-                        "-----FEED PAPER-----")
+                analytics.logPrintReceipt(
+                    "======IMAGE========\n" +
+                    "raw_receipt_text\n" +
+                    "==QR: signature_qr_code ==\n" +
+                    "==BC: barcode ==\n" +
+                    "======IMAGE========\n" +
+                    "-----FEED PAPER-----"
+                )
             }
         }
 

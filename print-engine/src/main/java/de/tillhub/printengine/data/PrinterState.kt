@@ -5,76 +5,76 @@ package de.tillhub.printengine.data
  */
 sealed class PrinterState {
     /** Trying to find supported printer */
-    object CheckingForPrinter : PrinterState()
+    data object CheckingForPrinter : PrinterState()
 
     /** The printer works normally / printer is running */
-    object Connected : PrinterState()
+    data object Connected : PrinterState()
 
     /** Preparing printer / printer found but still initializing */
-    object Preparing : PrinterState()
+    data object Preparing : PrinterState()
 
     /** Printer found but operating */
-    object Busy : PrinterState()
+    data object Busy : PrinterState()
 
     /** Printer error */
     sealed class Error : PrinterState() {
         /** Connection to printer has lost */
-        object ConnectionLost : Error()
+        data object ConnectionLost : Error()
 
         /** Printer was not detected / does not exist */
-        object NotAvailable : Error()
+        data object NotAvailable : Error()
 
         /** Abnormal communication / printer hardware interface is abnormal */
-        object AbnormalCommunication : Error()
+        data object AbnormalCommunication : Error()
 
         /** Printer is out of paper */
-        object OutOfPaper : Error()
+        data object OutOfPaper : Error()
 
         /** Printer is overheating */
-        object Overheated : Error()
+        data object Overheated : Error()
 
         /** Printers cover is not closed */
-        object CoverNotClosed : Error()
+        data object CoverNotClosed : Error()
 
         /** The printers paper cutter is abnormal */
-        object PaperCutterAbnormal : Error()
+        data object PaperCutterAbnormal : Error()
 
         /** Black mark has not been detected */
-        object BlackMarkNotFound : Error()
+        data object BlackMarkNotFound : Error()
 
         /** Failed to upgrade the printer firmware */
-        object FirmwareUpgradeFailed : Error()
+        data object FirmwareUpgradeFailed : Error()
 
         /** Paper jammed */
-        object PaperJam : Error()
+        data object PaperJam : Error()
 
         /** Battery or voltage is too low */
-        object VoltageTooLow : Error()
+        data object VoltageTooLow : Error()
 
         /** Unknown error state */
-        object Unknown : Error()
+        data object Unknown : Error()
 
         /** Print job cannot continue, but could be resumed later. */
-        object PrintingUnfinished : Error()
+        data object PrintingUnfinished : Error()
 
-        object Malfunctions : Error()
+        data object Malfunctions : Error()
 
         /**
          * Pax A920 specific
          */
         sealed class Pax : Error() {
-            object FormatPrintDataPacketError : Pax()
+            data object FormatPrintDataPacketError : Pax()
 
-            object NotInstalledFontLibrary : Pax()
+            data object NotInstalledFontLibrary : Pax()
 
-            object DataPackageTooLong : Pax()
+            data object DataPackageTooLong : Pax()
         }
 
         /**
          * Verifone specific
          */
         sealed class Verifone : Error() {
-            object InternalError : Verifone()
+            data object InternalError : Verifone()
         }
     }
 }

@@ -21,7 +21,7 @@ import de.tillhub.printengine.verifone.VerifoneUtils.transformToHtml
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class VerifonePrintController(
+internal class VerifonePrintController(
     private val printManager: DirectPrintManager,
     private val printerState: MutableStateFlow<PrinterState>,
     private val barcodeEncoder: BarcodeEncoder,

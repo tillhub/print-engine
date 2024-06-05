@@ -21,7 +21,7 @@ import kotlin.coroutines.suspendCoroutine
 /**
  * A wrapper to simplify access and interaction with [SunmiPrinterService].
  */
-class SunmiPrinterController(
+internal class SunmiPrinterController(
     private val printerService: SunmiPrinterService,
     private val serviceVersion: PrinterServiceVersion,
     private val printerState: MutableStateFlow<PrinterState>
@@ -194,54 +194,54 @@ private fun PrintingFontType.toFloatSize() = when (this) {
 }
 
 private enum class FontSize(val value: Float) {
-    NORMAL(20F)
+    NORMAL(value = 20F)
 }
 
 private enum class BarcodeType(val value: Int) {
-    UPC_A(0),
-    UPC_E(1),
-    JAN13(2),
-    JAN8(3),
-    CODE39(4),
-    ITF(5),
-    CODABAR(6),
-    CODE93(7),
-    CODE128(8),
+    UPC_A(value = 0),
+    UPC_E(value = 1),
+    JAN13(value = 2),
+    JAN8(value = 3),
+    CODE39(value = 4),
+    ITF(value = 5),
+    CODABAR(value = 6),
+    CODE93(value = 7),
+    CODE128(value = 8),
 }
 
 private enum class ImagePrintingMethod(val value: Int) {
-    DEFAULT(0),
-    BLACK_AND_WHITE(1),
-    GRAYSCALE(2),
+    DEFAULT(value = 0),
+    BLACK_AND_WHITE(value = 1),
+    GRAYSCALE(value = 2),
 }
 
 private enum class BarcodeTextPosition(val value: Int) {
-    NO_TEXT(0),
-    ABOVE(1),
-    UNDER(2),
-    ABOVE_AND_UNDER(3),
+    NO_TEXT(value = 0),
+    ABOVE(value = 1),
+    UNDER(value = 2),
+    ABOVE_AND_UNDER(value = 3),
 }
 
 private enum class QRCodeModuleSize(val value: Int) {
-    XXXSMALL(3),
-    XXSMALL(4),
-    XSMALL(6),
-    SMALL(8),
-    MEDIUM(10),
-    LARGE(12),
-    XLARGE(14),
-    XXLARGE(16),
+    XXXSMALL(value = 3),
+    XXSMALL(value = 4),
+    XSMALL(value = 6),
+    SMALL(value = 8),
+    MEDIUM(value = 10),
+    LARGE(value = 12),
+    XLARGE(value = 14),
+    XXLARGE(value = 16),
 }
 
 private enum class QRCodeErrorLevel(val value: Int) {
-    L(0),
-    M(1),
-    Q(2),
-    H(3),
+    L(value = 0),
+    M(value = 1),
+    Q(value = 2),
+    H(value = 3),
 }
 
 private enum class Alignment(val value: Int) {
-    LEFT(0),
-    CENTER(1),
-    RIGHT(2),
+    LEFT(value = 0),
+    CENTER(value = 1),
+    RIGHT(value = 2),
 }

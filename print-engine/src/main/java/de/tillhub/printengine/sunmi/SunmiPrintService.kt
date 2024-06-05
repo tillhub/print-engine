@@ -19,7 +19,7 @@ import timber.log.Timber
  * Print service for encapsulating connection handling, error handling and convenience methods for working with
  * [SunmiPrinterController].
  */
-class SunmiPrintService(context: Context) : PrintService() {
+internal class SunmiPrintService(context: Context) : PrintService() {
 
     override var printController: PrinterController? = null
     private var serviceVersion: PrinterServiceVersion = PrinterServiceVersion.Unknown

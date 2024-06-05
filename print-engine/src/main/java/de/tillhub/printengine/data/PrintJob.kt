@@ -1,6 +1,8 @@
 package de.tillhub.printengine.data
 
-data class PrintJob(val commands: List<PrintCommand>) {
+import java.util.Objects
+
+class PrintJob(val commands: List<PrintCommand>) {
     val isNotEmpty = commands.isNotEmpty()
     val description: String by lazy {
         commands.joinToString(separator = "\n") { command ->
@@ -15,4 +17,13 @@ data class PrintJob(val commands: List<PrintCommand>) {
             }
         }
     }
+
+    override fun toString() = "PrintJob(" +
+            "commands=$commands" +
+            ")"
+
+    override fun equals(other: Any?) = other is PrintJob &&
+            commands == other.commands
+
+    override fun hashCode() = Objects.hash(commands)
 }

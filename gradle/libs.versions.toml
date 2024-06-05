@@ -8,7 +8,7 @@ zxing = "3.5.0"
 sunmiPrinter = "1.0.19"
 timber = "5.0.1"
 androidDesugarJdkLibs = "1.2.2"
-detekt = "1.23.3"
+detekt = "1.23.6"
 
 junit = "4.13.2"
 mockk = "1.13.8"
@@ -67,8 +67,8 @@ androidx-test-core = { group = "androidx.test", name = "core-ktx", version.ref =
 # Dependencies of the included build-logic
 gradlePlugin-android = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 gradlePlugin-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
-gradlePlugin-detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
+detekt-libraries = { group = "io.gitlab.arturbosch.detekt", name = "detekt-rules-libraries", version.ref = "detekt" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }

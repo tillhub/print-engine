@@ -6,7 +6,7 @@ import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
 
 @RobolectricTest
-class VerifoneUtilsTest : FunSpec({
+internal class VerifoneUtilsTest : FunSpec({
 
     test("transformToHtml") {
         val result = VerifoneUtils.transformToHtml("Receipt text")
@@ -15,7 +15,8 @@ class VerifoneUtilsTest : FunSpec({
 
     test("monospaceText") {
         val result = VerifoneUtils.monospaceText("Line text")
-        result shouldBe "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: 20px;\">Line text</pre>"
+        result shouldBe "<pre style=\"font-family: monospace; " +
+                "letter-spacing: 0px; font-size: 20px;\">Line text</pre>"
     }
 
     test("singleLineCenteredText") {
@@ -29,7 +30,8 @@ class VerifoneUtilsTest : FunSpec({
         bitmap.recycle()
 
         result shouldBe "<div style=\"text-align:center;\">" +
-                "<img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/AAAAAAAABQAB\n" +
+                "<img src=\"data:image/png;base64," +
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/AAAAAAAABQAB\n" +
                 "ZHiVOAAAAABJRU5ErkJggg==\n\"/></div>"
     }
 })
