@@ -11,12 +11,17 @@ import de.tillhub.printengine.data.RawPrinterData
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
-import io.mockk.*
+import io.mockk.Ordering
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @RobolectricTest
-class SunmiPrinterControllerTest : FunSpec({
+internal class SunmiPrinterControllerTest : FunSpec({
 
     lateinit var printerService: SunmiPrinterService
     lateinit var serviceVersion: PrinterServiceVersion

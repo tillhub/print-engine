@@ -16,7 +16,7 @@ import timber.log.Timber
  * Print service for encapsulating connection handling, error handling and convenience methods for working with
  * [PaxPrinterController].
  */
-class PaxPrintService(context: Context) : PrintService() {
+internal class PaxPrintService(context: Context) : PrintService() {
 
     private val dal: IDAL by lazy {
         NeptuneLiteUser.getInstance().getDal(context)

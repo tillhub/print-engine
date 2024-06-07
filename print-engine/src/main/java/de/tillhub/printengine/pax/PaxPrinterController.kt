@@ -25,7 +25,7 @@ import timber.log.Timber
 /**
  * A wrapper to simplify access and interaction with [IPrinter].
  */
-class PaxPrinterController(
+internal class PaxPrinterController(
     private val printerService: IPrinter,
     private val printerState: MutableStateFlow<PrinterState>,
     private val barcodeEncoder: BarcodeEncoder
@@ -73,21 +73,32 @@ class PaxPrinterController(
         barcodeEncoder.encodeAsBitmap(barcode, BarcodeType.CODE_128, BARCODE_WIDTH, BARCODE_HEIGHT)?.let { image ->
             printerService.step(PAPER_FEEDER_DIVIDER)
             printerService.printBitmap(image)
-            printerService.printStr(formatCode(
-                content = barcode,
-                space = PrintingPaperSpec.PAX_PAPER_56MM.characterCount
-            ), CHARSET)
+            printerService.printStr(
+                formatCode(
+                    content = barcode,
+                    space = PrintingPaperSpec.PAX_PAPER_56MM.characterCount
+                ),
+                CHARSET
+            )
         }
     }
 
     override fun printQr(qrData: String) {
-        barcodeEncoder.encodeAsBitmap(qrData, BarcodeType.QR_CODE, QR_CODE_SIZE, QR_CODE_SIZE)?.let { image ->
+        barcodeEncoder.encodeAsBitmap(
+            content = qrData,
+            type = BarcodeType.QR_CODE,
+            imgWidth = QR_CODE_SIZE,
+            imgHeight = QR_CODE_SIZE
+        )?.let { image ->
             printerService.step(PAPER_FEEDER_DIVIDER)
             printerService.printBitmap(image)
-            printerService.printStr(formatCode(
-                content = qrData,
-                space = PrintingPaperSpec.PAX_PAPER_56MM.characterCount
-            ), CHARSET)
+            printerService.printStr(
+                formatCode(
+                    content = qrData,
+                    space = PrintingPaperSpec.PAX_PAPER_56MM.characterCount
+                ),
+                CHARSET
+            )
         }
     }
 
@@ -129,13 +140,15 @@ class PaxPrinterController(
      *  DARKEST: 500%
      */
     override fun setIntensity(intensity: PrintingIntensity) {
-        printerService.setGray(when (intensity) {
-            PrintingIntensity.DEFAULT -> DEFAULT_INTENSITY
-            PrintingIntensity.LIGHT -> LIGHT_INTENSITY
-            PrintingIntensity.DARK -> DARK_INTENSITY
-            PrintingIntensity.DARKER -> DARKER_INTENSITY
-            PrintingIntensity.DARKEST -> DARKEST_INTENSITY
-        })
+        printerService.setGray(
+            when (intensity) {
+                PrintingIntensity.DEFAULT -> DEFAULT_INTENSITY
+                PrintingIntensity.LIGHT -> LIGHT_INTENSITY
+                PrintingIntensity.DARK -> DARK_INTENSITY
+                PrintingIntensity.DARKER -> DARKER_INTENSITY
+                PrintingIntensity.DARKEST -> DARKEST_INTENSITY
+            }
+        )
     }
 
     /**

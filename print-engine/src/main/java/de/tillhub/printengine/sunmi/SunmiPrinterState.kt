@@ -5,23 +5,23 @@ import de.tillhub.printengine.data.PrinterState
 /**
  * State of the printer when connected as defined by Sunmi.
  */
-enum class SunmiPrinterState(val code: Int) {
-    Unknown(-1),
-    Connected(1),
-    Preparing(2),
-    AbnormalCommunication(3),
-    OutOfPaper(4),
-    Overheated(5),
-    CoverNotClosed(6),
-    PaperCutterAbnormal(7),
-    PaperCutterRecovered(8),
-    BlackMarkNotFound(9),
-    NotDetected(505),
-    FirmwareUpgradeFailed(507);
+internal enum class SunmiPrinterState(val code: Int) {
+    Unknown(code = -1),
+    Connected(code = 1),
+    Preparing(code = 2),
+    AbnormalCommunication(code = 3),
+    OutOfPaper(code = 4),
+    Overheated(code = 5),
+    CoverNotClosed(code = 6),
+    PaperCutterAbnormal(code = 7),
+    PaperCutterRecovered(code = 8),
+    BlackMarkNotFound(code = 9),
+    NotDetected(code = 505),
+    FirmwareUpgradeFailed(code = 507);
 
     companion object {
         fun fromCode(code: Int): SunmiPrinterState =
-            values().firstOrNull { it.code == code } ?: Unknown
+            entries.firstOrNull { it.code == code } ?: Unknown
         fun convert(state: SunmiPrinterState): PrinterState =
             when (state) {
                 Unknown -> PrinterState.Error.Unknown

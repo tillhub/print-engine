@@ -5,9 +5,15 @@ import com.pax.dal.IPrinter
 import com.pax.dal.entity.EFontTypeAscii
 import com.pax.dal.entity.EFontTypeExtCode
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.*
+import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
+import de.tillhub.printengine.data.PrinterServiceVersion
+import de.tillhub.printengine.data.PrintingFontType
+import de.tillhub.printengine.data.PrintingIntensity
+import de.tillhub.printengine.data.PrintingPaperSpec
+import de.tillhub.printengine.data.RawPrinterData
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
@@ -21,7 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @RobolectricTest
-class PaxPrinterControllerTest : FunSpec({
+internal class PaxPrinterControllerTest : FunSpec({
 
     lateinit var bitmap: Bitmap
     lateinit var printerService: IPrinter

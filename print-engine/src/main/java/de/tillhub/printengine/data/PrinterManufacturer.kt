@@ -8,7 +8,7 @@ enum class PrinterManufacturer(val value: String) {
 
     companion object {
         fun get(): PrinterManufacturer =
-            values().firstOrNull {
+            entries.firstOrNull {
                 it.value == android.os.Build.MANUFACTURER
             } ?: UNKNOWN
     }

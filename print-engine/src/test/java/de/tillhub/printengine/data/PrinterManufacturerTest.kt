@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import org.robolectric.shadows.ShadowBuild
 
 @RobolectricTest
-class PrinterManufacturerTest : FunSpec({
+internal class PrinterManufacturerTest : FunSpec({
 
     test("SUNMI device") {
         ShadowBuild.setManufacturer("SUNMI")

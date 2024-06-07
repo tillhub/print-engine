@@ -20,40 +20,23 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class de.tillhub.printengine.analytics.PrintAnalytics {
-    *;
-}
--keep class de.tillhub.printengine.Printer {
-    *;
-}
--keep class de.tillhub.printengine.Printer$Companion {
-    *;
-}
--keep class de.tillhub.printengine.barcode.BarcodeEncoder {
-    *;
-}
--keep class de.tillhub.printengine.barcode.BarcodeType {
-    *;
-}
--keep class de.tillhub.printengine.PrintEngine {
-    *;
-}
--keep class de.tillhub.printengine.PrintEngine$Companion {
-    *;
-}
--keep class de.tillhub.printengine.data.** {
-    *;
-}
+-keeppackagenames de.tillhub.printengine.**
 
--keep class com.pax.** {
-    *;
-}
+-keep class de.tillhub.printengine.Printer { *; }
+-keep class de.tillhub.printengine.Printer$Companion { *; }
+-keep class de.tillhub.printengine.PrintEngine { *; }
+-keep class de.tillhub.printengine.PrintEngine$Companion { *; }
+-keep class de.tillhub.printengine.helper.SingletonHolder { *; }
+-keep class de.tillhub.printengine.analytics.PrintAnalytics { *; }
+-keep class de.tillhub.printengine.data.** { *; }
+-keep class de.tillhub.printengine.barcode.BarcodeEncoder {  *; }
+-keep class de.tillhub.printengine.barcode.BarcodeType { *; }
+
+-keep class com.pax.** { *; }
 -keep public class com.sunmi.** {
     public protected *;
 }
--keep class com.verifone.peripherals.** {
-    *;
-}
+-keep class com.verifone.peripherals.** { *; }
 
 -dontwarn com.verifone.peripherals.CashDrawer
 -dontwarn com.verifone.peripherals.Scanner
