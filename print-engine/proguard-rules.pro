@@ -32,11 +32,11 @@
 -keep class de.tillhub.printengine.barcode.BarcodeEncoder {  *; }
 -keep class de.tillhub.printengine.barcode.BarcodeType { *; }
 
--keep class com.pax.** { *; }
--keep public class com.sunmi.** {
-    public protected *;
-}
--keep class com.verifone.peripherals.** { *; }
+#-keep class com.pax.** { *; }
+#-keep public class com.sunmi.** {
+#    public protected *;
+#}
+#-keep class com.verifone.peripherals.** { *; }
 
 -dontwarn com.verifone.peripherals.CashDrawer
 -dontwarn com.verifone.peripherals.Scanner
