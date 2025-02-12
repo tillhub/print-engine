@@ -34,7 +34,6 @@ internal class PaxPrinterController(
     private var fontSize: PrintingFontType? = null
 
     init {
-        printerService.init()
         printerState.value = getPrinterState()
     }
 

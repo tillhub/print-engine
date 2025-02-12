@@ -31,12 +31,17 @@ internal class PaxPrintService(context: Context) : PrintService() {
         @Suppress("TooGenericExceptionCaught")
         try {
             printController = PaxPrinterController(
-                printerService = dal.printer,
+                printerService = dal.printer.also {
+                    it.init()
+                },
                 printerState = connectionState,
                 barcodeEncoder = BarcodeEncoderImpl()
             )
             connectionState.value = PrinterState.Connected
         } catch (e: PrinterDevException) { // Printer Initialization
+            Timber.e(e)
+            connectionState.value = PrinterState.Error.NotAvailable
+        } catch (e: UnsatisfiedLinkError) { // Printer Not Supported
             Timber.e(e)
             connectionState.value = PrinterState.Error.NotAvailable
         } catch (e: Exception) {
