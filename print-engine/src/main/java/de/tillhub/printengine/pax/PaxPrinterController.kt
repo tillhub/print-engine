@@ -66,7 +66,7 @@ internal class PaxPrinterController(
         if (batchPrint) {
             batchSB.appendLine(monospaceText(text, FONT_SIZE))
         } else {
-            printContent(transformToHtml(monospaceText(text, FONT_SIZE)))
+            printContent(transformToHtml(monospaceText(text, FONT_SIZE), true))
         }
     }
 
@@ -91,7 +91,7 @@ internal class PaxPrinterController(
 
     override fun printImage(image: Bitmap) {
         val htmlImage = if (image.width > 250){
-            val newHeight = ((image.width/250.0) * image.height).toInt()
+            val newHeight = ((250.0/image.width) * image.height).toInt()
 
             generateImageHtml(Bitmap.createScaledBitmap(
                 image,
@@ -151,7 +151,7 @@ internal class PaxPrinterController(
         if (batchPrint && batchSB.isNotEmpty()) {
             printerState.value = PrinterState.Busy
 
-            printContent(transformToHtml(batchSB.toString()))
+            printContent(transformToHtml(batchSB.toString(), true))
             batchSB.clear()
         }
     }
@@ -197,7 +197,7 @@ internal class PaxPrinterController(
                     replyTo = Messenger(PrintResponseHandler(printerState))
                     data = Bundle().apply {
                         putString("html", content)
-                        putBoolean("autoCrop", false)
+                        putBoolean("autoCrop", true)
                         putInt("grey", printingIntensity)
                     }
                 })
@@ -223,7 +223,7 @@ internal class PaxPrinterController(
         private const val BARCODE_HEIGHT = 70
         private const val BARCODE_WIDTH = 220
         private const val QR_CODE_SIZE = 220
-        private const val FONT_SIZE = 15
+        private const val FONT_SIZE = 13
 
         private const val PRINTING_PACKAGE = "de.ccv.payment.printservice"
         private const val PRINTING_CLASS = "de.ccv.payment.printservice.DirectPrintService"
