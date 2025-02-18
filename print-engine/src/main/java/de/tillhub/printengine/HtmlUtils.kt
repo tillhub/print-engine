@@ -44,15 +44,17 @@ internal object HtmlUtils {
                 margin-top: 0.55cm
                 margin-bottom: 0px;
             }
-            
             pre {
                 padding: 0;
                 margin: 0;
             }
-            
             div {
                 padding: 0;
                 margin: 0;
+            }
+            img {
+                max-width: 100%;
+                max-height: 100%;
             }
         </style>
     """
