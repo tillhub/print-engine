@@ -90,18 +90,19 @@ internal class PaxPrinterController(
     }
 
     override fun printImage(image: Bitmap) {
-        val htmlImage = if (image.width > 250){
-            val newHeight = ((250.0/image.width) * image.height).toInt()
-
-            generateImageHtml(Bitmap.createScaledBitmap(
-                image,
-                250,
-                newHeight,
-                false
-            ))
-        } else {
-            generateImageHtml(image)
-        }
+//        val htmlImage = if (image.width > 250){
+//            val newHeight = ((250.0/image.width) * image.height).toInt()
+//
+//            generateImageHtml(Bitmap.createScaledBitmap(
+//                image,
+//                250,
+//                newHeight,
+//                false
+//            ))
+//        } else {
+//            generateImageHtml(image)
+//        }
+        val htmlImage = generateImageHtml(image)
 
         if (batchPrint) {
             batchSB.append(htmlImage)
