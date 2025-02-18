@@ -1,23 +1,23 @@
-package de.tillhub.printengine.verifone
+package de.tillhub.printengine
 
 import android.graphics.Bitmap
 import android.util.Base64
 import androidx.annotation.VisibleForTesting
 import java.io.ByteArrayOutputStream
 
-object VerifoneUtils {
+internal object HtmlUtils {
 
     fun transformToHtml(text: String): String =
         "<html><body>$text</body></html>"
 
-    fun monospaceText(text: String): String =
-        "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: 20px;\">$text</pre>"
+    fun monospaceText(text: String, fontSize: Int = DEFAULT_FONT_SIZE): String =
+        "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px;padding: 0;margin: 0;\">$text</pre>"
 
     fun singleLineCenteredText(text: String): String =
-        "<div style=\"text-align:center;\">$text</div>"
+        "<div style=\"text-align: center;padding: 0;margin: 0;\">$text</div>"
 
     fun generateImageHtml(image: Bitmap): String =
-        "<div style=\"text-align:center;\">" +
+        "<div style=\"text-align: center;padding: 0;margin: 0;\">" +
             "<img src=\"data:image/png;base64,${encodeToBase64(image)}\"/>" +
         "</div>"
 
@@ -29,5 +29,7 @@ object VerifoneUtils {
     }
 
     const val FEED_PAPER: String = "<br /><br /><br /><br /><br />"
+    const val FEED_PAPER_SMALL: String = "<br />"
     private const val PNG_QUALITY = 100
+    private const val DEFAULT_FONT_SIZE = 20
 }
