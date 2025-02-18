@@ -17,11 +17,6 @@ import timber.log.Timber
  * [PaxPrinterController].
  */
 internal class PaxPrintService(context: Context) : PrintService() {
-
-    private val dal: IDAL by lazy {
-        NeptuneLiteUser.getInstance().getDal(context)
-            ?: throw IllegalStateException("Error occurred, DAL is null")
-    }
     override var printController: PrinterController? = null
 
     private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
@@ -31,19 +26,11 @@ internal class PaxPrintService(context: Context) : PrintService() {
         @Suppress("TooGenericExceptionCaught")
         try {
             printController = PaxPrinterController(
-                printerService = dal.printer.also {
-                    it.init()
-                },
+                context = context,
                 printerState = connectionState,
                 barcodeEncoder = BarcodeEncoderImpl()
             )
             connectionState.value = PrinterState.Connected
-        } catch (e: PrinterDevException) { // Printer Initialization
-            Timber.e(e)
-            connectionState.value = PrinterState.Error.NotAvailable
-        } catch (e: UnsatisfiedLinkError) { // Printer Not Supported
-            Timber.e(e)
-            connectionState.value = PrinterState.Error.NotAvailable
         } catch (e: Exception) {
             Timber.e(e)
             connectionState.value = PrinterState.Error.NotAvailable

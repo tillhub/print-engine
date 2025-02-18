@@ -13,11 +13,11 @@ import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
-import de.tillhub.printengine.verifone.VerifoneUtils.FEED_PAPER
-import de.tillhub.printengine.verifone.VerifoneUtils.generateImageHtml
-import de.tillhub.printengine.verifone.VerifoneUtils.monospaceText
-import de.tillhub.printengine.verifone.VerifoneUtils.singleLineCenteredText
-import de.tillhub.printengine.verifone.VerifoneUtils.transformToHtml
+import de.tillhub.printengine.HtmlUtils.FEED_PAPER
+import de.tillhub.printengine.HtmlUtils.generateImageHtml
+import de.tillhub.printengine.HtmlUtils.monospaceText
+import de.tillhub.printengine.HtmlUtils.singleLineCenteredText
+import de.tillhub.printengine.HtmlUtils.transformToHtml
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
