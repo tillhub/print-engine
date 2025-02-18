@@ -7,17 +7,20 @@ import java.io.ByteArrayOutputStream
 
 internal object HtmlUtils {
 
-    fun transformToHtml(text: String): String =
+    fun transformToHtml(text: String, includeStyle: Boolean = false): String = if (includeStyle) {
+        "<html>$STYLE_TAG<body>$text</body></html>"
+    } else {
         "<html><body>$text</body></html>"
+    }
 
     fun monospaceText(text: String, fontSize: Int = DEFAULT_FONT_SIZE): String =
-        "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px;padding: 0;margin: 0;\">$text</pre>"
+        "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px;\">$text</pre>"
 
     fun singleLineCenteredText(text: String): String =
-        "<div style=\"text-align: center;padding: 0;margin: 0;\">$text</div>"
+        "<div style=\"text-align: center;\">$text</div>"
 
     fun generateImageHtml(image: Bitmap): String =
-        "<div style=\"text-align: center;padding: 0;margin: 0;\">" +
+        "<div style=\"text-align: center;\">" +
             "<img src=\"data:image/png;base64,${encodeToBase64(image)}\"/>" +
         "</div>"
 
@@ -32,4 +35,25 @@ internal object HtmlUtils {
     const val FEED_PAPER_SMALL: String = "<br />"
     private const val PNG_QUALITY = 100
     private const val DEFAULT_FONT_SIZE = 20
+
+    private const val STYLE_TAG = """
+        <style type="text/css">
+            @page {
+                margin-left: 0.55cm;
+                margin-right: 0.55cm;
+                margin-top: 0.55cm
+                margin-bottom: 0px;
+            }
+            
+            pre {
+                padding: 0;
+                margin: 0;
+            }
+            
+            div {
+                padding: 0;
+                margin: 0;
+            }
+        </style>
+    """
 }

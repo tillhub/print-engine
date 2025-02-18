@@ -96,6 +96,8 @@ class MainActivity : ComponentActivity() {
             PrintCommand.Barcode("123ABC"),
             PrintCommand.Text("QR code:"),
             PrintCommand.QrCode("123ABC"),
+            PrintCommand.Text("40 char line:"),
+            PrintCommand.Text("1234567890123456789012345678901234567890"),
             PrintCommand.FeedPaper,
         ))
     }
