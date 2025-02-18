@@ -13,35 +13,33 @@ import android.os.Message
 import android.os.Messenger
 import de.tillhub.printengine.HtmlUtils.FEED_PAPER_SMALL
 import de.tillhub.printengine.HtmlUtils.generateImageHtml
-import de.tillhub.printengine.HtmlUtils.monospaceText
-import de.tillhub.printengine.HtmlUtils.singleLineCenteredText
 import de.tillhub.printengine.HtmlUtils.transformToHtml
-import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.barcode.BarcodeEncoder
-import de.tillhub.printengine.barcode.BarcodeType
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.PrintingPaperSpec
-import de.tillhub.printengine.data.RawPrinterData
+import de.tillhub.printengine.html.HtmlPrinterController
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-
 
 internal class PaxPrinterController(
     private val context: Context,
     private val printerState: MutableStateFlow<PrinterState>,
-    private val barcodeEncoder: BarcodeEncoder,
-    /**
-     * If this field is set to false each print command is handled separately.
-     * If it is set to true the print commands are grouped and handled when start() is called
-     */
-    private val batchPrint: Boolean = BATCH_PRINT_DEFAULT
-) : PrinterController {
+    barcodeEncoder: BarcodeEncoder,
+) : HtmlPrinterController(
+    printerState = printerState,
+    barcodeEncoder = barcodeEncoder,
+    batchPrint = BATCH_PRINT_DEFAULT,
+    barcodeWidth = BARCODE_WIDTH,
+    barcodeHeight = BARCODE_HEIGHT,
+    qrCodeSize = QR_CODE_SIZE,
+    fontSize = FONT_SIZE,
+    includeStyleTag = true,
+    feedString = FEED_PAPER_SMALL
+) {
 
-    private val batchSB = StringBuilder()
     private var printingIntensity: Int = DEFAULT_INTENSITY
 
     init {
@@ -61,68 +59,44 @@ internal class PaxPrinterController(
             serviceVersion = PrinterServiceVersion.Unknown
         )
 
+    override fun printContent(content: String, cutAfterPrint: Boolean) {
+        val intent = Intent().apply {
+            component = ComponentName(PRINTING_PACKAGE, PRINTING_CLASS)
+        }
+
+        val connection = object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                printerState.value = PrinterState.Busy
+
+                val printMessenger = Messenger(service)
+                printMessenger.send(Message.obtain(null, PRINTING_REQUEST, 0, 0).apply {
+                    replyTo = Messenger(PrintResponseHandler(printerState))
+                    data = Bundle().apply {
+                        putString("html", content)
+                        putBoolean("autoCrop", true)
+                        putInt("grey", printingIntensity)
+                    }
+                })
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) = Unit
+        }
+
+        if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
+            context.unbindService(connection)
+            printerState.value = PrinterState.Error.NotAvailable
+        }
+    }
+
     override fun setFontSize(fontSize: PrintingFontType) = Unit // Not supported
 
-    override fun printText(text: String) {
-        if (batchPrint) {
-            batchSB.appendLine(monospaceText(text, FONT_SIZE))
-        } else {
-            printContent(transformToHtml(monospaceText(text, FONT_SIZE), true))
-        }
-    }
-
-    override fun printBarcode(barcode: String) {
-        barcodeEncoder.encodeAsBitmap(barcode, BarcodeType.CODE_128, BARCODE_WIDTH, BARCODE_HEIGHT)?.let { image ->
-            printImage(image)
-            printText(singleLineCenteredText(barcode))
-        }
-    }
-
-    override fun printQr(qrData: String) {
-        barcodeEncoder.encodeAsBitmap(
-            content = qrData,
-            type = BarcodeType.QR_CODE,
-            imgWidth = QR_CODE_SIZE,
-            imgHeight = QR_CODE_SIZE
-        )?.let { image ->
-            printImage(image)
-            printText(singleLineCenteredText(qrData))
-        }
-    }
-
     override fun printImage(image: Bitmap) {
-//        val htmlImage = if (image.width > 250){
-//            val newHeight = ((250.0/image.width) * image.height).toInt()
-//
-//            generateImageHtml(Bitmap.createScaledBitmap(
-//                image,
-//                250,
-//                newHeight,
-//                false
-//            ))
-//        } else {
-//            generateImageHtml(image)
-//        }
         val htmlImage = generateImageHtml(image)
 
         if (batchPrint) {
             batchSB.append(htmlImage)
         } else {
             printContent(htmlImage)
-        }
-    }
-
-    override fun sendRawData(data: RawPrinterData) {
-        printText(data.bytes.toString(Charsets.UTF_8))
-    }
-
-    override fun observePrinterState(): StateFlow<PrinterState> = printerState
-
-    override fun feedPaper() {
-        if (batchPrint) {
-            batchSB.append(FEED_PAPER_SMALL)
-        } else {
-            printContent(FEED_PAPER_SMALL)
         }
     }
 
@@ -147,18 +121,6 @@ internal class PaxPrinterController(
     }
 
     /**
-     * Start printer and prints data in buffer.This is synchronous interface.
-     */
-    override fun start() {
-        if (batchPrint && batchSB.isNotEmpty()) {
-            printerState.value = PrinterState.Busy
-
-            printContent(transformToHtml(batchSB.toString(), true))
-            batchSB.clear()
-        }
-    }
-
-    /**
      * Gets the real-time state of the printer, which can be used before each printing.
      */
     private fun getPrinterState() {
@@ -173,35 +135,6 @@ internal class PaxPrinterController(
                 val printMessenger = Messenger(service)
                 printMessenger.send(Message.obtain(null, STATUS_REQUEST, 0, 0).apply {
                     replyTo = Messenger(PrintResponseHandler(printerState))
-                })
-            }
-
-            override fun onServiceDisconnected(name: ComponentName?) = Unit
-        }
-
-        if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
-            context.unbindService(connection)
-            printerState.value = PrinterState.Error.NotAvailable
-        }
-    }
-
-    private fun printContent(content: String) {
-        val intent = Intent().apply {
-            component = ComponentName(PRINTING_PACKAGE, PRINTING_CLASS)
-        }
-
-        val connection = object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                printerState.value = PrinterState.Busy
-
-                val printMessenger = Messenger(service)
-                printMessenger.send(Message.obtain(null, PRINTING_REQUEST, 0, 0).apply {
-                    replyTo = Messenger(PrintResponseHandler(printerState))
-                    data = Bundle().apply {
-                        putString("html", content)
-                        putBoolean("autoCrop", true)
-                        putInt("grey", printingIntensity)
-                    }
                 })
             }
 
