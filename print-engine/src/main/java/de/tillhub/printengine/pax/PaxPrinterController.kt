@@ -90,10 +90,23 @@ internal class PaxPrinterController(
     }
 
     override fun printImage(image: Bitmap) {
-        if (batchPrint) {
-            batchSB.append(generateImageHtml(image))
+        val htmlImage = if (image.width > 250){
+            val newHeight = ((image.width/250.0) * image.height).toInt()
+
+            generateImageHtml(Bitmap.createScaledBitmap(
+                image,
+                250,
+                newHeight,
+                false
+            ))
         } else {
-            printContent(generateImageHtml(image))
+            generateImageHtml(image)
+        }
+
+        if (batchPrint) {
+            batchSB.append(htmlImage)
+        } else {
+            printContent(htmlImage)
         }
     }
 
@@ -184,7 +197,7 @@ internal class PaxPrinterController(
                     replyTo = Messenger(PrintResponseHandler(printerState))
                     data = Bundle().apply {
                         putString("html", content)
-                        putBoolean("autoCrop", true)
+                        putBoolean("autoCrop", false)
                         putInt("grey", printingIntensity)
                     }
                 })
