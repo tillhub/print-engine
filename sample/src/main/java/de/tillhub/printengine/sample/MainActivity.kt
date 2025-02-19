@@ -13,45 +13,36 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import de.tillhub.printengine.PrintEngine
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
+import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
     private val printer by lazy { PrintEngine.getInstance(this).printer }
-    private val printerState = mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
-                printer.observePrinterState().collect {
-                    printerState.value = it.javaClass.simpleName
-                }
-            }
-        }
-
         setContent {
+            val printState by printer.observePrinterState().collectAsState()
             TillhubPrintEngineTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Layout {
+                    Layout(printState) {
                         lifecycleScope.launch {
                             printer.startPrintJob(printJob)
                         }
@@ -63,28 +54,21 @@ class MainActivity : ComponentActivity() {
 
     @Preview
     @Composable
-    fun Layout(onClick: () -> Unit) {
+    fun Layout(state: PrinterState, onClick: () -> Unit) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            StateText()
+            Text(
+                text = "Printer state: $state",
+                textAlign = TextAlign.Center
+            )
             Spacer(modifier = Modifier.height(36.dp))
             Button(onClick = onClick) {
                 Text(text = "Print sample job")
             }
         }
-    }
-
-    @Preview
-    @Composable
-    fun StateText() {
-        val value by printerState
-        Text(
-            text = "Printer state: $value",
-            textAlign = TextAlign.Center
-        )
     }
 
     companion object {

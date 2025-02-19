@@ -4,6 +4,9 @@ import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.os.Messenger
+import android.os.RemoteException
+import androidx.core.os.bundleOf
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterServiceVersion
@@ -18,7 +21,7 @@ import de.tillhub.printengine.html.HtmlUtils.transformToHtml
 import kotlinx.coroutines.flow.MutableStateFlow
 
 internal class PaxPrinterController(
-    private val paxPrinterConnector: PaxPrinterConnector,
+    private val messenger: Messenger,
     private val printerState: MutableStateFlow<PrinterState>,
     barcodeEncoder: BarcodeEncoder,
     /**
@@ -37,11 +40,16 @@ internal class PaxPrinterController(
     includeStyleTag = true,
     feedString = FEED_PAPER_SMALL
 ) {
-
     private var printingIntensity: Int = DEFAULT_INTENSITY
 
+    private val responseMessenger = Messenger(PrintResponseHandler(printerState))
+
     init {
-        getPrinterState()
+        Message.obtain(null, MSG_STATUS, 0, 0).apply {
+            replyTo = responseMessenger
+        }.also { message ->
+            sendMessage(message)
+        }
     }
 
     override suspend fun getPrinterInfo(): PrinterInfo =
@@ -57,11 +65,17 @@ internal class PaxPrinterController(
         )
 
     override fun printContent(content: String, cutAfterPrint: Boolean) {
-        paxPrinterConnector.sendPrintRequest(
-            payload = content,
-            printingIntensity = printingIntensity,
-            responseHandler = PrintResponseHandler(printerState)
-        )
+        Message.obtain(null, MSG_PRINT, 0, 0).apply {
+            replyTo = responseMessenger
+            data = bundleOf(
+                "html" to content,
+                "autoCrop" to true,
+                "grey" to printingIntensity
+            )
+        }.also { message ->
+            printerState.value = PrinterState.Busy
+            sendMessage(message)
+        }
     }
 
     override fun setFontSize(fontSize: PrintingFontType) = Unit // Not supported
@@ -96,14 +110,28 @@ internal class PaxPrinterController(
         }
     }
 
-    /**
-     * Gets the real-time state of the printer, which can be used before each printing.
-     */
-    private fun getPrinterState() {
-        paxPrinterConnector.sendStatusRequest(PrintResponseHandler(printerState))
+    private fun sendMessage(message: Message) {
+        try {
+            messenger.send(message)
+        } catch (e: RemoteException) {
+            printerState.value = PrinterState.Error.ConnectionLost
+        }
+    }
+
+    internal class PrintResponseHandler(
+        private val connectionState: MutableStateFlow<PrinterState>
+    ) : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            val status = msg.data.getInt(PRINTER_STATUS_KEY, PaxPrinterState.NotAvailable.code)
+            connectionState.value = PaxPrinterState.convert(PaxPrinterState.fromCode(status))
+        }
     }
 
     companion object {
+        private const val PRINTER_STATUS_KEY = "status"
+        private const val MSG_PRINT = 1
+        private const val MSG_STATUS = 2
+
         private const val DEFAULT_INTENSITY = 50
         private const val LIGHT_INTENSITY = 25
         private const val DARK_INTENSITY = 70
@@ -115,22 +143,5 @@ internal class PaxPrinterController(
         private const val BARCODE_WIDTH = 220
         private const val QR_CODE_SIZE = 220
         private const val FONT_SIZE = 13
-    }
-}
-
-internal class PrintResponseHandler(
-    private val printerState: MutableStateFlow<PrinterState>
-) : Handler(Looper.getMainLooper()) {
-    override fun handleMessage(msg: Message) {
-        val status = msg.data.getInt("status", PRINTER_NOT_AVAILABLE_ERROR)
-        if (status == 0) {
-            printerState.value = PrinterState.Connected
-        } else {
-            printerState.value = PaxPrinterState.convert(PaxPrinterState.fromCode(status))
-        }
-    }
-
-    companion object {
-        private const val PRINTER_NOT_AVAILABLE_ERROR = 666
     }
 }
