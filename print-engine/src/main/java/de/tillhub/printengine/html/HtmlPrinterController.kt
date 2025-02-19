@@ -1,8 +1,8 @@
 package de.tillhub.printengine.html
 
-import de.tillhub.printengine.HtmlUtils.monospaceText
-import de.tillhub.printengine.HtmlUtils.singleLineCenteredText
-import de.tillhub.printengine.HtmlUtils.transformToHtml
+import de.tillhub.printengine.html.HtmlUtils.monospaceText
+import de.tillhub.printengine.html.HtmlUtils.singleLineCenteredText
+import de.tillhub.printengine.html.HtmlUtils.transformToHtml
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType

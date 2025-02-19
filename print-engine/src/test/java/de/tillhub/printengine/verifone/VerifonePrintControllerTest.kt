@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import com.verifone.peripherals.DirectPrintManager
 import com.verifone.peripherals.Printer
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.HtmlUtils
+import de.tillhub.printengine.html.HtmlUtils
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
 import de.tillhub.printengine.data.PrinterInfo
@@ -167,7 +167,11 @@ internal class VerifonePrintControllerTest : DescribeSpec({
             printerController.feedPaper()
 
             verify(exactly = 1) {
-                printManager.printString(any(), "", Printer.PRINTER_NO_CUT)
+                printManager.printString(
+                    any(),
+                    "<br /><br /><br /><br /><br />",
+                    Printer.PRINTER_NO_CUTTER_LINE_FEED
+                )
             }
         }
 

@@ -3,9 +3,6 @@ package de.tillhub.printengine.verifone
 import android.graphics.Bitmap
 import com.verifone.peripherals.DirectPrintManager
 import com.verifone.peripherals.Printer
-import de.tillhub.printengine.HtmlUtils.FEED_PAPER
-import de.tillhub.printengine.HtmlUtils.generateImageHtml
-import de.tillhub.printengine.HtmlUtils.transformToHtml
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterServiceVersion
@@ -14,16 +11,23 @@ import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.html.HtmlPrinterController
+import de.tillhub.printengine.html.HtmlUtils.FEED_PAPER
+import de.tillhub.printengine.html.HtmlUtils.generateImageHtml
 import kotlinx.coroutines.flow.MutableStateFlow
 
 internal class VerifonePrintController(
     private val printManager: DirectPrintManager,
     private val printerState: MutableStateFlow<PrinterState>,
     barcodeEncoder: BarcodeEncoder,
+    /**
+     * If this field is set to false each print command is handled separately.
+     * If it is set to true the print commands are grouped and handled when start() is called
+     */
+    batchPrint: Boolean = BATCH_PRINT_DEFAULT
 ) : HtmlPrinterController(
     printerState = printerState,
     barcodeEncoder = barcodeEncoder,
-    batchPrint = BATCH_PRINT_DEFAULT,
+    batchPrint = batchPrint,
     barcodeWidth = BARCODE_WIDTH,
     barcodeHeight = BARCODE_HEIGHT,
     qrCodeSize = QR_CODE_SIZE,
@@ -65,7 +69,7 @@ internal class VerifonePrintController(
     override fun printContent(content: String, cutAfterPrint: Boolean) {
         printManager.printString(
             printListener,
-            transformToHtml(batchSB.toString()),
+            content,
             when {
                 cutAfterPrint || useCutter -> Printer.PRINTER_FULL_CUT
                 else -> Printer.PRINTER_NO_CUTTER_LINE_FEED
