@@ -1,4 +1,4 @@
-package de.tillhub.printengine
+package de.tillhub.printengine.html
 
 import android.graphics.Bitmap
 import android.util.Base64
@@ -17,10 +17,10 @@ internal object HtmlUtils {
         "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px;\">$text</pre>"
 
     fun singleLineCenteredText(text: String): String =
-        "<div style=\"text-align: center;\">$text</div>"
+        "<div style=\"text-align:center;\">$text</div>"
 
     fun generateImageHtml(image: Bitmap): String =
-        "<div style=\"text-align: center;\">" +
+        "<div style=\"text-align:center;\">" +
             "<img src=\"data:image/png;base64,${encodeToBase64(image)}\"/>" +
         "</div>"
 

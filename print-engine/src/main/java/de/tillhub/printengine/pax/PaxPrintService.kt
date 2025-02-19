@@ -1,9 +1,6 @@
 package de.tillhub.printengine.pax
 
 import android.content.Context
-import com.pax.dal.IDAL
-import com.pax.dal.exceptions.PrinterDevException
-import com.pax.neptunelite.api.NeptuneLiteUser
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.barcode.BarcodeEncoderImpl
@@ -26,9 +23,13 @@ internal class PaxPrintService(context: Context) : PrintService() {
         @Suppress("TooGenericExceptionCaught")
         try {
             printController = PaxPrinterController(
-                context = context,
                 printerState = connectionState,
+                paxPrinterConnector = PaxPrinterConnector(
+                    context = context,
+                    printerState = connectionState
+                ),
                 barcodeEncoder = BarcodeEncoderImpl()
+
             )
             connectionState.value = PrinterState.Connected
         } catch (e: Exception) {
