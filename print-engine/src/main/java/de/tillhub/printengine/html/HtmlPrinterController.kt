@@ -42,14 +42,24 @@ internal abstract class HtmlPrinterController(
     }
 
     override fun printBarcode(barcode: String) {
-        barcodeEncoder.encodeAsBitmap(barcode, BarcodeType.CODE_128, barcodeSize.width, barcodeSize.height)?.let { image ->
+        barcodeEncoder.encodeAsBitmap(
+            content = barcode,
+            type = BarcodeType.CODE_128,
+            imgWidth = barcodeSize.width,
+            imgHeight = barcodeSize.height
+        )?.let { image ->
             printImage(image)
             printText(singleLineCenteredText(barcode))
         }
     }
 
     override fun printQr(qrData: String) {
-        barcodeEncoder.encodeAsBitmap(qrData, BarcodeType.QR_CODE, qrCodeSize.value, qrCodeSize.value)?.let { image ->
+        barcodeEncoder.encodeAsBitmap(
+            content = qrData,
+            type = BarcodeType.QR_CODE,
+            imgWidth = qrCodeSize.value,
+            imgHeight = qrCodeSize.value
+        )?.let { image ->
             printImage(image)
             printText(singleLineCenteredText(qrData))
         }

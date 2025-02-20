@@ -1,7 +1,6 @@
 package de.tillhub.printengine.pax
 
 import android.graphics.Bitmap
-import com.verifone.peripherals.Printer
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
 import de.tillhub.printengine.data.PrinterInfo

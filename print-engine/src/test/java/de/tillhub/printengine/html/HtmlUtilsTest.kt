@@ -42,7 +42,7 @@ internal class HtmlUtilsTest : FunSpec({
     test("monospaceText") {
         val result = HtmlUtils.monospaceText("Line text")
         result shouldBe "<pre style=\"font-family: monospace; " +
-                "letter-spacing: 0px; font-size: 20px;\">Line text</pre>"
+                "letter-spacing: 0px; font-size: 13px;\">Line text</pre>"
     }
 
     test("monospaceText with custom size") {

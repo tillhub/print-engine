@@ -61,7 +61,6 @@ internal class VerifonePrintControllerTest : DescribeSpec({
         bitmap.recycle()
     }
 
-
     it("observePrinterState") {
         printerController.observePrinterState().first() shouldBe PrinterState.CheckingForPrinter
     }

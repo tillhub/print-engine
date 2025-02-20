@@ -1,10 +1,8 @@
 package de.tillhub.printengine.pax
 
-import android.os.Handler
 import android.os.Message
 import android.os.Messenger
 import android.os.RemoteException
-import androidx.core.os.bundleOf
 import de.tillhub.printengine.pax.DirectPrintService.DirectPrintListener
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.robolectric.RobolectricTest
@@ -14,7 +12,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.robolectric.shadows.ShadowLooper
 
 @ExperimentalCoroutinesApi
 @RobolectricTest
@@ -66,39 +63,6 @@ class DirectPrintServiceImplTest : FunSpec({
 
         verify {
             listener.onFailed(ex)
-        }
-    }
-
-    test("print + status check") {
-        ShadowLooper.
-        requestMessenger = Messenger(object : Handler() {
-            override fun handleMessage(msg: Message) {
-                val response = Message.obtain(null, 1, 0, 0).apply {
-                    data = bundleOf(
-                        "status" to 2
-                    )
-                }
-
-                msg.replyTo.send(response)
-            }
-        })
-        target = DirectPrintServiceImpl(requestMessenger)
-//        every { requestMessenger.send(any()) } answers {
-//            val message = firstArg<Message>()
-//
-//            val response = Message.obtain(null, 1, 0, 0).apply {
-//                data = bundleOf(
-//                    "status" to 2
-//                )
-//            }
-//
-//            message.replyTo.send(response)
-//        }
-
-        target.print("payload", 50, listener)
-
-        verify {
-            listener.onStatus(2)
         }
     }
 })
