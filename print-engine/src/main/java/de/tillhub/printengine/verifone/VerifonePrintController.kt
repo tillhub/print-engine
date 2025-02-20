@@ -1,6 +1,5 @@
 package de.tillhub.printengine.verifone
 
-import android.graphics.Bitmap
 import com.verifone.peripherals.DirectPrintManager
 import com.verifone.peripherals.Printer
 import de.tillhub.printengine.barcode.BarcodeEncoder
@@ -10,30 +9,25 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.PrintingPaperSpec
+import de.tillhub.printengine.html.BarcodeSize
+import de.tillhub.printengine.html.FeedString
+import de.tillhub.printengine.html.FontSize
 import de.tillhub.printengine.html.HtmlPrinterController
-import de.tillhub.printengine.html.HtmlUtils.FEED_PAPER
-import de.tillhub.printengine.html.HtmlUtils.generateImageHtml
+import de.tillhub.printengine.html.QrCodeSize
 import kotlinx.coroutines.flow.MutableStateFlow
 
 internal class VerifonePrintController(
     private val printManager: DirectPrintManager,
     private val printerState: MutableStateFlow<PrinterState>,
     barcodeEncoder: BarcodeEncoder,
-    /**
-     * If this field is set to false each print command is handled separately.
-     * If it is set to true the print commands are grouped and handled when start() is called
-     */
-    batchPrint: Boolean = BATCH_PRINT_DEFAULT
 ) : HtmlPrinterController(
     printerState = printerState,
     barcodeEncoder = barcodeEncoder,
-    batchPrint = batchPrint,
-    barcodeWidth = BARCODE_WIDTH,
-    barcodeHeight = BARCODE_HEIGHT,
-    qrCodeSize = QR_CODE_SIZE,
-    fontSize = FONT_SIZE,
+    barcodeSize = BarcodeSize.VERIFONE,
+    qrCodeSize = QrCodeSize.VERIFONE,
+    fontSize = FontSize.VERIFONE,
     includeStyleTag = false,
-    feedString = FEED_PAPER
+    feedString = FeedString.VERIFONE
 ) {
     private var useCutter = false
 
@@ -81,20 +75,8 @@ internal class VerifonePrintController(
 
     override fun setFontSize(fontSize: PrintingFontType) = Unit // Not supported
 
-    override fun printImage(image: Bitmap) {
-        if (batchPrint) {
-            batchSB.append(generateImageHtml(image))
-        } else {
-            printManager.printBitmap(printListener, image, Printer.PRINTER_NO_CUTTER_LINE_FEED)
-        }
-    }
-
     override fun cutPaper() {
-        if (batchPrint) {
-            useCutter = true
-        } else {
-            printManager.printString(printListener, "", Printer.PRINTER_FULL_CUT)
-        }
+        useCutter = true
     }
 
     override fun setIntensity(intensity: PrintingIntensity) = Unit // Not supported
@@ -110,12 +92,4 @@ internal class VerifonePrintController(
             printedDistance = 0,
             serviceVersion = PrinterServiceVersion.Unknown
         )
-
-    companion object {
-        private const val BATCH_PRINT_DEFAULT = true
-        private const val BARCODE_HEIGHT = 140
-        private const val BARCODE_WIDTH = 420
-        private const val QR_CODE_SIZE = 420
-        private const val FONT_SIZE = 20
-    }
 }

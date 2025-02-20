@@ -28,8 +28,10 @@ internal class PaxPrintService(context: Context) : PrintService() {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder) {
             printController = PaxPrinterController(
+                printService = DirectPrintServiceImpl(
+                    requestMessenger = Messenger(service)
+                ),
                 printerState = connectionState,
-                messenger = Messenger(service),
                 barcodeEncoder = BarcodeEncoderImpl()
             )
         }

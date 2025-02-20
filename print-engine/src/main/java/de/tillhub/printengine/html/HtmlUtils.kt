@@ -13,7 +13,7 @@ internal object HtmlUtils {
         "<html><body>$text</body></html>"
     }
 
-    fun monospaceText(text: String, fontSize: Int = DEFAULT_FONT_SIZE): String =
+    fun monospaceText(text: String, fontSize: Int = FontSize.PAX.value): String =
         "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px;\">$text</pre>"
 
     fun singleLineCenteredText(text: String): String =
@@ -31,11 +31,7 @@ internal object HtmlUtils {
         Base64.encodeToString(b, Base64.DEFAULT)
     }
 
-    const val FEED_PAPER: String = "<br /><br /><br /><br /><br />"
-    const val FEED_PAPER_SMALL: String = "<br />"
     private const val PNG_QUALITY = 100
-    private const val DEFAULT_FONT_SIZE = 20
-
     private const val STYLE_TAG = """
         <style type="text/css">
             @page {

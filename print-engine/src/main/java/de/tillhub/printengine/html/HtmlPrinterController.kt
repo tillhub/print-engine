@@ -1,5 +1,6 @@
 package de.tillhub.printengine.html
 
+import android.graphics.Bitmap
 import de.tillhub.printengine.html.HtmlUtils.monospaceText
 import de.tillhub.printengine.html.HtmlUtils.singleLineCenteredText
 import de.tillhub.printengine.html.HtmlUtils.transformToHtml
@@ -8,25 +9,21 @@ import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.RawPrinterData
+import de.tillhub.printengine.html.HtmlUtils.generateImageHtml
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 internal abstract class HtmlPrinterController(
     private val printerState: MutableStateFlow<PrinterState>,
     private val barcodeEncoder: BarcodeEncoder,
-    /**
-     * If this field is set to false each print command is handled separately.
-     * If it is set to true the print commands are grouped and handled when start() is called
-     */
-    protected val batchPrint: Boolean,
-    protected val barcodeWidth: Int,
-    protected val barcodeHeight: Int,
-    protected val qrCodeSize: Int,
-    protected val fontSize: Int,
+    protected val barcodeSize: BarcodeSize,
+    protected val qrCodeSize: QrCodeSize,
+    protected val fontSize: FontSize,
     protected val includeStyleTag: Boolean,
-    protected val feedString: String,
+    protected val feedString: FeedString,
 ) : PrinterController {
-    protected val batchSB = StringBuilder()
+
+    private val batchSB = StringBuilder()
 
     protected abstract fun printContent(content: String, cutAfterPrint: Boolean = false)
 
@@ -37,37 +34,33 @@ internal abstract class HtmlPrinterController(
     }
 
     override fun printText(text: String) {
-        if (batchPrint) {
-            batchSB.appendLine(monospaceText(text, fontSize))
-        } else {
-            printContent(transformToHtml(monospaceText(text, fontSize), includeStyleTag))
-        }
+        batchSB.appendLine(monospaceText(text, fontSize.value))
+    }
+
+    override fun printImage(image: Bitmap) {
+        batchSB.append(generateImageHtml(image))
     }
 
     override fun printBarcode(barcode: String) {
-        barcodeEncoder.encodeAsBitmap(barcode, BarcodeType.CODE_128, barcodeWidth, barcodeHeight)?.let { image ->
+        barcodeEncoder.encodeAsBitmap(barcode, BarcodeType.CODE_128, barcodeSize.width, barcodeSize.height)?.let { image ->
             printImage(image)
             printText(singleLineCenteredText(barcode))
         }
     }
 
     override fun printQr(qrData: String) {
-        barcodeEncoder.encodeAsBitmap(qrData, BarcodeType.QR_CODE, qrCodeSize, qrCodeSize)?.let { image ->
+        barcodeEncoder.encodeAsBitmap(qrData, BarcodeType.QR_CODE, qrCodeSize.value, qrCodeSize.value)?.let { image ->
             printImage(image)
             printText(singleLineCenteredText(qrData))
         }
     }
 
     override fun feedPaper() {
-        if (batchPrint) {
-            batchSB.append(feedString)
-        } else {
-            printContent(feedString)
-        }
+        batchSB.append(feedString.value)
     }
 
     override fun start() {
-        if (batchPrint && batchSB.isNotEmpty()) {
+        if (batchSB.isNotEmpty()) {
             printContent(transformToHtml(batchSB.toString(), includeStyleTag))
             batchSB.clear()
         }
