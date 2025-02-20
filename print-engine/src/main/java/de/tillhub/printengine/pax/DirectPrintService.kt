@@ -48,7 +48,7 @@ internal class DirectPrintServiceImpl(private val requestMessenger: Messenger) :
         }
     }
 
-    private class PrintResponseHandler(
+    class PrintResponseHandler(
         private val listener: DirectPrintListener
     ) : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
