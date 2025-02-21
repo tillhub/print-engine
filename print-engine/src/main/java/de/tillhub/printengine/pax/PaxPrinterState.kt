@@ -13,7 +13,8 @@ internal enum class PaxPrinterState(val code: Int) {
     VoltageTooLow(code = 9),
     PrintingUnfinished(code = 240),
     NotInstalledFontLibrary(code = 252),
-    DataPackageTooLong(code = 254);
+    DataPackageTooLong(code = 254),
+    NotAvailable(code = 666);
 
     companion object {
         fun fromCode(code: Int): PaxPrinterState =
@@ -31,6 +32,7 @@ internal enum class PaxPrinterState(val code: Int) {
                 PrintingUnfinished -> PrinterState.Error.PrintingUnfinished
                 NotInstalledFontLibrary -> PrinterState.Error.Pax.NotInstalledFontLibrary
                 DataPackageTooLong -> PrinterState.Error.Pax.DataPackageTooLong
+                NotAvailable -> PrinterState.Error.NotAvailable
             }
     }
 }

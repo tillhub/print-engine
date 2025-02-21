@@ -1,110 +1,66 @@
 package de.tillhub.printengine.pax
 
 import android.graphics.Bitmap
-import com.pax.dal.IPrinter
-import com.pax.dal.entity.EFontTypeAscii
-import com.pax.dal.entity.EFontTypeExtCode
-import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.PrinterState
-import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
+import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterServiceVersion
+import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.RawPrinterData
-import io.kotest.core.spec.style.FunSpec
+import de.tillhub.printengine.html.FeedString
+import de.tillhub.printengine.html.FontSize
+import de.tillhub.printengine.html.HtmlUtils
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
 import io.mockk.Ordering
-import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @RobolectricTest
-internal class PaxPrinterControllerTest : FunSpec({
+internal class PaxPrinterControllerTest : DescribeSpec({
 
     lateinit var bitmap: Bitmap
-    lateinit var printerService: IPrinter
     lateinit var printerState: MutableStateFlow<PrinterState>
+    lateinit var printService: DirectPrintService
     lateinit var barcodeEncoder: BarcodeEncoder
-    lateinit var printerController: PrinterController
+    lateinit var target: PaxPrinterController
 
     beforeSpec {
         bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
     }
 
     beforeTest {
-        printerService = mockk {
-            every { init() } just Runs
-            every { fontSet(any(), any()) } just Runs
-            every { printStr(any(), any()) } just Runs
-            every { step(any()) } just Runs
-            every { printBitmap(any()) } just Runs
-            every { setGray(any()) } just Runs
-            every { cutPaper(any()) } just Runs
-            every { start() } returns 0
-            every { status } returns 0
-        }
         printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
         barcodeEncoder = mockk {
             every { encodeAsBitmap(any(), any(), any(), any()) } returns bitmap
         }
-        printerController = PaxPrinterController(printerService, printerState, barcodeEncoder)
+        printService = mockk {
+            every { checkStatus(any()) } just runs
+            every { print(any(), any(), any()) } just runs
+        }
+
+        target = PaxPrinterController(
+            printService = printService,
+            printerState = printerState,
+            barcodeEncoder = barcodeEncoder
+        )
     }
 
     afterSpec {
         bitmap.recycle()
     }
 
-    test("observePrinterState") {
-        every { printerService.status } returns 0
-        printerController.observePrinterState().first() shouldBe PrinterState.Connected
-
-        every { printerService.status } returns 1
-        printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Busy
-
-        every { printerService.status } returns 2
-        printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.OutOfPaper
-
-        every { printerService.status } returns 3
-        printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.Pax.FormatPrintDataPacketError
-
-        every { printerService.status } returns 4
-        printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.Malfunctions
-
-        every { printerService.status } returns 8
-        printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.Overheated
-
-        every { printerService.status } returns 9
-        printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.VoltageTooLow
-
-        every { printerService.status } returns 240
-        printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.PrintingUnfinished
-
-        every { printerService.status } returns 252
-        printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.Pax.NotInstalledFontLibrary
-
-        every { printerService.status } returns 254
-        printerController.start()
-        printerController.observePrinterState().first() shouldBe PrinterState.Error.Pax.DataPackageTooLong
-    }
-
-    test("getPrinterInfo") {
-        printerController.getPrinterInfo() shouldBe PrinterInfo(
+    it("getPrinterInfo") {
+        target.getPrinterInfo() shouldBe PrinterInfo(
             serialNumber = "n/a",
             deviceModel = "A920",
             printerVersion = "n/a",
@@ -116,99 +72,129 @@ internal class PaxPrinterControllerTest : FunSpec({
         )
     }
 
-    test("setFontSize") {
-        printerController.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
+    it("observePrinterState") {
+        target.observePrinterState().first() shouldBe PrinterState.CheckingForPrinter
+
+        verify(exactly = 1) { printService.checkStatus(any()) }
+    }
+
+    it("setIntensity and printText") {
+        val payload = HtmlUtils.transformToHtml(
+            text = HtmlUtils.monospaceText("text_to_print", FontSize.PAX.value) + "\n",
+            includeStyle = true
+        )
+
+        target.setIntensity(PrintingIntensity.DARKEST)
+
+        target.printText("text_to_print")
+        target.start()
 
         verify {
-            printerService.fontSet(EFontTypeAscii.FONT_12_24, EFontTypeExtCode.FONT_16_16)
+            printService.print(payload, 100, any())
         }
     }
 
-    test("printText") {
-        printerController.printText("text_to_print")
+    it("sendRawData") {
+        val payload = HtmlUtils.transformToHtml(
+            text = HtmlUtils.monospaceText("raw_data", FontSize.PAX.value) + "\n",
+            includeStyle = true
+        )
 
-        verify {
-            printerService.printStr("text_to_print\n", "UTF-8")
-        }
-    }
-
-    test("printBarcode") {
-        printerController.printBarcode("barcode")
-
-        verify(ordering = Ordering.ORDERED) {
-            barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 500, 150)
-            printerService.step(20)
-            printerService.printBitmap(bitmap)
-            printerService.printStr("            barcode             ", "UTF-8")
-        }
-    }
-
-    test("printQr") {
-        printerController.printQr("qr_code")
-
-        verify(ordering = Ordering.ORDERED) {
-            barcodeEncoder.encodeAsBitmap("qr_code", BarcodeType.QR_CODE, 500, 500)
-            printerService.step(20)
-            printerService.printBitmap(bitmap)
-            printerService.printStr("            qr_code             ", "UTF-8")
-        }
-    }
-
-    test("printImage") {
-        printerController.printImage(bitmap)
-
-        verify(exactly = 1) {
-            printerService.printBitmap(bitmap)
-        }
-    }
-
-    test("sendRawData") {
         val rawData = RawPrinterData("raw_data".toByteArray())
-        printerController.sendRawData(rawData)
+        target.sendRawData(rawData)
+        target.start()
 
         verify(exactly = 1) {
-            printerController.printText("raw_data")
+            printService.print(payload, 50, any())
         }
     }
 
-    test("feedPaper") {
-        printerController.feedPaper()
+    it("printBarcode") {
+        val payload = HtmlUtils.transformToHtml(
+            text = StringBuilder().apply {
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode")))
+            }.toString(),
+            includeStyle = true
+        )
 
-        verify(exactly = 1) {
-            printerService.step(180)
-        }
-    }
-
-    test("cutPaper") {
-        printerController.cutPaper()
-
-        verify(exactly = 1) {
-            printerService.cutPaper(0)
-        }
-    }
-
-    test("setIntensity") {
-        printerController.setIntensity(PrintingIntensity.DEFAULT)
-        printerController.setIntensity(PrintingIntensity.LIGHT)
-        printerController.setIntensity(PrintingIntensity.DARK)
-        printerController.setIntensity(PrintingIntensity.DARKER)
-        printerController.setIntensity(PrintingIntensity.DARKEST)
+        target.printBarcode("barcode")
+        target.start()
 
         verify(ordering = Ordering.ORDERED) {
-            printerService.setGray(1)
-            printerService.setGray(50)
-            printerService.setGray(150)
-            printerService.setGray(250)
-            printerService.setGray(500)
+            barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 210, 70)
+            printService.print(payload, 50, any())
         }
     }
 
-    test("start") {
-        printerController.start()
+    it("printQr") {
+        val payload = HtmlUtils.transformToHtml(
+            text = StringBuilder().apply {
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(
+                    HtmlUtils.monospaceText(
+                        HtmlUtils.singleLineCenteredText("qr_code")
+                    )
+                )
+            }.toString(),
+            includeStyle = true
+        )
+
+        target.printQr("qr_code")
+        target.start()
 
         verify(ordering = Ordering.ORDERED) {
-            printerService.start()
-            printerService.init()
+            barcodeEncoder.encodeAsBitmap("qr_code", BarcodeType.QR_CODE, 220, 220)
+            printService.print(payload, 50, any())
+        }
+    }
+
+    it("printImage") {
+        val payload = HtmlUtils.transformToHtml(HtmlUtils.generateImageHtml(bitmap), true)
+        target.printImage(bitmap)
+        target.start()
+
+        verify(exactly = 1) {
+            printService.print(payload, 50, any())
+        }
+    }
+
+    it("feedPaper") {
+        val payload = HtmlUtils.transformToHtml(FeedString.PAX.value, true)
+
+        target.feedPaper()
+        target.start()
+
+        verify(exactly = 1) {
+            printService.print(payload, 50, any())
+        }
+    }
+
+    it("full print") {
+        val payload = HtmlUtils.transformToHtml(
+            text = StringBuilder().apply {
+                appendLine(HtmlUtils.monospaceText("start line", FontSize.PAX.value))
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode"), FontSize.PAX.value))
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("qr_code"), FontSize.PAX.value))
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(HtmlUtils.monospaceText("end line", FontSize.PAX.value))
+                append(FeedString.PAX.value)
+            }.toString(),
+            includeStyle = true
+        )
+
+        target.printText("start line")
+        target.printBarcode("barcode")
+        target.printQr("qr_code")
+        target.printImage(bitmap)
+        target.printText("end line")
+        target.feedPaper()
+        target.start()
+
+        verify(exactly = 1) {
+            printService.print(payload, 50, any())
         }
     }
 })

@@ -11,9 +11,6 @@ android {
 
     defaultConfig {
         minSdk = 21
-        ndk {
-            abiFilters.add("armeabi-v7a")
-        }
     }
 
     buildFeatures {

@@ -1,40 +1,47 @@
 package de.tillhub.printengine.pax
 
-import android.graphics.Bitmap
-import com.pax.dal.IPrinter
-import com.pax.dal.entity.EFontTypeAscii
-import com.pax.dal.entity.EFontTypeExtCode
-import com.pax.dal.exceptions.PrinterDevException
-import de.tillhub.printengine.PrinterController
+import android.os.RemoteException
+import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.data.PrinterInfo
+import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
-import de.tillhub.printengine.data.RawPrinterData
-import de.tillhub.printengine.data.PrintingPaperSpec
-import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingIntensity
-import de.tillhub.printengine.barcode.BarcodeEncoder
-import de.tillhub.printengine.barcode.BarcodeType
-import de.tillhub.printengine.pax.PaxUtils.chunkForPrinting
-import de.tillhub.printengine.pax.PaxUtils.formatCode
-import de.tillhub.printengine.pax.PaxUtils.printTextOptimizer
+import de.tillhub.printengine.data.PrintingPaperSpec
+import de.tillhub.printengine.html.BarcodeSize
+import de.tillhub.printengine.html.FeedString
+import de.tillhub.printengine.html.FontSize
+import de.tillhub.printengine.html.HtmlPrinterController
+import de.tillhub.printengine.html.QrCodeSize
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import timber.log.Timber
 
-/**
- * A wrapper to simplify access and interaction with [IPrinter].
- */
 internal class PaxPrinterController(
-    private val printerService: IPrinter,
+    private val printService: DirectPrintService,
     private val printerState: MutableStateFlow<PrinterState>,
-    private val barcodeEncoder: BarcodeEncoder
-) : PrinterController {
+    barcodeEncoder: BarcodeEncoder,
+) : HtmlPrinterController(
+    printerState = printerState,
+    barcodeEncoder = barcodeEncoder,
+    barcodeSize = BarcodeSize.PAX,
+    qrCodeSize = QrCodeSize.PAX,
+    fontSize = FontSize.PAX,
+    includeStyleTag = true,
+    feedString = FeedString.PAX
+) {
+    private var printingIntensity: Int = DEFAULT_INTENSITY
 
-    private var fontSize: PrintingFontType? = null
+    private val printListener = object : DirectPrintService.DirectPrintListener {
+        override fun onFailed(e: RemoteException) {
+            printerState.value = PrinterState.Error.ConnectionLost
+        }
+
+        override fun onStatus(status: Int) {
+            printerState.value = PaxPrinterState.convert(PaxPrinterState.fromCode(status))
+        }
+    }
 
     init {
-        printerState.value = getPrinterState()
+        printService.checkStatus(printListener)
     }
 
     override suspend fun getPrinterInfo(): PrinterInfo =
@@ -49,155 +56,39 @@ internal class PaxPrinterController(
             serviceVersion = PrinterServiceVersion.Unknown
         )
 
-    override fun setFontSize(fontSize: PrintingFontType) {
-        this.fontSize = fontSize
-        printerService.fontSet(fontSize.toEFontTypeAscii(), fontSize.toEFontTypeExtCode())
-    }
-
-    override fun printText(text: String) {
-        val optimizedTextForPrinting = printTextOptimizer(text)
-
-        val chunks = chunkForPrinting(optimizedTextForPrinting)
-        if (chunks.size > 1) {
-            chunks.forEach { chunk ->
-                printerService.printStr(chunk, CHARSET)
-                start()
-            }
-        } else {
-            printerService.printStr(chunks[0], CHARSET)
+    override fun printContent(content: String, cutAfterPrint: Boolean) {
+        printService.print(content, printingIntensity, printListener).also {
+            printerState.value = PrinterState.Busy
         }
     }
 
-    override fun printBarcode(barcode: String) {
-        barcodeEncoder.encodeAsBitmap(barcode, BarcodeType.CODE_128, BARCODE_WIDTH, BARCODE_HEIGHT)?.let { image ->
-            printerService.step(PAPER_FEEDER_DIVIDER)
-            printerService.printBitmap(image)
-            printerService.printStr(
-                formatCode(
-                    content = barcode,
-                    space = PrintingPaperSpec.PAX_PAPER_56MM.characterCount
-                ),
-                CHARSET
-            )
-        }
-    }
+    override fun setFontSize(fontSize: PrintingFontType) = Unit // Not supported
 
-    override fun printQr(qrData: String) {
-        barcodeEncoder.encodeAsBitmap(
-            content = qrData,
-            type = BarcodeType.QR_CODE,
-            imgWidth = QR_CODE_SIZE,
-            imgHeight = QR_CODE_SIZE
-        )?.let { image ->
-            printerService.step(PAPER_FEEDER_DIVIDER)
-            printerService.printBitmap(image)
-            printerService.printStr(
-                formatCode(
-                    content = qrData,
-                    space = PrintingPaperSpec.PAX_PAPER_56MM.characterCount
-                ),
-                CHARSET
-            )
-        }
-    }
-
-    override fun printImage(image: Bitmap) {
-        printerService.printBitmap(image)
-    }
-
-    override fun sendRawData(data: RawPrinterData) {
-        printText(data.bytes.toString(Charsets.UTF_8))
-    }
-
-    override fun observePrinterState(): StateFlow<PrinterState> = printerState
-
-    /**
-     *  Due to the distance between the paper hatch and the print head, the paper needs to be fed out automatically
-     *  But if the Api does not support it, it will be replaced by printing three lines
-     */
-    override fun feedPaper() {
-        printerService.step(PAPER_FEEDER_LENGTH_END)
-    }
-
-    /**
-     * Printer cuts paper and throws exception on machines without a cutter
-     *  0:Only support full paper cut
-     *  1:Only support partial paper cutting
-     *  2:support partial paper and full paper cutting
-     *  -1:No cutting knife,not support
-     */
-    override fun cutPaper() {
-        printerService.cutPaper(FULL_PAPER_CUT)
-    }
+    override fun cutPaper() = Unit
 
     /**
      * Sets printing intensity (darkness of the print)
-     *  DEFAULT: 100%
-     *  LIGHT: 50%
-     *  DARK: 150%
-     *  DARKER: 250%
-     *  DARKEST: 500%
+     *  DEFAULT: 50
+     *  LIGHT: 25
+     *  DARK: 70
+     *  DARKER: 85
+     *  DARKEST: 100
      */
     override fun setIntensity(intensity: PrintingIntensity) {
-        printerService.setGray(
-            when (intensity) {
-                PrintingIntensity.DEFAULT -> DEFAULT_INTENSITY
-                PrintingIntensity.LIGHT -> LIGHT_INTENSITY
-                PrintingIntensity.DARK -> DARK_INTENSITY
-                PrintingIntensity.DARKER -> DARKER_INTENSITY
-                PrintingIntensity.DARKEST -> DARKEST_INTENSITY
-            }
-        )
-    }
-
-    /**
-     * Start printer and prints data in buffer.This is synchronous interface.
-     */
-    override fun start() {
-        printerState.value = PrinterState.Busy
-        printerService.start()
-        printerService.init()
-        fontSize?.let {
-            printerService.fontSet(it.toEFontTypeAscii(), it.toEFontTypeExtCode())
+        printingIntensity = when (intensity) {
+            PrintingIntensity.DEFAULT -> DEFAULT_INTENSITY
+            PrintingIntensity.LIGHT -> LIGHT_INTENSITY
+            PrintingIntensity.DARK -> DARK_INTENSITY
+            PrintingIntensity.DARKER -> DARKER_INTENSITY
+            PrintingIntensity.DARKEST -> DARKEST_INTENSITY
         }
-        printerState.value = getPrinterState()
-    }
-
-    /**
-     * Gets the real-time state of the printer, which can be used before each printing.
-     */
-    private fun getPrinterState(): PrinterState = try {
-        val state = PaxPrinterState.fromCode(printerService.status)
-        PaxPrinterState.convert(state)
-    } catch (e: PrinterDevException) {
-        Timber.e(e)
-        PrinterState.Error.Unknown
     }
 
     companion object {
-        private const val DEFAULT_INTENSITY = 1
-        private const val LIGHT_INTENSITY = 50
-        private const val DARK_INTENSITY = 150
-        private const val DARKER_INTENSITY = 250
-        private const val DARKEST_INTENSITY = 500
-
-        const val FULL_PAPER_CUT = 0
-        const val PAPER_FEEDER_DIVIDER = 20
-        const val PAPER_FEEDER_LENGTH_END = 180
-        const val CHARSET = "UTF-8"
-
-        private const val BARCODE_HEIGHT = 150
-        private const val BARCODE_WIDTH = 500
-        private const val QR_CODE_SIZE = 500
-
-        private fun PrintingFontType.toEFontTypeAscii() =
-            when (this) {
-                PrintingFontType.DEFAULT_FONT_SIZE -> EFontTypeAscii.FONT_12_24
-            }
-
-        private fun PrintingFontType.toEFontTypeExtCode() =
-            when (this) {
-                PrintingFontType.DEFAULT_FONT_SIZE -> EFontTypeExtCode.FONT_16_16
-            }
+        private const val DEFAULT_INTENSITY = 50
+        private const val LIGHT_INTENSITY = 25
+        private const val DARK_INTENSITY = 70
+        private const val DARKER_INTENSITY = 85
+        private const val DARKEST_INTENSITY = 100
     }
 }
