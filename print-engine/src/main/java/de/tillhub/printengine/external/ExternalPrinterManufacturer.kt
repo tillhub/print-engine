@@ -1,0 +1,3 @@
+package de.tillhub.printengine.external
+
+interface ExternalPrinterManufacturer

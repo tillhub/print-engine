@@ -187,7 +187,7 @@ internal class SunmiPrinterController(
     }
 }
 
-private fun Int.toPrintingPaperSpec(): PrintingPaperSpec = PrintingPaperSpec.SUNMI_PAPER_56MM
+private fun Int.toPrintingPaperSpec(): PrintingPaperSpec = PrintingPaperSpec.SunmiPaper56mm
 
 private fun PrintingFontType.toFloatSize() = when (this) {
     PrintingFontType.DEFAULT_FONT_SIZE -> FontSize.NORMAL.value

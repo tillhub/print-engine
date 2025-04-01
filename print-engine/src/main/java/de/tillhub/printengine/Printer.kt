@@ -18,6 +18,6 @@ interface Printer {
     suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit>
 
     companion object {
-        val DEFAULT_PRINTER_WIDTH = PrintingPaperSpec.PAX_PAPER_56MM.characterCount
+        val DEFAULT_PRINTER_WIDTH = PrintingPaperSpec.PaxPaper56mm.characterCount
     }
 }

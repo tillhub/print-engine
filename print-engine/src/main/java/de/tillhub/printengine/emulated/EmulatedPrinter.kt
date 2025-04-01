@@ -36,7 +36,7 @@ internal class EmulatedPrinter : Printer {
                 serialNumber = "n/a",
                 deviceModel = "Emulated Printer",
                 printerVersion = "n/a",
-                printerPaperSpec = PrintingPaperSpec.PAX_PAPER_56MM,
+                printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
                 printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
                 printerHead = "n/a",
                 printedDistance = 0,

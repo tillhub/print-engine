@@ -24,6 +24,8 @@
 
 -keep class de.tillhub.printengine.Printer { *; }
 -keep class de.tillhub.printengine.Printer$Companion { *; }
+-keep class de.tillhub.printengine.external.PrinterDiscovery { *; }
+-keep class de.tillhub.printengine.external.ExternalPrinterManufacturer { *; }
 -keep class de.tillhub.printengine.PrintEngine { *; }
 -keep class de.tillhub.printengine.PrintEngine$Companion { *; }
 -keep class de.tillhub.printengine.helper.SingletonHolder { *; }

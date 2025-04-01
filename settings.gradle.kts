@@ -22,4 +22,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Tillhub Print Engine"
 include(":print-engine")
+include(":star-printer")
 include(":sample")

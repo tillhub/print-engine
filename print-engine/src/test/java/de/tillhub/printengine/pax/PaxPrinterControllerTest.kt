@@ -64,7 +64,7 @@ internal class PaxPrinterControllerTest : DescribeSpec({
             serialNumber = "n/a",
             deviceModel = "A920",
             printerVersion = "n/a",
-            printerPaperSpec = PrintingPaperSpec.PAX_PAPER_56MM,
+            printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
             printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
             printerHead = "n/a",
             printedDistance = 0,

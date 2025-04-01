@@ -8,7 +8,7 @@ import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.data.PrintingIntensity
 import kotlinx.coroutines.flow.StateFlow
 
-internal interface PrinterController {
+interface PrinterController {
     fun sendRawData(data: RawPrinterData)
     fun observePrinterState(): StateFlow<PrinterState>
     fun setFontSize(fontSize: PrintingFontType)

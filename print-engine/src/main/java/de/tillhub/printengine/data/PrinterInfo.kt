@@ -51,11 +51,17 @@ class PrinterInfo(
 /**
  * Defines the width of the printing paper.
  */
-enum class PrintingPaperSpec(val characterCount: Int) {
-    /** Printing paper width of 56 mm */
-    PAX_PAPER_56MM(characterCount = 35),
-    SUNMI_PAPER_56MM(characterCount = 38),
-    VERIFONE_PAPER_58MM(characterCount = 32)
+sealed class PrintingPaperSpec(open val characterCount: Int) {
+    data object PaxPaper56mm : PrintingPaperSpec(PAX_PAPER_56MM_CHAR_COUNT)
+    data object SunmiPaper56mm : PrintingPaperSpec(SUNMI_PAPER_56MM_CHAR_COUNT)
+    data object VerifonePaper56mm : PrintingPaperSpec(VERIFONE_PAPER_56MM_CHAR_COUNT)
+    class External(override val characterCount: Int) : PrintingPaperSpec(characterCount)
+
+    companion object {
+        const val PAX_PAPER_56MM_CHAR_COUNT = 35
+        const val SUNMI_PAPER_56MM_CHAR_COUNT = 38
+        const val VERIFONE_PAPER_56MM_CHAR_COUNT = 32
+    }
 }
 
 /**

@@ -18,6 +18,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.Ordering
 import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -49,15 +50,15 @@ internal class PrinterImplTest : DescribeSpec({
             every { printImage(any()) } just Runs
             every { printBarcode(any()) } just Runs
             every { printQr(any()) } just Runs
-            every { sendRawData(any()) } just Runs
+            coEvery { sendRawData(any()) } just Runs
             every { feedPaper() } just Runs
             every { cutPaper() } just Runs
-            every { start() } just Runs
+            coEvery { start() } just Runs
             coEvery { getPrinterInfo() } returns PrinterInfo(
                 serialNumber = "n/a",
                 deviceModel = "P9 pro",
                 printerVersion = "n/a",
-                printerPaperSpec = PrintingPaperSpec.SUNMI_PAPER_56MM,
+                printerPaperSpec = PrintingPaperSpec.SunmiPaper56mm,
                 printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
                 printerHead = "n/a",
                 printedDistance = 0,
@@ -91,7 +92,7 @@ internal class PrinterImplTest : DescribeSpec({
                     serialNumber = "n/a",
                     deviceModel = "P9 pro",
                     printerVersion = "n/a",
-                    printerPaperSpec = PrintingPaperSpec.SUNMI_PAPER_56MM,
+                    printerPaperSpec = PrintingPaperSpec.SunmiPaper56mm,
                     printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
                     printerHead = "n/a",
                     printedDistance = 0,
@@ -116,7 +117,7 @@ internal class PrinterImplTest : DescribeSpec({
                 )
             )
 
-            verify(ordering = Ordering.ORDERED) {
+            coVerify(ordering = Ordering.ORDERED) {
                 controller.setIntensity(PrintingIntensity.DEFAULT)
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printText("text_to_print")
@@ -124,7 +125,7 @@ internal class PrinterImplTest : DescribeSpec({
                 controller.start()
                 analytics.logPrintReceipt(
                     "text_to_print\n" +
-                    "-----FEED PAPER-----"
+                            "-----FEED PAPER-----"
                 )
             }
         }
@@ -140,7 +141,7 @@ internal class PrinterImplTest : DescribeSpec({
                 )
             )
 
-            verify(ordering = Ordering.ORDERED) {
+            coVerify(ordering = Ordering.ORDERED) {
                 controller.setIntensity(PrintingIntensity.DARK)
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printText("text_to_print")
@@ -159,7 +160,7 @@ internal class PrinterImplTest : DescribeSpec({
                 )
             )
 
-            verify(ordering = Ordering.ORDERED) {
+            coVerify(ordering = Ordering.ORDERED) {
                 controller.setIntensity(PrintingIntensity.DEFAULT)
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printImage(bitmap)
@@ -167,7 +168,7 @@ internal class PrinterImplTest : DescribeSpec({
                 controller.start()
                 analytics.logPrintReceipt(
                     "======IMAGE========\n" +
-                    "receipt_to_print"
+                            "receipt_to_print"
                 )
             }
         }
@@ -186,7 +187,7 @@ internal class PrinterImplTest : DescribeSpec({
                 )
             )
 
-            verify(ordering = Ordering.ORDERED) {
+            coVerify(ordering = Ordering.ORDERED) {
                 controller.setIntensity(PrintingIntensity.DEFAULT)
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.printImage(bitmap)
@@ -198,11 +199,11 @@ internal class PrinterImplTest : DescribeSpec({
                 controller.start()
                 analytics.logPrintReceipt(
                     "======IMAGE========\n" +
-                    "raw_receipt_text\n" +
-                    "==QR: signature_qr_code ==\n" +
-                    "==BC: barcode ==\n" +
-                    "======IMAGE========\n" +
-                    "-----FEED PAPER-----"
+                            "raw_receipt_text\n" +
+                            "==QR: signature_qr_code ==\n" +
+                            "==BC: barcode ==\n" +
+                            "======IMAGE========\n" +
+                            "-----FEED PAPER-----"
                 )
             }
         }
@@ -217,7 +218,7 @@ internal class PrinterImplTest : DescribeSpec({
                 )
             )
 
-            verify(ordering = Ordering.ORDERED) {
+            coVerify(ordering = Ordering.ORDERED) {
                 controller.setIntensity(PrintingIntensity.DEFAULT)
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.sendRawData(rawPrinterData)
@@ -296,7 +297,7 @@ internal class PrinterImplTest : DescribeSpec({
                 )
             )
 
-            verify(inverse = true) {
+            coVerify(inverse = true) {
                 controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
                 controller.sendRawData(any())
             }
