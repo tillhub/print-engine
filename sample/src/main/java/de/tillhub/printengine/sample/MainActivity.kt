@@ -41,6 +41,9 @@ import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.epson.EpsonManufacturer
+import de.tillhub.printengine.epson.EpsonPrintService
+import de.tillhub.printengine.epson.EpsonPrinterDiscovery
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
 import de.tillhub.printengine.star.StarPrinterDiscovery
 import kotlinx.coroutines.launch
