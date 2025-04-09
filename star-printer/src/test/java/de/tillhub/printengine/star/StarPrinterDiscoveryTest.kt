@@ -12,11 +12,8 @@ import de.tillhub.printengine.data.DiscoveryState
 import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
-import de.tillhub.printengine.star.StarManufacturer
-import de.tillhub.printengine.star.StarPrinterDiscovery
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
 import io.mockk.every
@@ -26,7 +23,6 @@ import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
 
 class StarPrinterDiscoveryTest : FunSpec({
     lateinit var context: Context
@@ -90,6 +86,7 @@ class StarPrinterDiscoveryTest : FunSpec({
             info.printedDistance shouldBe 0
             info.serviceVersion shouldBe PrinterServiceVersion.Unknown
             manufacturer shouldBe StarManufacturer
+            connectionAddress shouldBe "SN123"
             connectionType shouldBe ConnectionType.LAN
         }
 
@@ -125,6 +122,7 @@ class StarPrinterDiscoveryTest : FunSpec({
 
         val result = StarPrinterDiscovery.discoverPrinter(context).toList()
 
+        result.size shouldBe 2
         result[0] shouldBe DiscoveryState.Idle
         result[1].shouldBeTypeOf<DiscoveryState.Discovered>().printers shouldBe emptyList()
 
@@ -135,6 +133,57 @@ class StarPrinterDiscoveryTest : FunSpec({
             )
             discoveryManager.discoveryTime = 10000
             discoveryManager.startDiscovery()
+            discoveryManager.stopDiscovery()
         }
+    }
+
+    test("discoverPrinter maps multiple printers correctly") {
+        val printer1Settings = mockk<StarConnectionSettings> {
+            every { identifier } returns "SN123"
+            every { interfaceType } returns InterfaceType.Lan
+        }
+        val printer2Settings = mockk<StarConnectionSettings> {
+            every { identifier } returns "BT456"
+            every { interfaceType } returns InterfaceType.Bluetooth
+        }
+        val printerInfo = mockk<StarPrinterInformation> {
+            every { model } returns mockk { every { name } returns "StarModel" }
+        }
+        val printer1 = mockk<StarPrinter> {
+            every { connectionSettings } returns printer1Settings
+            every { information } returns printerInfo
+        }
+        val printer2 = mockk<StarPrinter> {
+            every { connectionSettings } returns printer2Settings
+            every { information } returns printerInfo
+        }
+
+        val callbackSlot = slot<StarDeviceDiscoveryManager.Callback>()
+        every { discoveryManager.callback = any() } answers {
+            callbackSlot.captured = args[0] as StarDeviceDiscoveryManager.Callback
+        }
+        every { discoveryManager.startDiscovery() } answers {
+            callbackSlot.captured.onPrinterFound(printer1)
+            callbackSlot.captured.onPrinterFound(printer2)
+            callbackSlot.captured.onDiscoveryFinished()
+        }
+
+        val result = StarPrinterDiscovery.discoverPrinter(context).toList()
+
+        result.size shouldBe 4
+        result[0] shouldBe DiscoveryState.Idle
+
+        val discovering1 = result[1] as DiscoveryState.Discovering
+        discovering1.printers.size shouldBe 1
+        discovering1.printers[0].connectionAddress shouldBe "SN123"
+        discovering1.printers[0].connectionType shouldBe ConnectionType.LAN
+
+        val discovering2 = result[2] as DiscoveryState.Discovering
+        discovering2.printers.size shouldBe 1
+        discovering2.printers[0].connectionAddress shouldBe "BT456"
+        discovering2.printers[0].connectionType shouldBe ConnectionType.BLUETOOTH
+
+        val discovered = result[3] as DiscoveryState.Discovered
+        discovered.printers.shouldBeEmpty()
     }
 })

@@ -10,8 +10,8 @@ import de.tillhub.printengine.barcode.BarcodeType
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.html.HtmlUtils.generateImageHtml
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 internal abstract class HtmlPrinterController(
     private val printerState: MutableStateFlow<PrinterState>,
@@ -27,7 +27,7 @@ internal abstract class HtmlPrinterController(
 
     protected abstract fun printContent(content: String, cutAfterPrint: Boolean = false)
 
-    override fun observePrinterState(): StateFlow<PrinterState> = printerState
+    override fun observePrinterState(): Flow<PrinterState> = printerState
 
     override fun sendRawData(data: RawPrinterData) {
         printText(data.bytes.toString(Charsets.UTF_8))

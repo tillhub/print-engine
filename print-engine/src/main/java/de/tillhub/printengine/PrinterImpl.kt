@@ -13,7 +13,7 @@ import de.tillhub.printengine.dispatcher.DispatcherProviderImp
 import de.tillhub.printengine.pax.PaxPrintService
 import de.tillhub.printengine.sunmi.SunmiPrintService
 import de.tillhub.printengine.verifone.VerifonePrintService
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -35,7 +35,7 @@ internal class PrinterImpl(
         PrinterSettings()
     }
 
-    override fun observePrinterState(): StateFlow<PrinterState> = printService.printerState
+    override val printerState: Flow<PrinterState> = printService.printerState
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
         withContext(dispatcherProvider.iO()) {

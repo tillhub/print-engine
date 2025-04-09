@@ -20,7 +20,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -35,28 +34,28 @@ class ExternalPrinterContainerTest : FunSpec({
     beforeTest {
         printer = mockk {
             every { settings } returns PrinterSettings()
-            every { observePrinterState() } returns MutableStateFlow(PrinterState.CheckingForPrinter)
+            every { printerState } returns MutableStateFlow(PrinterState.CheckingForPrinter)
             coEvery { getPrinterInfo() } returns PrinterResult.Success(PRINTER_INFO)
             coEvery { startPrintJob(any()) } returns PrinterResult.Success(Unit)
         }
         testDispatcher = UnconfinedTestDispatcher()
-        container = ExternalPrinterContainer(TestScope(testDispatcher))
+        container = ExternalPrinterContainer()
     }
 
     test("initial state should be CheckingForPrinter") {
-        val initialState = container.observePrinterState().first()
+        val initialState = container.printerState.first()
         initialState shouldBe PrinterState.Error.NotAvailable
     }
 
     test("observePrinterState emits new printer's state after initPrinter") {
         runTest(testDispatcher) {
-            every { printer.observePrinterState() } returns MutableStateFlow(PrinterState.Connected)
+            every { printer.printerState } returns MutableStateFlow(PrinterState.Connected)
 
             container.initPrinter(printer)
 
             advanceUntilIdle()
 
-            val state = container.observePrinterState().first()
+            val state = container.printerState.first()
             state shouldBe PrinterState.Connected
         }
     }
@@ -64,17 +63,17 @@ class ExternalPrinterContainerTest : FunSpec({
     test("observePrinterState updates when new printer's state changes") {
         runTest(testDispatcher) {
             val newPrinterState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
-            every { printer.observePrinterState() } returns newPrinterState
+            every { printer.printerState } returns newPrinterState
 
             container.initPrinter(printer)
             advanceUntilIdle()
 
-            container.observePrinterState().first() shouldBe PrinterState.CheckingForPrinter
+            container.printerState.first() shouldBe PrinterState.CheckingForPrinter
 
             newPrinterState.value = PrinterState.Connected
             advanceUntilIdle()
 
-            container.observePrinterState().first() shouldBe PrinterState.Connected
+            container.printerState.first() shouldBe PrinterState.Connected
         }
     }
 

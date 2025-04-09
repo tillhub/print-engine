@@ -83,7 +83,7 @@ internal class PrinterImplTest : DescribeSpec({
     describe("independent") {
 
         it("observePrinterState") {
-            printer.observePrinterState().first() shouldBe PrinterState.Connected
+            printer.printerState.first() shouldBe PrinterState.Connected
         }
 
         it("getPrinterInfo") {

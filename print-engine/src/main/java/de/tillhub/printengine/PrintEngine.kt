@@ -33,11 +33,7 @@ class PrintEngine private constructor(context: Context) {
         when (PrinterManufacturer.get()) {
             PrinterManufacturer.PAX -> PrinterImpl(PaxPrintService(context), printAnalytics)
             PrinterManufacturer.SUNMI -> PrinterImpl(SunmiPrintService(context), printAnalytics)
-            PrinterManufacturer.VERIFONE -> PrinterImpl(
-                VerifonePrintService(context),
-                printAnalytics
-            )
-
+            PrinterManufacturer.VERIFONE -> PrinterImpl(VerifonePrintService(context), printAnalytics)
             PrinterManufacturer.UNKNOWN -> ExternalPrinterContainer()
         }
     }

@@ -1,6 +1,7 @@
 package de.tillhub.printengine.star
 
 import android.graphics.Bitmap
+import com.starmicronics.stario10.StarIO10Exception
 import com.starmicronics.stario10.StarPrinter
 import com.starmicronics.stario10.starxpandcommand.DocumentBuilder
 import com.starmicronics.stario10.starxpandcommand.PrinterBuilder
@@ -23,20 +24,21 @@ import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.RawPrinterData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @Suppress("TooManyFunctions")
 internal class StarPrinterController(
     private val starPrinter: StarPrinter,
-    private val printerState: StateFlow<PrinterState>,
+    private val printerState: MutableStateFlow<PrinterState>,
     private val commandBuilderFactory: () -> StarXpandCommandBuilder = { StarXpandCommandBuilder() },
     private val documentBuilderFactory: () -> DocumentBuilder = { DocumentBuilder() },
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
     private var printerBuilder: PrinterBuilder = PrinterBuilder().styleAlignment(Alignment.Center)
 ) : PrinterController {
 
-    override fun observePrinterState(): StateFlow<PrinterState> = printerState
+    override fun observePrinterState(): Flow<PrinterState> = printerState
 
     override fun sendRawData(data: RawPrinterData) {
         scope.launch {
@@ -81,7 +83,8 @@ internal class StarPrinterController(
 
     override fun start() {
         scope.launch {
-            try {
+            runCatching {
+                cutPaper()
                 val commandBuilder = commandBuilderFactory().apply {
                     addDocument(documentBuilderFactory().addPrinter(printerBuilder))
                 }
@@ -91,7 +94,13 @@ internal class StarPrinterController(
                 starPrinter.printAsync(commands).await()
 
                 printerBuilder = PrinterBuilder().styleAlignment(Alignment.Center)
-            } finally {
+            }.onFailure { exception ->
+                printerState.value = StarPrinterErrorState.convert(
+                    StarPrinterErrorState.fromCode(
+                        (exception as StarIO10Exception).errorCode.value
+                    )
+                )
+            }.also {
                 starPrinter.closeAsync().await()
             }
         }
@@ -107,7 +116,7 @@ internal class StarPrinterController(
 
     override suspend fun getPrinterInfo(): PrinterInfo =
         PrinterInfo(
-            serialNumber = starPrinter.connectionSettings.identifier,
+            serialNumber = "n/a",
             deviceModel = starPrinter.information?.model?.name ?: "Unknown",
             printerVersion = "n/a",
             printerPaperSpec = PrintingPaperSpec.External(characterCount = 32),

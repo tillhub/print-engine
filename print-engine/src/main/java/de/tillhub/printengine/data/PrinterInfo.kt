@@ -55,7 +55,16 @@ sealed class PrintingPaperSpec(open val characterCount: Int) {
     data object PaxPaper56mm : PrintingPaperSpec(PAX_PAPER_56MM_CHAR_COUNT)
     data object SunmiPaper56mm : PrintingPaperSpec(SUNMI_PAPER_56MM_CHAR_COUNT)
     data object VerifonePaper56mm : PrintingPaperSpec(VERIFONE_PAPER_56MM_CHAR_COUNT)
-    class External(override val characterCount: Int) : PrintingPaperSpec(characterCount)
+    class External(override val characterCount: Int) : PrintingPaperSpec(characterCount) {
+        override fun toString() = "PrintingPaperSpec.External(" +
+                "characterCount=$characterCount" +
+                ")"
+
+        override fun equals(other: Any?) = other is External &&
+                characterCount == other.characterCount
+
+        override fun hashCode() = Objects.hash(characterCount)
+    }
 
     companion object {
         const val PAX_PAPER_56MM_CHAR_COUNT = 35

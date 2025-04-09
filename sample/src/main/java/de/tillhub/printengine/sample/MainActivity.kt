@@ -1,12 +1,14 @@
 package de.tillhub.printengine.sample
 
-import StarPrintService
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,7 +42,6 @@ import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
-import de.tillhub.printengine.star.StarManufacturer
 import de.tillhub.printengine.star.StarPrinterDiscovery
 import kotlinx.coroutines.launch
 
@@ -48,58 +50,54 @@ class MainActivity : ComponentActivity() {
     private val printerEngine by lazy { PrintEngine.getInstance(this) }
     private val printers = mutableStateListOf<ExternalPrinter>()
 
-    private val requestCode = 1000
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val requestBluetoothPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (isGranted) {
+                discoverPrinters()
+            } else {
+                showToast("Bluetooth permission is required to connect to printers")
+            }
+        }
+
         setContent {
-            val printState by printerEngine.printer.observePrinterState().collectAsState()
             TillhubPrintEngineTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Layout(printState, printers) { printer ->
-                        lifecycleScope.launch {
-                            when (printer?.manufacturer) {
-                                StarManufacturer -> printerEngine.initPrinter(
-                                    StarPrintService(this@MainActivity, printer)
-                                )
-
-                                else -> Unit
+                    val printState by printerEngine.printer.printerState
+                        .collectAsState(PrinterState.CheckingForPrinter)
+                    PrinterLayout(
+                        printState = printState,
+                        printers = printers,
+                        onPrinterSelected = { printer ->
+                            lifecycleScope.launch {
+                                printer?.let {
+                                    val service =
+                                        it.manufacturer.build(context = this@MainActivity, it)
+                                    printerEngine.initPrinter(service)
+                                }
+                                printerEngine.printer.startPrintJob(printJob)
                             }
-                            printerEngine.printer.startPrintJob(printJob)
                         }
-                    }
+                    )
                 }
             }
         }
-        requestBluetoothPermission()
-        lifecycleScope.launch {
-            printerEngine.discoverExternalPrinters(StarPrinterDiscovery)
-                .collect { discoveryState ->
-                    when (discoveryState) {
-                        is DiscoveryState.Discovering,  -> {
-                            printers.clear()
-                            printers.addAll(discoveryState.printers)
-                        }
-                        is DiscoveryState.Discovered -> {
-                            printers.clear()
-                            printers.addAll(discoveryState.printers)
-                        }
-                        else -> Unit
-                    }
-                }
-        }
+
+        requestBluetoothPermission(requestBluetoothPermissionLauncher)
     }
 
     @Preview
     @Composable
-    fun Layout(
-        state: PrinterState,
+    private fun PrinterLayout(
+        printState: PrinterState,
         printers: List<ExternalPrinter>,
-        onClick: (ExternalPrinter?) -> Unit
+        onPrinterSelected: (ExternalPrinter?) -> Unit
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -107,33 +105,39 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Printer state: $state",
-                textAlign = TextAlign.Center
+                text = "Printer state: $printState",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.height(36.dp))
             if (printers.isNotEmpty()) {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(printers) { printer ->
-                        PrinterItem(printerInfo = printer, onClick = { onClick(printer) })
+                    items(printers, key = { it.connectionAddress }) { printer ->
+                        PrinterItem(
+                            printerInfo = printer,
+                            onClick = { onPrinterSelected(printer) }
+                        )
                     }
                 }
             } else {
-                Button(onClick = { onClick(null) }) {
+                Button(onClick = { onPrinterSelected(null) }) {
                     Text(text = "Print sample job")
                 }
             }
         }
-
-
     }
 
     @Composable
-    fun PrinterItem(printerInfo: ExternalPrinter, onClick: (ExternalPrinter) -> Unit) {
+    private fun PrinterItem(
+        printerInfo: ExternalPrinter,
+        onClick: () -> Unit
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
-                .clickable { onClick(printerInfo) },
+                .clickable(onClick = onClick),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -148,26 +152,52 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun requestBluetoothPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            return
-        }
+    private fun discoverPrinters() {
+        lifecycleScope.launch {
+            printerEngine.discoverExternalPrinters(StarPrinterDiscovery)
+                .collect { discoveryState ->
+                    when (discoveryState) {
+                        is DiscoveryState.Discovering -> {
+                            printers.apply {
+                                clear()
+                                addAll(discoveryState.printers)
+                            }
+                        }
 
-        if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(
-                arrayOf(
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                ), requestCode
-            )
+                        is DiscoveryState.Discovered -> {
+                            printers.apply {
+                                clear()
+                                addAll(discoveryState.printers)
+                            }
+                        }
+
+                        is DiscoveryState.Error -> {
+                            showToast("Discovery error: ${discoveryState.message}")
+                        }
+
+                        DiscoveryState.Idle -> Unit
+                    }
+                }
         }
     }
 
-    private fun hasBluetoothPermission(): Boolean {
+    private fun requestBluetoothPermission(launcher: ActivityResultLauncher<String>) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            return true
+            discoverPrinters()
+            return
         }
 
-        return checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+        when {
+            checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED -> {
+                discoverPrinters()
+            }
+
+            else -> launcher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     companion object {
@@ -182,22 +212,7 @@ class MainActivity : ComponentActivity() {
                 PrintCommand.QrCode("123ABC"),
                 PrintCommand.Text("40 char line:"),
                 PrintCommand.Text("1234567890123456789012345678901234567890"),
-                PrintCommand.FeedPaper,
-            )
-        )
-
-        private val printJobw = PrintJob(
-            listOf(
-                PrintCommand.Text("This is a line erf klenvkerv e nckler\n"),
-                PrintCommand.Text("This is a another line wef kwef;e\n"),
-                PrintCommand.Text("------33333-\n"),
-                PrintCommand.Text("Barcodeevr:"),
-                PrintCommand.Barcode("123ABevvC"),
-                PrintCommand.Text("QR cerverode:"),
-                PrintCommand.QrCode("123evefvABC"),
-                PrintCommand.Text("40 chaevrevr line:\n"),
-                PrintCommand.Text("1234567890123456789033cccc12345678901234567890"),
-                PrintCommand.FeedPaper,
+                PrintCommand.FeedPaper
             )
         )
     }

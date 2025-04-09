@@ -1,10 +1,14 @@
 package de.tillhub.printengine.star
 
 import android.graphics.Bitmap
+import com.starmicronics.stario10.StarIO10ErrorCode
+import com.starmicronics.stario10.StarIO10Exception
+import com.starmicronics.stario10.StarIO10IllegalHostDeviceStateException
 import com.starmicronics.stario10.StarPrinter
 import com.starmicronics.stario10.starxpandcommand.DocumentBuilder
 import com.starmicronics.stario10.starxpandcommand.PrinterBuilder
 import com.starmicronics.stario10.starxpandcommand.StarXpandCommandBuilder
+import com.starmicronics.stario10.starxpandcommand.printer.Alignment
 import com.starmicronics.stario10.starxpandcommand.printer.CutType
 import com.starmicronics.stario10.starxpandcommand.printer.FontType
 import de.tillhub.printengine.data.PrinterState
@@ -24,6 +28,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StarPrinterControllerTest : FunSpec({
@@ -34,25 +39,28 @@ class StarPrinterControllerTest : FunSpec({
     lateinit var documentBuilder: DocumentBuilder
     lateinit var commandBuilderFactory: () -> StarXpandCommandBuilder
     lateinit var documentBuilderFactory: () -> DocumentBuilder
-    lateinit var testDispatcher : TestDispatcher
+    lateinit var testDispatcher: TestDispatcher
     lateinit var controller: StarPrinterController
 
     beforeEach {
         testDispatcher = UnconfinedTestDispatcher()
-        starPrinter = mockk<StarPrinter>(relaxed = true) {
+        starPrinter = mockk(relaxed = true) {
             coEvery { openAsync().await() } returns mockk()
             coEvery { printAsync(any()).await() } returns mockk()
             coEvery { closeAsync().await() } returns mockk()
             coEvery { printRawDataAsync(any()).await() } returns mockk()
         }
         printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
-        printerBuilder = mockk<PrinterBuilder>(relaxed = true) {
+        printerBuilder = mockk(relaxed = true) {
             every { actionPrintText(any()) } returns this
             every { actionFeedLine(any()) } returns this
             every { actionPrintBarcode(any()) } returns this
+            every { actionPrintImage(any()) } returns this
+            every { actionPrintQRCode(any()) } returns this
+            every { actionCut(any()) } returns this
         }
-        commandBuilder = mockk<StarXpandCommandBuilder>(relaxed = true)
-        documentBuilder = mockk<DocumentBuilder>(relaxed = true)
+        commandBuilder = mockk(relaxed = true)
+        documentBuilder = mockk(relaxed = true)
 
         commandBuilderFactory = { commandBuilder }
         documentBuilderFactory = { documentBuilder }
@@ -65,7 +73,6 @@ class StarPrinterControllerTest : FunSpec({
             TestScope(testDispatcher),
             printerBuilder,
         )
-
     }
 
     test("observePrinterState returns correct StateFlow") {
@@ -77,13 +84,12 @@ class StarPrinterControllerTest : FunSpec({
 
         controller.sendRawData(rawData)
 
-        coVerify {
+        coVerifyOrder {
             starPrinter.openAsync().await()
             starPrinter.printRawDataAsync(rawData.bytes.toList())
             starPrinter.closeAsync().await()
         }
     }
-
 
     test("setFontSize applies correct font size") {
         every { printerBuilder.styleFont(any()) } returns printerBuilder
@@ -103,7 +109,6 @@ class StarPrinterControllerTest : FunSpec({
     }
 
     test("printBarcode adds barcode with correct parameters") {
-
         controller.printBarcode("123456")
 
         verifyOrder {
@@ -114,7 +119,6 @@ class StarPrinterControllerTest : FunSpec({
 
     test("printQr adds QR code with correct parameters") {
         every { printerBuilder.actionPrintQRCode(any()) } returns printerBuilder
-        every { printerBuilder.actionFeedLine(any()) } returns printerBuilder
 
         controller.printQr("test-qr")
 
@@ -131,24 +135,50 @@ class StarPrinterControllerTest : FunSpec({
 
         verifyOrder {
             printerBuilder.actionPrintImage(any())
+            printerBuilder.actionFeedLine(1)
         }
     }
 
-    test("start executes printing sequence and resets builder") {
+    test("start executes printing sequence and resets builder on success") {
         every { commandBuilder.addDocument(any()) } returns commandBuilder
         every { commandBuilder.getCommands() } returns "commands"
         every { documentBuilder.addPrinter(printerBuilder) } returns documentBuilder
-        every { printerBuilder.actionCut(any()) } returns printerBuilder
 
         controller.start()
 
         coVerifyOrder {
+            printerBuilder.actionCut(any())
             starPrinter.openAsync().await()
             starPrinter.printAsync("commands")
             starPrinter.closeAsync().await()
         }
     }
 
+    test("start updates printerState on failure with UsbUnavailable error") {
+        val exception = mockk<StarIO10Exception>(relaxed = true) {
+            every {
+                errorCode
+            } returns StarIO10ErrorCode.UsbUnavailable
+        }
+        coEvery { starPrinter.printAsync(any()).await() } throws exception
+        every { commandBuilder.addDocument(any()) } returns commandBuilder
+        every { commandBuilder.getCommands() } returns "commands"
+        every { documentBuilder.addPrinter(printerBuilder) } returns documentBuilder
+
+        controller.start()
+
+        coVerifyOrder {
+            printerBuilder.actionCut(any())
+            starPrinter.openAsync().await()
+            starPrinter.printAsync("commands")
+            starPrinter.closeAsync().await()
+        }
+
+        val expectedErrorState = StarPrinterErrorState.convert(
+            StarPrinterErrorState.fromCode(StarPrinterErrorCodes.USB_UNAVAILABLE_CODE)
+        )
+        printerState.value shouldBe expectedErrorState
+    }
 
     test("feedPaper adds single feed line") {
         every { printerBuilder.actionFeedLine(any()) } returns printerBuilder

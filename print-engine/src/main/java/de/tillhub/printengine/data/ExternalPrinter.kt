@@ -1,6 +1,7 @@
 package de.tillhub.printengine.data
 
 import de.tillhub.printengine.external.ExternalPrinterManufacturer
+import java.util.Objects
 
 class ExternalPrinter(
     val info: PrinterInfo,
@@ -28,4 +29,23 @@ class ExternalPrinter(
      * - "Epson": Epson printers
      */
     val manufacturer: ExternalPrinterManufacturer
-)
+) {
+    override fun toString(): String = "ExternalPrinter(" +
+            "info=$info," +
+            "connectionType=$connectionType," +
+            "connectionAddress='$connectionAddress'," +
+            "manufacturer=$manufacturer" +
+            ")"
+
+    override fun equals(other: Any?): Boolean = other is ExternalPrinter && info == other.info &&
+            connectionType == other.connectionType &&
+            connectionAddress == other.connectionAddress &&
+            manufacturer == other.manufacturer
+
+    override fun hashCode(): Int = Objects.hash(
+        info,
+        connectionType,
+        connectionAddress,
+        manufacturer
+    )
+}

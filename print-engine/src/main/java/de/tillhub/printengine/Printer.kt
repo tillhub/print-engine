@@ -6,14 +6,14 @@ import de.tillhub.printengine.data.PrinterResult
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterSettings
 import de.tillhub.printengine.data.PrintingPaperSpec
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Represents one printer and allows to manage the printers connection issue print commands.
  */
 interface Printer {
     val settings: PrinterSettings
-    fun observePrinterState(): StateFlow<PrinterState>
+    val printerState: Flow<PrinterState>
     suspend fun getPrinterInfo(): PrinterResult<PrinterInfo>
     suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit>
 

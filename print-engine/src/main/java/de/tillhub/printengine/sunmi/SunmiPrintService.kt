@@ -11,8 +11,8 @@ import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrinterState
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 
 /**
@@ -25,7 +25,7 @@ internal class SunmiPrintService(context: Context) : PrintService() {
     private var serviceVersion: PrinterServiceVersion = PrinterServiceVersion.Unknown
 
     private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
-    override val printerState: StateFlow<PrinterState> = connectionState
+    override val printerState: Flow<PrinterState> = connectionState
 
     private val innerPrinterCallback: InnerPrinterCallback = object : InnerPrinterCallback() {
         override fun onConnected(service: SunmiPrinterService) {
