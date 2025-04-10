@@ -54,8 +54,8 @@ internal class EpsonPrinterController(
             qrData,
             EpsonPrinter.SYMBOL_QRCODE_MODEL_1,
             EpsonPrinter.LEVEL_M,
-            BARCODE_HEIGHT,
-            BARCODE_HEIGHT,
+            QR_DIMENSION,
+            QR_DIMENSION,
             EpsonPrinter.PARAM_UNSPECIFIED
         )
     }
@@ -100,15 +100,8 @@ internal class EpsonPrinterController(
         try {
             command.invoke()
         } catch (e: Epos2Exception) {
-            printerState.value = when (e.errorStatus) {
-                Epos2Exception.ERR_PARAM -> PrinterState.Error.Epson.DataError
-                Epos2Exception.ERR_CONNECT -> PrinterState.Error.NotAvailable
-                Epos2Exception.ERR_TIMEOUT,
-                Epos2Exception.ERR_DISCONNECT -> PrinterState.Error.ConnectionLost
-                Epos2Exception.ERR_MEMORY -> PrinterState.Error.Epson.MemoryError
-
-                else -> PrinterState.Error.Epson.InternalError
-            }
+            e.printStackTrace() // TODO remove
+            printerState.value = EpsonPrinterErrorState.epsonExceptionToState(e)
             epsonPrinter.clearCommandBuffer()
         }
     }
@@ -126,7 +119,8 @@ internal class EpsonPrinterController(
     override suspend fun getPrinterInfo(): PrinterInfo = printerData.info
 
     companion object {
-        private const val BARCODE_HEIGHT = 120
+        private const val QR_DIMENSION = 240
+        private const val BARCODE_HEIGHT = 200
         private const val BARCODE_MODULE_WIDTH = 4
         private const val SINGLE_FEED_LINE = 1
         private const val IMAGE_BRIGHTNESS = 1.0

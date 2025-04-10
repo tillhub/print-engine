@@ -18,43 +18,7 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
     override val printerState: StateFlow<PrinterState> = connectionState
 
     private val receiveListener = ReceiveListener { _, code, status, _ ->
-        connectionState.value = when (code) {
-            Epos2CallbackCode.CODE_SUCCESS -> PrinterState.Connected
-            Epos2CallbackCode.CODE_PRINTING -> PrinterState.Busy
-            else -> when {
-                status.online == EpsonPrinter.FALSE -> PrinterState.Error.ConnectionLost
-                status.paper == EpsonPrinter.PAPER_EMPTY -> PrinterState.Error.OutOfPaper
-                status.coverOpen == EpsonPrinter.TRUE -> PrinterState.Error.CoverNotClosed
-                status.errorStatus == EpsonPrinter.UNKNOWN ||
-                        status.errorStatus == EpsonPrinter.MECHANICAL_ERR -> {
-                    PrinterState.Error.Malfunctions
-                }
-                status.errorStatus == EpsonPrinter.AUTOCUTTER_ERR -> {
-                    PrinterState.Error.PaperCutterAbnormal
-                }
-                status.errorStatus == EpsonPrinter.UNRECOVER_ERR -> {
-                    when (status.unrecoverError) {
-                        EpsonPrinter.LOW_VOLTAGE_ERR -> PrinterState.Error.VoltageTooLow
-                        else -> PrinterState.Error.Malfunctions
-                    }
-                }
-                status.errorStatus == EpsonPrinter.AUTORECOVER_ERR -> {
-                    when (status.autoRecoverError) {
-                        EpsonPrinter.HEAD_OVERHEAT,
-                        EpsonPrinter.MOTOR_OVERHEAT,
-                        EpsonPrinter.BATTERY_OVERHEAT -> PrinterState.Error.Overheated
-                        EpsonPrinter.WRONG_PAPER -> PrinterState.Error.PaperAbnormal
-                        EpsonPrinter.COVER_OPEN -> PrinterState.Error.CoverNotClosed
-                        else -> PrinterState.Error.Malfunctions
-                    }
-                }
-                status.batteryLevel == EpsonPrinter.BATTERY_LEVEL_0 -> {
-                    PrinterState.Error.VoltageTooLow
-                }
-
-                else -> PrinterState.Connected
-            }
-        }
+        connectionState.value = EpsonPrinterErrorState.epsonStatusToState(code, status)
     }
 
     private val epsonPrinter: EpsonPrinter by lazy {
