@@ -58,12 +58,15 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
     }
 
     private val epsonPrinter: EpsonPrinter by lazy {
-        EpsonPrinter(printer.info.deviceModel.toModel(), EpsonPrinter.MODEL_ANK, context).apply {
+        EpsonPrinter(
+            printer.info.deviceModel.uppercase().toModel(),
+            EpsonPrinter.MODEL_ANK,
+            context
+        ).apply {
             setReceiveEventListener(receiveListener)
 
-            val connectionUri = "${printer.connectionType.toProtocol()}:${printer.connectionAddress}"
             try {
-                connect(connectionUri, EpsonPrinter.PARAM_DEFAULT)
+                connect(printer.connectionAddress, EpsonPrinter.PARAM_DEFAULT)
                 connectionState.value = PrinterState.Connected
             } catch (_: Exception) {
                 connectionState.value = PrinterState.Error.AbnormalCommunication
@@ -76,12 +79,6 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
         epsonPrinter = epsonPrinter,
         printerState = connectionState
     )
-
-    private fun ConnectionType.toProtocol() = when (this) {
-        ConnectionType.LAN -> "TCP"
-        ConnectionType.BLUETOOTH -> "BT"
-        ConnectionType.USB -> "USB"
-    }
 
     @Suppress("CyclomaticComplexMethod")
     private fun String.toModel() = when (this) {
