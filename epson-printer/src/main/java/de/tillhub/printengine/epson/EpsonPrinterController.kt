@@ -1,6 +1,7 @@
 package de.tillhub.printengine.epson
 
 import android.graphics.Bitmap
+import android.util.Log
 import com.epson.epos2.Epos2Exception
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.ConnectionType
@@ -100,7 +101,7 @@ internal class EpsonPrinterController(
         try {
             command.invoke()
         } catch (e: Epos2Exception) {
-            e.printStackTrace() // TODO remove
+            Log.e("Epos2Exception", "$e ${e.errorStatus} ${e.message}") // TODO remove
             printerState.value = EpsonPrinterErrorState.epsonExceptionToState(e)
             epsonPrinter.clearCommandBuffer()
         }
