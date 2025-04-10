@@ -101,6 +101,7 @@ internal class EpsonPrinterController(
         try {
             command.invoke()
         } catch (e: Epos2Exception) {
+            Log.e("Epos2Target", "${printerData.getTarget()}") // TODO remove
             Log.e("Epos2Exception", "$e ${e.errorStatus} ${e.message}") // TODO remove
             printerState.value = EpsonPrinterErrorState.epsonExceptionToState(e)
             epsonPrinter.clearCommandBuffer()
