@@ -65,9 +65,9 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
         ).apply {
             setReceiveEventListener(receiveListener)
 
+            connectionState.value = PrinterState.Connected
             try {
-                connect(printer.connectionAddress, EpsonPrinter.PARAM_DEFAULT)
-                connectionState.value = PrinterState.Connected
+
             } catch (_: Exception) {
                 connectionState.value = PrinterState.Error.AbnormalCommunication
             }

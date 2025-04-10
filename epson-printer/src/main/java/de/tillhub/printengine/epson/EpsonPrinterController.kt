@@ -3,6 +3,7 @@ package de.tillhub.printengine.epson
 import android.graphics.Bitmap
 import com.epson.epos2.Epos2Exception
 import de.tillhub.printengine.PrinterController
+import de.tillhub.printengine.data.ConnectionType
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterState
@@ -34,7 +35,7 @@ internal class EpsonPrinterController(
     }
 
     override fun printText(text: String) = executeEpsonCommand {
-        epsonPrinter.addText(text)
+        epsonPrinter.addText("$text\n")
     }
 
     override fun printBarcode(barcode: String) = executeEpsonCommand {
@@ -86,9 +87,13 @@ internal class EpsonPrinterController(
 
     override fun start() {
         executeEpsonCommand {
+            epsonPrinter.connect(printerData.getTarget(), EpsonPrinter.PARAM_DEFAULT)
             epsonPrinter.sendData(EpsonPrinter.PARAM_DEFAULT)
         }
         epsonPrinter.clearCommandBuffer()
+        try {
+            epsonPrinter.disconnect()
+        } catch (_: Epos2Exception) { }
     }
 
     private fun executeEpsonCommand(command: () -> Unit) {
@@ -106,6 +111,16 @@ internal class EpsonPrinterController(
             }
             epsonPrinter.clearCommandBuffer()
         }
+    }
+
+    private fun ExternalPrinter.getTarget() =
+        "${connectionType.fromConnectionType()}:${connectionAddress}"
+
+    private fun ConnectionType.fromConnectionType() = when (this) {
+        ConnectionType.LAN_SECURED -> "TCPS"
+        ConnectionType.LAN -> "TCP"
+        ConnectionType.BLUETOOTH -> "BT"
+        ConnectionType.USB -> "USB"
     }
 
     override suspend fun getPrinterInfo(): PrinterInfo = printerData.info

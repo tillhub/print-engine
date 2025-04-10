@@ -45,6 +45,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
             Discovery.start(context, discoveryFilters) { deviceInfo ->
                 val connectionDividerIdx = deviceInfo.target.indexOfFirst { it == ':' }
                 val protocol = deviceInfo.target.substring(0, connectionDividerIdx)
+                val address = deviceInfo.target.substring(connectionDividerIdx+1)
 
                 discoveredPrinters.add(
                     ExternalPrinter(
@@ -59,7 +60,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
                             serviceVersion = PrinterServiceVersion.Unknown
                         ),
                         manufacturer = EpsonManufacturer,
-                        connectionAddress = deviceInfo.target,
+                        connectionAddress = address,
                         connectionType = protocol.toConnectionType(),
                     )
                 )
@@ -78,7 +79,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
     }
 
     private fun String.toConnectionType() = when (this) {
-        "TCPS",
+        "TCPS" -> ConnectionType.LAN_SECURED
         "TCP" -> ConnectionType.LAN
         "BT" -> ConnectionType.BLUETOOTH
         "USB" -> ConnectionType.USB
