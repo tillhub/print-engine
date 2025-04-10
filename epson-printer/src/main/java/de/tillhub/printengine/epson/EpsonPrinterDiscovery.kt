@@ -12,13 +12,11 @@ import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.external.PrinterDiscovery
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
 
 object EpsonPrinterDiscovery : PrinterDiscovery {
     private const val DISCOVERY_TIMEOUT_MS = 10000L
@@ -31,17 +29,15 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
         deviceModel = Discovery.MODEL_ALL
     }
 
-    private val discoveryScope = CoroutineScope(Dispatchers.IO)
+    override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> = channelFlow {
+        trySend(DiscoveryState.Idle)
 
-    override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> = flow {
-        emit(DiscoveryState.Idle)
-
-        discoverAllPrinters(context, ::emit)
+        discoverAllPrinters(context, ::trySend)
     }.flowOn(Dispatchers.IO)
 
     private suspend fun discoverAllPrinters(
         context: Context,
-        emit: suspend (DiscoveryState) -> Unit
+        trySend: (DiscoveryState) -> Unit
     ) {
         val discoveredPrinters = mutableListOf<ExternalPrinter>()
 
@@ -69,17 +65,15 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
                     )
                 )
 
-                discoveryScope.launch {
-                    emit(DiscoveryState.Discovering(discoveredPrinters))
-                }
+                trySend(DiscoveryState.Discovering(discoveredPrinters))
             }
 
             delay(DISCOVERY_TIMEOUT_MS)
 
             Discovery.stop()
-            emit(DiscoveryState.Discovered(discoveredPrinters))
+            trySend(DiscoveryState.Discovered(discoveredPrinters))
         } catch (e: Epos2Exception) {
-            emit(DiscoveryState.Error(e.message))
+            trySend(DiscoveryState.Error(e.message))
             Discovery.stop()
         }
     }
