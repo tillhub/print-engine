@@ -45,7 +45,7 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
     )
 
     @Suppress("CyclomaticComplexMethod")
-    private fun String.toModel() = when (this) {
+    private fun String.toModel() = when (this.substringBefore('_')) {
         "TM-M10" -> EpsonPrinter.TM_M10
         "TM-M30" -> EpsonPrinter.TM_M30
         "TM-P20" -> EpsonPrinter.TM_P20

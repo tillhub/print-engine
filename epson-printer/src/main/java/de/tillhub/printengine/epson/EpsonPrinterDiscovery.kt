@@ -2,6 +2,7 @@ package de.tillhub.printengine.epson
 
 import android.content.Context
 import com.epson.epos2.Epos2Exception
+import com.epson.epos2.discovery.DeviceInfo
 import com.epson.epos2.discovery.Discovery
 import com.epson.epos2.discovery.FilterOption
 import de.tillhub.printengine.data.ConnectionType
@@ -24,7 +25,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
 
     private val discoveryFilters = FilterOption().apply {
         deviceType = Discovery.TYPE_PRINTER
-        epsonFilter = Discovery.FILTER_NONE
+        epsonFilter = Discovery.FILTER_NAME
         portType = Discovery.PORTTYPE_ALL
         deviceModel = Discovery.MODEL_ALL
     }
@@ -43,29 +44,31 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
 
         try {
             Discovery.start(context, discoveryFilters) { deviceInfo ->
-                val connectionDividerIdx = deviceInfo.target.indexOfFirst { it == ':' }
-                val protocol = deviceInfo.target.substring(0, connectionDividerIdx)
-                val address = deviceInfo.target.substring(connectionDividerIdx+1)
+                if (deviceInfo.isValid()) {
+                    val connectionDividerIdx = deviceInfo.target.indexOfFirst { it == ':' }
+                    val protocol = deviceInfo.target.substring(0, connectionDividerIdx)
+                    val address = deviceInfo.target.substring(connectionDividerIdx + 1)
 
-                discoveredPrinters.add(
-                    ExternalPrinter(
-                        info = PrinterInfo(
-                            serialNumber = "n/a",
-                            deviceModel = deviceInfo.deviceName,
-                            printerVersion = "n/a",
-                            printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT), // TODO
-                            printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-                            printerHead = "n/a",
-                            printedDistance = 0,
-                            serviceVersion = PrinterServiceVersion.Unknown
-                        ),
-                        manufacturer = EpsonManufacturer,
-                        connectionAddress = address,
-                        connectionType = protocol.toConnectionType(),
+                    discoveredPrinters.add(
+                        ExternalPrinter(
+                            info = PrinterInfo(
+                                serialNumber = "n/a",
+                                deviceModel = deviceInfo.deviceName,
+                                printerVersion = "n/a",
+                                printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT), // TODO
+                                printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+                                printerHead = "n/a",
+                                printedDistance = 0,
+                                serviceVersion = PrinterServiceVersion.Unknown
+                            ),
+                            manufacturer = EpsonManufacturer,
+                            connectionAddress = address,
+                            connectionType = protocol.toConnectionType(),
+                        )
                     )
-                )
 
-                trySend(DiscoveryState.Discovering(discoveredPrinters))
+                    trySend(DiscoveryState.Discovering(discoveredPrinters))
+                }
             }
 
             delay(DISCOVERY_TIMEOUT_MS)
@@ -85,4 +88,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
         "USB" -> ConnectionType.USB
         else -> throw IllegalArgumentException("Unsupported connection type: $this")
     }
+
+    private fun DeviceInfo.isValid() = deviceType == Discovery.TYPE_PRINTER
+            && deviceName.isNotEmpty()
 }
