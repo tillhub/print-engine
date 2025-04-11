@@ -94,15 +94,16 @@ internal class EpsonPrinterController(
         epsonPrinter.clearCommandBuffer()
         try {
             epsonPrinter.disconnect()
-        } catch (_: Epos2Exception) { }
+        } catch (e: Epos2Exception) {
+            Log.e("Epos2Exception", "DISCONNECT $e ${e.errorStatus} ${e.message}") // TODO remove
+        }
     }
 
     private fun executeEpsonCommand(command: () -> Unit) {
         try {
             command.invoke()
         } catch (e: Epos2Exception) {
-            Log.e("Epos2Target", "${printerData.getTarget()}") // TODO remove
-            Log.e("Epos2Exception", "$e ${e.errorStatus} ${e.message}") // TODO remove
+            Log.e("Epos2Exception", "CONNECT $e ${e.errorStatus} ${e.message}") // TODO remove
             printerState.value = EpsonPrinterErrorState.epsonExceptionToState(e)
             epsonPrinter.clearCommandBuffer()
         }

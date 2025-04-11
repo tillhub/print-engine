@@ -57,9 +57,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val requestBluetoothPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            if (isGranted) {
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            if (permissions.all { it.value }) {
                 discoverPrinters()
             } else {
                 showToast("Bluetooth permission is required to connect to printers")
@@ -184,18 +184,51 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun requestBluetoothPermission(launcher: ActivityResultLauncher<String>) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            discoverPrinters()
-            return
+    private fun requestBluetoothPermission(launcher: ActivityResultLauncher<Array<String>>) {
+        val permissions = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            mutableListOf<String>().apply {
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH)
+                }
+
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH_ADMIN)
+                }
+
+                if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                }
+            }
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            mutableListOf<String>().apply {
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH)
+                }
+
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH_ADMIN)
+                }
+
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
+            }
+        } else {
+            mutableListOf<String>().apply {
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH_SCAN)
+                }
+
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH_CONNECT)
+                }
+            }
         }
 
-        when {
-            checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED -> {
-                discoverPrinters()
-            }
-
-            else -> launcher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+        if (permissions.isNotEmpty()) {
+            launcher.launch(permissions.toTypedArray())
+        } else {
+            discoverPrinters()
         }
     }
 
