@@ -22,6 +22,7 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
     }
 
     private val epsonPrinter: EpsonPrinter by lazy {
+        connectionState.value = PrinterState.Preparing
         EpsonPrinter(
             printer.info.deviceModel.uppercase().toModel(),
             EpsonPrinter.MODEL_ANK,
@@ -30,11 +31,6 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
             setReceiveEventListener(receiveListener)
 
             connectionState.value = PrinterState.Connected
-            try {
-
-            } catch (_: Exception) {
-                connectionState.value = PrinterState.Error.AbnormalCommunication
-            }
         }
     }
 
