@@ -1,9 +1,7 @@
 package de.tillhub.printengine.epson
 
 import android.graphics.Bitmap
-import android.util.Log
 import com.epson.epos2.Epos2Exception
-import com.epson.epos2.printer.ReceiveListener
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.ConnectionType
 import de.tillhub.printengine.data.ExternalPrinter
@@ -18,18 +16,18 @@ import com.epson.epos2.printer.Printer as EpsonPrinter
 
 internal class EpsonPrinterController(
     private val printerData: ExternalPrinter,
-    private val epsonPrinter: EpsonPrinter,
+    private val printerWrapper: PrinterWrapper,
     private val printerState: MutableStateFlow<PrinterState>,
 ) : PrinterController {
 
     override fun sendRawData(data: RawPrinterData) = executeEpsonCommand {
-        epsonPrinter.addCommand(data.bytes)
+        printerWrapper.addCommand(data.bytes)
     }
 
     override fun observePrinterState(): StateFlow<PrinterState> = printerState
 
     override fun setFontSize(fontSize: PrintingFontType) = executeEpsonCommand {
-        epsonPrinter.addTextFont(
+        printerWrapper.addTextFont(
             when (fontSize) {
                 PrintingFontType.DEFAULT_FONT_SIZE -> EpsonPrinter.FONT_A
             }
@@ -37,11 +35,11 @@ internal class EpsonPrinterController(
     }
 
     override fun printText(text: String) = executeEpsonCommand {
-        epsonPrinter.addText("$text\n")
+        printerWrapper.addText("$text\n")
     }
 
     override fun printBarcode(barcode: String) = executeEpsonCommand {
-        epsonPrinter.addBarcode(
+        printerWrapper.addBarcode(
             barcode,
             EpsonPrinter.BARCODE_CODE128,
             EpsonPrinter.HRI_BELOW,
@@ -52,7 +50,7 @@ internal class EpsonPrinterController(
     }
 
     override fun printQr(qrData: String) = executeEpsonCommand {
-        epsonPrinter.addSymbol(
+        printerWrapper.addSymbol(
             qrData,
             EpsonPrinter.SYMBOL_QRCODE_MODEL_1,
             EpsonPrinter.LEVEL_M,
@@ -63,7 +61,7 @@ internal class EpsonPrinterController(
     }
 
     override fun printImage(image: Bitmap) = executeEpsonCommand {
-        epsonPrinter.addImage(
+        printerWrapper.addImage(
             image,
             IMAGE_START_XY,
             IMAGE_START_XY,
@@ -78,37 +76,32 @@ internal class EpsonPrinterController(
     }
 
     override fun feedPaper() = executeEpsonCommand {
-        epsonPrinter.addFeedLine(SINGLE_FEED_LINE)
+        printerWrapper.addFeedLine(SINGLE_FEED_LINE)
     }
 
     override fun cutPaper() = executeEpsonCommand {
-        epsonPrinter.addCut(EpsonPrinter.CUT_NO_FEED)
+        printerWrapper.addCut(EpsonPrinter.CUT_NO_FEED)
     }
 
     override fun setIntensity(intensity: PrintingIntensity) = Unit
 
     override fun start() {
         executeEpsonCommand {
-            if (epsonPrinter.status.connection != EpsonPrinter.TRUE) {
-                epsonPrinter.connect(printerData.getTarget(), EpsonPrinter.PARAM_DEFAULT)
+            if (printerWrapper.status.connection != EpsonPrinter.TRUE) {
+                printerWrapper.connect(printerData.getTarget(), EpsonPrinter.PARAM_DEFAULT)
             }
-            epsonPrinter.sendData(EpsonPrinter.PARAM_DEFAULT)
+            printerWrapper.sendData(EpsonPrinter.PARAM_DEFAULT)
         }
-        epsonPrinter.clearCommandBuffer()
-        try {
-            epsonPrinter.disconnect()
-        } catch (e: Epos2Exception) {
-            Log.e("Epos2Exception", "DISCONNECT $e ${e.errorStatus} ${e.message}") // TODO remove
-        }
+        printerWrapper.clearCommandBuffer()
+        printerWrapper.disconnect()
     }
 
     private fun executeEpsonCommand(command: () -> Unit) {
         try {
             command.invoke()
         } catch (e: Epos2Exception) {
-            Log.e("Epos2Exception", "CONNECT $e ${e.errorStatus} ${e.message}") // TODO remove
             printerState.value = EpsonPrinterErrorState.epsonExceptionToState(e)
-            epsonPrinter.clearCommandBuffer()
+            printerWrapper.clearCommandBuffer()
         }
     }
 

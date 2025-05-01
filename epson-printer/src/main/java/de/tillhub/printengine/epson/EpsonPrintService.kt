@@ -1,11 +1,9 @@
 package de.tillhub.printengine.epson
 
 import android.content.Context
-import com.epson.epos2.Epos2CallbackCode
 import com.epson.epos2.printer.ReceiveListener
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.ConnectionType
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,22 +19,24 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
         connectionState.value = EpsonPrinterErrorState.epsonStatusToState(code, status)
     }
 
-    private val epsonPrinter: EpsonPrinter by lazy {
+    private val epsonPrinter: PrinterWrapper by lazy {
         connectionState.value = PrinterState.Preparing
-        EpsonPrinter(
-            printer.info.deviceModel.uppercase().toModel(),
-            EpsonPrinter.MODEL_ANK,
-            context
-        ).apply {
-            setReceiveEventListener(receiveListener)
+        EpsonPrinterWrapper(
+            epsonPrinter = EpsonPrinter(
+                printer.info.deviceModel.uppercase().toModel(),
+                EpsonPrinter.MODEL_ANK,
+                context
+            ).apply {
+                setReceiveEventListener(receiveListener)
 
-            connectionState.value = PrinterState.Connected
-        }
+                connectionState.value = PrinterState.Connected
+            }
+        )
     }
 
     override var printController: PrinterController? = EpsonPrinterController(
         printerData = printer,
-        epsonPrinter = epsonPrinter,
+        printerWrapper = epsonPrinter,
         printerState = connectionState
     )
 
@@ -81,6 +81,7 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
         // based on the documentation these 2 can be valid
         "TM PRINTER",
         "" -> EpsonPrinter.TM_T88
+
         else -> throw IllegalArgumentException("Unsupported printer type: $this")
     }
 }

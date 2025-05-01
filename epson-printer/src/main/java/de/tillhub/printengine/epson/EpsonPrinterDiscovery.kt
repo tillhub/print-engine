@@ -19,15 +19,21 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 
-object EpsonPrinterDiscovery : PrinterDiscovery {
-    private const val DISCOVERY_TIMEOUT_MS = 10000L
-    private const val CHARACTER_COUNT = 32
+class EpsonPrinterDiscovery(
+    private val discoveryWrapper: DiscoveryWrapper = EpsonDiscoveryWrapper(),
+    private val discoveryTimeout: Long = DISCOVERY_TIMEOUT_MS,
+) : PrinterDiscovery {
 
-    private val discoveryFilters = FilterOption().apply {
-        deviceType = Discovery.TYPE_PRINTER
-        epsonFilter = Discovery.FILTER_NAME
-        portType = Discovery.PORTTYPE_ALL
-        deviceModel = Discovery.MODEL_ALL
+    companion object {
+        private const val DISCOVERY_TIMEOUT_MS = 10000L
+        private const val CHARACTER_COUNT = 32
+
+        private val discoveryFilters = FilterOption().apply {
+            deviceType = Discovery.TYPE_PRINTER
+            epsonFilter = Discovery.FILTER_NAME
+            portType = Discovery.PORTTYPE_ALL
+            deviceModel = Discovery.MODEL_ALL
+        }
     }
 
     override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> = channelFlow {
@@ -43,7 +49,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
         val discoveredPrinters = mutableListOf<ExternalPrinter>()
 
         try {
-            Discovery.start(context, discoveryFilters) { deviceInfo ->
+            discoveryWrapper.start(context, discoveryFilters) { deviceInfo ->
                 if (deviceInfo.isValid()) {
                     val connectionDividerIdx = deviceInfo.target.indexOfFirst { it == ':' }
                     val protocol = deviceInfo.target.substring(0, connectionDividerIdx)
@@ -55,7 +61,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
                                 serialNumber = "n/a",
                                 deviceModel = deviceInfo.deviceName,
                                 printerVersion = "n/a",
-                                printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT), // TODO
+                                printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT),
                                 printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
                                 printerHead = "n/a",
                                 printedDistance = 0,
@@ -66,18 +72,17 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
                             connectionType = protocol.toConnectionType(),
                         )
                     )
-
-                    trySend(DiscoveryState.Discovering(discoveredPrinters))
+                    trySend(DiscoveryState.Discovering(discoveredPrinters.toList()))
                 }
             }
 
-            delay(DISCOVERY_TIMEOUT_MS)
+            delay(discoveryTimeout)
 
-            Discovery.stop()
-            trySend(DiscoveryState.Discovered(discoveredPrinters))
+            discoveryWrapper.stop()
+            trySend(DiscoveryState.Discovered(discoveredPrinters.toList()))
         } catch (e: Epos2Exception) {
             trySend(DiscoveryState.Error(e.message))
-            Discovery.stop()
+            discoveryWrapper.stop()
         }
     }
 

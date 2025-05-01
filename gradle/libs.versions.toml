@@ -11,15 +11,18 @@ androidDesugarJdkLibs = "1.2.2"
 detekt = "1.23.6"
 
 junit = "4.13.2"
-mockk = "1.13.13"
+mockk = "1.14.0"
 robolectric = "4.10"
 kotest = "4.6.4"
 kotestRobolectric = "0.4.0"
-coreTest = "1.5.0"
-androidx-test-ext-junit = "1.1.5"
+coreTest = "1.6.0"
+androidx-test-ext-junit = "1.2.1"
 espresso-core = "3.5.1"
 appcompat = "1.6.1"
 material = "1.11.0"
+runner = "1.6.2"
+rules = "1.6.1"
+truth = "1.6.0"
 
 starPrinter = "1.8.0"
 
@@ -69,6 +72,10 @@ kotest-robolectric = { group = "io.kotest.extensions", name = "kotest-extensions
 
 androidx-test-core = { group = "androidx.test", name = "core-ktx", version.ref = "coreTest" }
 
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "rules" }
+androidx-test-truth = { group = "androidx.test.ext", name = "truth", version.ref = "truth" }
+
 # Dependencies of the included build-logic
 gradlePlugin-android = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 gradlePlugin-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -100,6 +107,15 @@ testing = [
     "kotest.property",
     "kotest-api",
     "kotlin.coroutines.test"
+]
+testing-android = [
+    "androidx-test-core",
+    "androidx-test-runner",
+    "androidx-test-rules",
+    "androidx-test-ext-junit",
+    "androidx-test-truth",
+    "mockk-agent",
+    "mockk-android",
 ]
 robolectric = [
     "robolectric",

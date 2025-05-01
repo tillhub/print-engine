@@ -20,7 +20,6 @@ internal class ExternalPrinterContainer : Printer {
         .flatMapLatest { it.printerState }
 
     override val settings: PrinterSettings get() = selectedPrinter.value.settings
-
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
         selectedPrinter.value.getPrinterInfo()
 

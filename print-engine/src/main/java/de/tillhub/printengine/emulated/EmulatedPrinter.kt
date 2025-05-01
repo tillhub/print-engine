@@ -10,7 +10,6 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
 import kotlinx.coroutines.flow.Flow
-
 import kotlinx.coroutines.flow.flowOf
 import timber.log.Timber
 

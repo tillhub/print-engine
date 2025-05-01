@@ -78,6 +78,9 @@ dependencies {
     // Unit tests
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.robolectric)
+
+    // Android tests
+    androidTestImplementation(libs.bundles.testing.android)
 }
 
 afterEvaluate {

@@ -41,8 +41,6 @@ import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterState
-import de.tillhub.printengine.epson.EpsonManufacturer
-import de.tillhub.printengine.epson.EpsonPrintService
 import de.tillhub.printengine.epson.EpsonPrinterDiscovery
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
 import de.tillhub.printengine.star.StarPrinterDiscovery
@@ -50,6 +48,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    private var initilazed: Boolean = false
     private val printerEngine by lazy { PrintEngine.getInstance(this) }
     private val printers = mutableStateListOf<ExternalPrinter>()
 
@@ -78,12 +77,17 @@ class MainActivity : ComponentActivity() {
                         printState = printState,
                         printers = printers,
                         onPrinterSelected = { printer ->
-                            lifecycleScope.launch {
-                                printer?.let {
-                                    val service =
-                                        it.manufacturer.build(context = this@MainActivity, it)
+                            if (printer != null && !initilazed) {
+                                initilazed = true
+                                lifecycleScope.launch {
+                                    val service = printer.manufacturer.build(
+                                        context = this@MainActivity,
+                                        printer
+                                    )
                                     printerEngine.initPrinter(service)
                                 }
+                            }
+                            lifecycleScope.launch {
                                 printerEngine.printer.startPrintJob(printJob)
                             }
                         }
@@ -157,7 +161,7 @@ class MainActivity : ComponentActivity() {
 
     private fun discoverPrinters() {
         lifecycleScope.launch {
-            printerEngine.discoverExternalPrinters(StarPrinterDiscovery)
+            printerEngine.discoverExternalPrinters(StarPrinterDiscovery, EpsonPrinterDiscovery())
                 .collect { discoveryState ->
                     when (discoveryState) {
                         is DiscoveryState.Discovering -> {
