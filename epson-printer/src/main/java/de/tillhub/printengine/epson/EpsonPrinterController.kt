@@ -16,7 +16,7 @@ import com.epson.epos2.printer.Printer as EpsonPrinter
 
 internal class EpsonPrinterController(
     private val printerData: ExternalPrinter,
-    private val printerWrapper: PrinterWrapper,
+    private val printerWrapper: EpsonPrinterWrapper,
     private val printerState: MutableStateFlow<PrinterState>,
 ) : PrinterController {
 
@@ -106,7 +106,7 @@ internal class EpsonPrinterController(
     }
 
     private fun ExternalPrinter.getTarget() =
-        "${connectionType.fromConnectionType()}:${connectionAddress}"
+        "${connectionType.fromConnectionType()}:$connectionAddress"
 
     private fun ConnectionType.fromConnectionType() = when (this) {
         ConnectionType.LAN_SECURED -> "TCPS"

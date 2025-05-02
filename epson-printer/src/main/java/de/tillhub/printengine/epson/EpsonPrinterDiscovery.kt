@@ -18,23 +18,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
+import org.jetbrains.annotations.VisibleForTesting
 
-class EpsonPrinterDiscovery(
-    private val discoveryWrapper: DiscoveryWrapper = EpsonDiscoveryWrapper(),
-    private val discoveryTimeout: Long = DISCOVERY_TIMEOUT_MS,
-) : PrinterDiscovery {
+object EpsonPrinterDiscovery : PrinterDiscovery {
 
-    companion object {
-        private const val DISCOVERY_TIMEOUT_MS = 10000L
-        private const val CHARACTER_COUNT = 32
+    private const val DISCOVERY_TIMEOUT_MS = 10000L
+    private const val CHARACTER_COUNT = 32
 
-        private val discoveryFilters = FilterOption().apply {
-            deviceType = Discovery.TYPE_PRINTER
-            epsonFilter = Discovery.FILTER_NAME
-            portType = Discovery.PORTTYPE_ALL
-            deviceModel = Discovery.MODEL_ALL
-        }
+    private val discoveryFilters = FilterOption().apply {
+        deviceType = Discovery.TYPE_PRINTER
+        epsonFilter = Discovery.FILTER_NAME
+        portType = Discovery.PORTTYPE_ALL
+        deviceModel = Discovery.MODEL_ALL
     }
+    private var discoveryTimeoutMs: Long = DISCOVERY_TIMEOUT_MS
 
     override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> = channelFlow {
         trySend(DiscoveryState.Idle)
@@ -44,12 +41,12 @@ class EpsonPrinterDiscovery(
 
     private suspend fun discoverAllPrinters(
         context: Context,
-        trySend: (DiscoveryState) -> Unit
+        trySend: (DiscoveryState) -> Unit,
     ) {
         val discoveredPrinters = mutableListOf<ExternalPrinter>()
 
         try {
-            discoveryWrapper.start(context, discoveryFilters) { deviceInfo ->
+            EpsonDiscoveryWrapper.start(context, discoveryFilters) { deviceInfo ->
                 if (deviceInfo.isValid()) {
                     val connectionDividerIdx = deviceInfo.target.indexOfFirst { it == ':' }
                     val protocol = deviceInfo.target.substring(0, connectionDividerIdx)
@@ -72,17 +69,18 @@ class EpsonPrinterDiscovery(
                             connectionType = protocol.toConnectionType(),
                         )
                     )
-                    trySend(DiscoveryState.Discovering(discoveredPrinters.toList()))
+
+                    trySend(DiscoveryState.Discovering(discoveredPrinters))
                 }
             }
 
-            delay(discoveryTimeout)
+            delay(discoveryTimeoutMs)
 
-            discoveryWrapper.stop()
-            trySend(DiscoveryState.Discovered(discoveredPrinters.toList()))
+            EpsonDiscoveryWrapper.stop()
+            trySend(DiscoveryState.Discovered(discoveredPrinters))
         } catch (e: Epos2Exception) {
             trySend(DiscoveryState.Error(e.message))
-            discoveryWrapper.stop()
+            EpsonDiscoveryWrapper.stop()
         }
     }
 
@@ -94,6 +92,11 @@ class EpsonPrinterDiscovery(
         else -> throw IllegalArgumentException("Unsupported connection type: $this")
     }
 
-    private fun DeviceInfo.isValid() = deviceType == Discovery.TYPE_PRINTER
-            && deviceName.isNotEmpty()
+    @VisibleForTesting
+    fun setDiscoveryTimeout(timeoutMs: Long) {
+        discoveryTimeoutMs = timeoutMs
+    }
+
+    private fun DeviceInfo.isValid() =
+        deviceType == Discovery.TYPE_PRINTER && deviceName.isNotEmpty()
 }

@@ -1,6 +1,5 @@
 package de.tillhub.printengine.epson
 
-
 import android.content.Context
 import com.epson.epos2.Epos2Exception
 import com.epson.epos2.discovery.DeviceInfo
@@ -15,7 +14,9 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
+import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
@@ -23,31 +24,29 @@ import kotlinx.coroutines.flow.toList
 @ExperimentalCoroutinesApi
 class EpsonPrinterDiscoveryTest : FunSpec({
 
-    lateinit var discoveryWrapper: DiscoveryWrapper
     lateinit var context: Context
-    lateinit var printerDiscovery: EpsonPrinterDiscovery
 
-    beforeTest {
-        discoveryWrapper = mockk()
+    beforeEach {
+        mockkObject(EpsonDiscoveryWrapper)
+        every { EpsonDiscoveryWrapper.start(any(), any(), any()) } just Runs
+        every { EpsonDiscoveryWrapper.stop() } just Runs
         context = mockk()
-        printerDiscovery = EpsonPrinterDiscovery(
-            discoveryWrapper = discoveryWrapper,
-            discoveryTimeout = 0L
-        )
+        EpsonPrinterDiscovery.setDiscoveryTimeout(0L)
+    }
+
+    afterEach {
+        unmockkObject(EpsonDiscoveryWrapper)
     }
 
     test("discoverPrinter emits empty state initially") {
-        every { discoveryWrapper.start(any(), any(), any()) } just Runs
-        every { discoveryWrapper.stop() } just Runs
-
-        val states = printerDiscovery.discoverPrinter(context).toList()
+        val states = EpsonPrinterDiscovery.discoverPrinter(context).toList()
 
         states.size shouldBe 2
         states[0] shouldBe DiscoveryState.Idle
         states[1] shouldBe DiscoveryState.Discovered(emptyList())
         verify {
-            discoveryWrapper.start(any(), any(), any())
-            discoveryWrapper.stop()
+            EpsonDiscoveryWrapper.start(any(), any(), any())
+            EpsonDiscoveryWrapper.stop()
         }
     }
 
@@ -59,12 +58,12 @@ class EpsonPrinterDiscoveryTest : FunSpec({
         }
 
         val callbackSlot = slot<(DeviceInfo) -> Unit>()
-        every { discoveryWrapper.start(any(), any(), capture(callbackSlot)) } answers {
+        every { EpsonDiscoveryWrapper.start(any(), any(), capture(callbackSlot)) } answers {
             callbackSlot.captured(deviceInfo)
         }
-        every { discoveryWrapper.stop() } just Runs
+        every { EpsonDiscoveryWrapper.stop() } just Runs
 
-        val states = printerDiscovery.discoverPrinter(context).toList()
+        val states = EpsonPrinterDiscovery.discoverPrinter(context).toList()
 
         states.size shouldBe 3
         states[0] shouldBe DiscoveryState.Idle
@@ -89,27 +88,27 @@ class EpsonPrinterDiscoveryTest : FunSpec({
             }
         }
         verify {
-            discoveryWrapper.start(any(), any(), any())
-            discoveryWrapper.stop()
+            EpsonDiscoveryWrapper.start(any(), any(), any())
+            EpsonDiscoveryWrapper.stop()
         }
     }
 
     test("discoverPrinter emits Error state on Epos2Exception") {
         every {
-            discoveryWrapper.start(any(), any(), any())
+            EpsonDiscoveryWrapper.start(any(), any(), any())
         } throws Epos2Exception("Discovery failed", RuntimeException())
 
-        every { discoveryWrapper.stop() } just Runs
+        every { EpsonDiscoveryWrapper.stop() } just Runs
 
-        val states = printerDiscovery.discoverPrinter(context).toList()
+        val states = EpsonPrinterDiscovery.discoverPrinter(context).toList()
 
         states.last().let { errorState ->
             errorState.shouldBeInstanceOf<DiscoveryState.Error>()
             errorState.message shouldBe "Discovery failed"
         }
         verify {
-            discoveryWrapper.start(any(), any(), any())
-            discoveryWrapper.stop()
+            EpsonDiscoveryWrapper.start(any(), any(), any())
+            EpsonDiscoveryWrapper.stop()
         }
     }
 
@@ -121,17 +120,17 @@ class EpsonPrinterDiscoveryTest : FunSpec({
         }
 
         val callbackSlot = slot<(DeviceInfo) -> Unit>()
-        every { discoveryWrapper.start(any(), any(), capture(callbackSlot)) } answers {
+        every { EpsonDiscoveryWrapper.start(any(), any(), capture(callbackSlot)) } answers {
             callbackSlot.captured(invalidDeviceInfo)
         }
-        every { discoveryWrapper.stop() } returns Unit
+        every { EpsonDiscoveryWrapper.stop() } returns Unit
 
-        val states = printerDiscovery.discoverPrinter(context).toList()
+        val states = EpsonPrinterDiscovery.discoverPrinter(context).toList()
 
         states[1] shouldBe DiscoveryState.Discovered(emptyList())
         verify {
-            discoveryWrapper.start(any(), any(), any())
-            discoveryWrapper.stop()
+            EpsonDiscoveryWrapper.start(any(), any(), any())
+            EpsonDiscoveryWrapper.stop()
         }
     }
 
@@ -142,16 +141,15 @@ class EpsonPrinterDiscoveryTest : FunSpec({
             every { target } returns "INVALID:192.168.1.100" // Unsupported protocol
         }
         val callbackSlot = slot<(DeviceInfo) -> Unit>()
-        every { discoveryWrapper.start(any(), any(), capture(callbackSlot)) } answers {
+        every { EpsonDiscoveryWrapper.start(any(), any(), capture(callbackSlot)) } answers {
             callbackSlot.captured(invalidDeviceInfo)
         }
-        every { discoveryWrapper.stop() } returns Unit
+        every { EpsonDiscoveryWrapper.stop() } returns Unit
 
         val exception = shouldThrow<IllegalArgumentException> {
-            printerDiscovery.discoverPrinter(context).toList()
+            EpsonPrinterDiscovery.discoverPrinter(context).toList()
         }
 
         exception.message shouldBe "Unsupported connection type: INVALID"
     }
 })
-

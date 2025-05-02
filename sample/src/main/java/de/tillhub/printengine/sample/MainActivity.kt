@@ -161,8 +161,10 @@ class MainActivity : ComponentActivity() {
 
     private fun discoverPrinters() {
         lifecycleScope.launch {
-            printerEngine.discoverExternalPrinters(StarPrinterDiscovery, EpsonPrinterDiscovery())
-                .collect { discoveryState ->
+            printerEngine.discoverExternalPrinters(
+                StarPrinterDiscovery,
+                EpsonPrinterDiscovery
+            ).collect { discoveryState ->
                     when (discoveryState) {
                         is DiscoveryState.Discovering -> {
                             printers.apply {

@@ -19,7 +19,7 @@ class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintServi
         connectionState.value = EpsonPrinterErrorState.epsonStatusToState(code, status)
     }
 
-    private val epsonPrinter: PrinterWrapper by lazy {
+    private val epsonPrinter: EpsonPrinterWrapper by lazy {
         connectionState.value = PrinterState.Preparing
         EpsonPrinterWrapper(
             epsonPrinter = EpsonPrinter(

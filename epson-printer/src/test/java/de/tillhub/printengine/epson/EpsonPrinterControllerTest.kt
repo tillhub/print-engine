@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class EpsonPrinterControllerTest : FunSpec({
 
     lateinit var printerData: ExternalPrinter
-    lateinit var printerWrapper: PrinterWrapper
+    lateinit var printerWrapper: EpsonPrinterWrapper
     lateinit var printerState: MutableStateFlow<PrinterState>
 
     lateinit var controller: EpsonPrinterController
@@ -216,4 +216,3 @@ class EpsonPrinterControllerTest : FunSpec({
         printerState.value shouldBe PrinterState.Preparing
     }
 })
-

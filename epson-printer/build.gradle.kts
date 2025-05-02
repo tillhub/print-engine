@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "de.tillhub.printengine.epson"
-    compileSdk = 34
+    namespace = Configs.APPLICATION_ID + ".epson"
+    compileSdk = Configs.COMPILE_SDK
 
     defaultConfig {
-        minSdk = 21
+        minSdk = Configs.MIN_SDK
     }
 
     buildTypes {
@@ -18,7 +18,7 @@ android {
             isMinifyEnabled = false
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -29,9 +29,10 @@ android {
             )
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = Configs.JAVA_VERSION
+        targetCompatibility = Configs.JAVA_VERSION
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -41,7 +42,7 @@ android {
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
-            jvmTarget = JavaVersion.VERSION_17.toString()
+            jvmTarget = Configs.JVM_TARGET
             freeCompilerArgs = listOf(
                 "-Xstring-concat=inline"
             )
@@ -89,7 +90,7 @@ afterEvaluate {
             create<MavenPublication>("print-engine:epson") {
                 groupId = "de.tillhub.printengine.epson"
                 artifactId = "print-engine:epson"
-                version = "1.8.0"
+                version = Configs.VERSION_CODE
 
                 from(components.getByName("release"))
             }

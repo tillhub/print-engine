@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "de.tillhub.printengine"
-    compileSdk = 34
+    namespace = Configs.APPLICATION_ID
+    compileSdk = Configs.COMPILE_SDK
 
     defaultConfig {
-        minSdk = 21
+        minSdk = Configs.MIN_SDK
     }
 
     buildFeatures {
@@ -34,8 +34,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = Configs.JAVA_VERSION
+        targetCompatibility = Configs.JAVA_VERSION
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -45,7 +45,7 @@ android {
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
-            jvmTarget = JavaVersion.VERSION_17.toString()
+            jvmTarget = Configs.JVM_TARGET
             freeCompilerArgs = listOf(
                 "-Xstring-concat=inline"
             )
@@ -93,7 +93,7 @@ afterEvaluate {
             create<MavenPublication>("print-engine") {
                 groupId = "de.tillhub.printengine"
                 artifactId = "print-engine"
-                version = "1.8.1"
+                version = Configs.VERSION_CODE
 
                 from(components.getByName("release"))
             }
