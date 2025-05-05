@@ -39,6 +39,9 @@ sealed class PrinterState {
         /** The printers paper cutter is abnormal */
         data object PaperCutterAbnormal : Error()
 
+        /** The printers paper is abnormal */
+        data object PaperAbnormal : Error()
+
         /** Black mark has not been detected */
         data object BlackMarkNotFound : Error()
 
@@ -75,6 +78,15 @@ sealed class PrinterState {
          */
         sealed class Verifone : Error() {
             data object InternalError : Verifone()
+        }
+
+        /**
+         * Epson specific
+         */
+        sealed class Epson : Error() {
+            data object MemoryError : Epson()
+            data object DataError : Epson()
+            data object InternalError : Epson()
         }
     }
 }

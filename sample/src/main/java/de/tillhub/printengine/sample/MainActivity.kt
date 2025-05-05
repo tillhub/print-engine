@@ -41,12 +41,14 @@ import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.epson.EpsonPrinterDiscovery
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
 import de.tillhub.printengine.star.StarPrinterDiscovery
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    private var initilazed: Boolean = false
     private val printerEngine by lazy { PrintEngine.getInstance(this) }
     private val printers = mutableStateListOf<ExternalPrinter>()
 
@@ -54,9 +56,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val requestBluetoothPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            if (isGranted) {
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            if (permissions.all { it.value }) {
                 discoverPrinters()
             } else {
                 showToast("Bluetooth permission is required to connect to printers")
@@ -75,12 +77,17 @@ class MainActivity : ComponentActivity() {
                         printState = printState,
                         printers = printers,
                         onPrinterSelected = { printer ->
-                            lifecycleScope.launch {
-                                printer?.let {
-                                    val service =
-                                        it.manufacturer.build(context = this@MainActivity, it)
+                            if (printer != null && !initilazed) {
+                                initilazed = true
+                                lifecycleScope.launch {
+                                    val service = printer.manufacturer.build(
+                                        context = this@MainActivity,
+                                        printer
+                                    )
                                     printerEngine.initPrinter(service)
                                 }
+                            }
+                            lifecycleScope.launch {
                                 printerEngine.printer.startPrintJob(printJob)
                             }
                         }
@@ -154,8 +161,10 @@ class MainActivity : ComponentActivity() {
 
     private fun discoverPrinters() {
         lifecycleScope.launch {
-            printerEngine.discoverExternalPrinters(StarPrinterDiscovery)
-                .collect { discoveryState ->
+            printerEngine.discoverExternalPrinters(
+                StarPrinterDiscovery,
+                EpsonPrinterDiscovery
+            ).collect { discoveryState ->
                     when (discoveryState) {
                         is DiscoveryState.Discovering -> {
                             printers.apply {
@@ -181,18 +190,51 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun requestBluetoothPermission(launcher: ActivityResultLauncher<String>) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            discoverPrinters()
-            return
+    private fun requestBluetoothPermission(launcher: ActivityResultLauncher<Array<String>>) {
+        val permissions = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            mutableListOf<String>().apply {
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH)
+                }
+
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH_ADMIN)
+                }
+
+                if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                }
+            }
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            mutableListOf<String>().apply {
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH)
+                }
+
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH_ADMIN)
+                }
+
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
+            }
+        } else {
+            mutableListOf<String>().apply {
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH_SCAN)
+                }
+
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    add(Manifest.permission.BLUETOOTH_CONNECT)
+                }
+            }
         }
 
-        when {
-            checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED -> {
-                discoverPrinters()
-            }
-
-            else -> launcher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+        if (permissions.isNotEmpty()) {
+            launcher.launch(permissions.toTypedArray())
+        } else {
+            discoverPrinters()
         }
     }
 

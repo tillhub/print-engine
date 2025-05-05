@@ -775,3 +775,5 @@ libraries:
       - '**/main/java/de/tillhub/printengine/barcode/BarcodeType.kt'
       - '**/main/java/de/tillhub/printengine/external/ExternalPrinterManufacturer.kt'
       - '**/main/java/de/tillhub/printengine/external/PrinterDiscovery.kt'
+      - '**/main/java/de/tillhub/printengine/epson/EpsonPrintService.kt'
+      - '**/main/java/de/tillhub/printengine/epson/EpsonPrinterDiscovery.kt'

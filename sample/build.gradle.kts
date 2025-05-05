@@ -5,12 +5,11 @@ plugins {
 
 android {
     namespace = "de.tillhub.printengine.sample"
-    compileSdk = 34
+    compileSdk = Configs.COMPILE_SDK
 
     defaultConfig {
         applicationId = "de.tillhub.printengine.sample"
-        minSdk = 24
-        targetSdk = 34
+        minSdk = Configs.MIN_SDK
 
         vectorDrawables {
             useSupportLibrary = true
@@ -24,8 +23,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = Configs.JAVA_VERSION
+        targetCompatibility = Configs.JAVA_VERSION
 
         isCoreLibraryDesugaringEnabled = true
     }
@@ -35,7 +34,7 @@ android {
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
-            jvmTarget = JavaVersion.VERSION_17.toString()
+            jvmTarget = Configs.JVM_TARGET
         }
     }
     buildFeatures {
@@ -52,6 +51,7 @@ dependencies {
 
     implementation(project(":print-engine"))
     implementation(project(":star-printer"))
+    implementation(project(":epson-printer"))
 
     implementation(libs.androidx.core)
     implementation(libs.bundles.compose)
