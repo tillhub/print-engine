@@ -9,8 +9,8 @@ import de.tillhub.printengine.data.PrinterSettings
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import timber.log.Timber
 
 /**
@@ -26,9 +26,7 @@ internal class EmulatedPrinter : Printer {
         PrinterSettings()
     }
 
-    override fun observePrinterState(): StateFlow<PrinterState> {
-        return MutableStateFlow(PrinterState.Error.NotAvailable)
-    }
+    override val printerState: Flow<PrinterState> = flowOf(PrinterState.Error.NotAvailable)
 
     override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> {
         return PrinterResult.Success(
@@ -36,7 +34,7 @@ internal class EmulatedPrinter : Printer {
                 serialNumber = "n/a",
                 deviceModel = "Emulated Printer",
                 printerVersion = "n/a",
-                printerPaperSpec = PrintingPaperSpec.PAX_PAPER_56MM,
+                printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
                 printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
                 printerHead = "n/a",
                 printedDistance = 0,

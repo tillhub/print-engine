@@ -6,11 +6,11 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.data.PrintingIntensity
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 
-internal interface PrinterController {
+interface PrinterController {
     fun sendRawData(data: RawPrinterData)
-    fun observePrinterState(): StateFlow<PrinterState>
+    fun observePrinterState(): Flow<PrinterState>
     fun setFontSize(fontSize: PrintingFontType)
     fun printText(text: String)
     fun printBarcode(barcode: String)

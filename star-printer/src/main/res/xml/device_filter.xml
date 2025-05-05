@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <usb-device class="255" protocol="1" subclass="66" />
+    <usb-device product-id="0003" vendor-id="1305" />   <!--TSP100IIU+/IIIU/IV/IV SK-->
+    <usb-device product-id="0071" vendor-id="1305" />   <!--mC-Print3-->
+    <usb-device product-id="0073" vendor-id="1305" />   <!--mC-Print2-->
+    <usb-device product-id="0025" vendor-id="1305" />   <!--mC-Label3-->
+    <usb-device product-id="0023" vendor-id="1305" />   <!--mPOP-->
+    <usb-device product-id="0001" vendor-id="1305" />   <!--TSP650II/TSP650II SK/TSP700II/TSP800II/SP700-->
+    <usb-device product-id="0027" vendor-id="1305" />   <!--BSC10II-->
+    <usb-device product-id="0075" vendor-id="1305" />   <!--SK1-211/221/V211-->
+    <usb-device product-id="0077" vendor-id="1305" />   <!--SK1-311/321/V311-->
+    <usb-device product-id="0079" vendor-id="1305" />   <!--SK5-31-->
+    <usb-device product-id="0081" vendor-id="1305" />   <!--SK1-41-->
+</resources>

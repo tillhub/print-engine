@@ -51,6 +51,7 @@ dependencies {
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
     implementation(project(":print-engine"))
+    implementation(project(":star-printer"))
 
     implementation(libs.androidx.core)
     implementation(libs.bundles.compose)

@@ -12,8 +12,8 @@ import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingIntensity
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -51,7 +51,7 @@ internal class SunmiPrinterController(
         printerService.sendRAWData(data.bytes, printListener)
     }
 
-    override fun observePrinterState(): StateFlow<PrinterState> = printerState
+    override fun observePrinterState(): Flow<PrinterState> = printerState
 
     override fun setFontSize(fontSize: PrintingFontType) {
         printerService.setFontSize(fontSize.toFloatSize(), printListener)
@@ -187,7 +187,7 @@ internal class SunmiPrinterController(
     }
 }
 
-private fun Int.toPrintingPaperSpec(): PrintingPaperSpec = PrintingPaperSpec.SUNMI_PAPER_56MM
+private fun Int.toPrintingPaperSpec(): PrintingPaperSpec = PrintingPaperSpec.SunmiPaper56mm
 
 private fun PrintingFontType.toFloatSize() = when (this) {
     PrintingFontType.DEFAULT_FONT_SIZE -> FontSize.NORMAL.value

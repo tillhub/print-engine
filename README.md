@@ -1,5 +1,6 @@
 [![](https://jitpack.io/v/tillhub/print-engine.svg)](https://jitpack.io/#tillhub/print-engine)
 [![API](https://img.shields.io/badge/API-21%2B-green.svg?style=flat)](https://android-arsenal.com/api?level-11)
+
 # Print Engine
 
 This library combines various printer implementations into a single, easy-to-use interface.
@@ -188,6 +189,55 @@ override fun onCreate(savedInstanceState: Bundle?) {
     )
 }
 ```
+
+## Plugins
+
+### Star Printer Library
+
+A library for integrating Star Micronics printers using the StarXpand SDK.
+
+#### Installation
+
+Add to your `build.gradle`
+
+   ```gradle
+   implementation 'com.tillhub.printengine:star-printer:1.0.0'
+   ```
+
+#### Setup & Usage
+
+1. **Permissions**  
+   To avoid the USB connection permission dialog appearing every time a cable is connected or
+   disconnected, add the following `<intent-filter>` and `<meta-data>` entries to your
+   `AndroidManifest.xml`:
+
+   ```xml
+   <intent-filter>
+       <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+       <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
+   </intent-filter>
+   ```
+2. **Discovery**  
+   To begin discovering Star printers, use the following method and handle the results accordingly:
+
+   ```kotlin
+   // Observe discovery state
+   printerEngine.discoverExternalPrinters(StarPrinterDiscovery).collect { discoveryState ->
+       // Handle discoveryState result
+   }
+   ```
+3. **Initialization & Printing**  
+   Once a user selects a Star printer, initialize and start printer using the following approach:
+
+   ```kotlin
+   val service = printer.manufacturer.build(
+       context = context,
+       printer = printer
+   )
+
+   printerEngine.initPrinter(service)
+   printerEngine.printer.startPrintJob(printJob)
+    ```
 
 ## Credits
 

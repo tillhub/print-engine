@@ -86,7 +86,7 @@ internal class VerifonePrintController(
             serialNumber = "n/a",
             deviceModel = "Verifone T630c",
             printerVersion = "n/a",
-            printerPaperSpec = PrintingPaperSpec.VERIFONE_PAPER_58MM,
+            printerPaperSpec = PrintingPaperSpec.VerifonePaper56mm,
             printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
             printerHead = "n/a",
             printedDistance = 0,
