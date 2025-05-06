@@ -16,6 +16,6 @@ internal enum class QrCodeSize(val value: Int) {
 }
 
 internal enum class BarcodeSize(val height: Int, val width: Int) {
-    PAX(70, 210),
+    PAX(190, 420),
     VERIFONE(140, 420)
 }
