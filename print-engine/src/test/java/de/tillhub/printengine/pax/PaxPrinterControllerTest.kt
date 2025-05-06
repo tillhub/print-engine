@@ -122,7 +122,7 @@ internal class PaxPrinterControllerTest : DescribeSpec({
         target.start()
 
         verify(ordering = Ordering.ORDERED) {
-            barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 210, 70)
+            barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 420, 190)
             printService.print(payload, 50, any())
         }
     }
