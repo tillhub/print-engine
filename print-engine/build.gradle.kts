@@ -90,7 +90,7 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            create<MavenPublication>("print-engine") {
+            create<MavenPublication>("print-engine-dummy") {
                 groupId = "de.tillhub.printengine"
                 artifactId = "print-engine"
                 version = Configs.VERSION_CODE
