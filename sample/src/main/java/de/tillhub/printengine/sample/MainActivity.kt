@@ -249,7 +249,7 @@ class MainActivity : ComponentActivity() {
                 PrintCommand.Text("This is a another line"),
                 PrintCommand.Text("-------"),
                 PrintCommand.Text("Barcode:"),
-                PrintCommand.Barcode("123ABC"),
+                PrintCommand.Barcode("RTC6093739"),
                 PrintCommand.Text("QR code:"),
                 PrintCommand.QrCode("123ABC"),
                 PrintCommand.Text("40 char line:"),
