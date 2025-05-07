@@ -1,13 +1,11 @@
 package de.tillhub.printengine.star
 
-import StarPrintService
 import android.content.Context
 import com.starmicronics.stario10.PrinterDelegate
 import com.starmicronics.stario10.StarIO10Exception
 import de.tillhub.printengine.data.ConnectionType
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterState
-import de.tillhub.printengine.star.StarPrinterController
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf

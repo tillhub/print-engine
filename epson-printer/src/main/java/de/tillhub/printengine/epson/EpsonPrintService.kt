@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.epson.epos2.printer.Printer as EpsonPrinter
 
-class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintService() {
+internal class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintService() {
 
     private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
     override val printerState: StateFlow<PrinterState> = connectionState

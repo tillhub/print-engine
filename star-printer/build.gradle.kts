@@ -53,6 +53,7 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    namespace = "com.tillhub.printengine.star"
 }
 
 dependencies {
@@ -75,9 +76,9 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            create<MavenPublication>("print-engine:star") {
+            create<MavenPublication>("print-engine-star") {
                 groupId = "de.tillhub.printengine.star"
-                artifactId = "print-engine:star"
+                artifactId = "print-engine-star"
                 version = Configs.VERSION_CODE
 
                 from(components.getByName("release"))

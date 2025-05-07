@@ -1,0 +1,2 @@
+-keep class com.starmicronics.** { *; }
+-dontwarn com.starmicronics.**
