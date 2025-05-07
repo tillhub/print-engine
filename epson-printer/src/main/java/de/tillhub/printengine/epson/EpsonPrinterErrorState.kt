@@ -6,7 +6,7 @@ import com.epson.epos2.printer.Printer
 import com.epson.epos2.printer.PrinterStatusInfo
 import de.tillhub.printengine.data.PrinterState
 
-object EpsonPrinterErrorState {
+internal object EpsonPrinterErrorState {
     fun epsonExceptionToState(e: Epos2Exception) = when (e.errorStatus) {
         Epos2Exception.ERR_PARAM -> PrinterState.Error.Epson.DataError
         Epos2Exception.ERR_CONNECT -> PrinterState.Error.NotAvailable

@@ -19,5 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--keep class de.tillhub.printengine.star.StarManufacturer { *; }
+-keeppackagenames de.tillhub.printengine.star.**
+
 -keep class de.tillhub.printengine.star.StarPrinterDiscovery { *; }
+-keep class de.tillhub.printengine.star.StarManufacturer { *; }

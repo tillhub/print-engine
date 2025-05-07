@@ -5,7 +5,7 @@ import com.epson.epos2.discovery.DeviceInfo
 import com.epson.epos2.discovery.Discovery
 import com.epson.epos2.discovery.FilterOption
 
-object EpsonDiscoveryWrapper {
+internal object EpsonDiscoveryWrapper {
     fun start(
         context: Context,
         filterOption: FilterOption,
