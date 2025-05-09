@@ -23,3 +23,5 @@
 -keep class de.tillhub.printengine.star.StarPrinterDiscovery { *; }
 -keepnames class de.tillhub.printengine.star.** { *; }
 -keep class de.tillhub.printengine.star.** { *; }
+-keep class com.starmicronics.** { *; }
+-dontwarn com.starmicronics.**
