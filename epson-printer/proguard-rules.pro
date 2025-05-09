@@ -23,3 +23,5 @@
 -keeppackagenames de.tillhub.printengine.epson.**
 
 -keep class de.tillhub.printengine.epson.EpsonPrinterDiscovery {  *; }
+-keepnames class de.tillhub.printengine.epson.** { *; }
+-keep class de.tillhub.printengine.epson.** { *; }
