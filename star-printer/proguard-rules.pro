@@ -21,3 +21,5 @@
 #-renamesourcefileattribute SourceFile
 -keep class de.tillhub.printengine.star.StarManufacturer { *; }
 -keep class de.tillhub.printengine.star.StarPrinterDiscovery { *; }
+-keepnames class de.tillhub.printengine.star.** { *; }
+-keep class de.tillhub.printengine.star.** { *; }
