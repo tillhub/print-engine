@@ -23,13 +23,5 @@
 -keeppackagenames de.tillhub.printengine.epson.**
 
 -keep class de.tillhub.printengine.epson.EpsonPrinterDiscovery {  *; }
--keep class de.tillhub.printengine.epson.EpsonDiscoveryWrapper {  *; }
--keep class de.tillhub.printengine.epson.EpsonManufacturer {  *; }
--keep class de.tillhub.printengine.epson.EpsonPrinterController {  *; }
--keep class de.tillhub.printengine.epson.EpsonPrinterController$Companion {  *; }
--keep class de.tillhub.printengine.epson.EpsonPrinterDiscovery {  *; }
--keep class de.tillhub.printengine.epson.EpsonPrinterErrorState {  *; }
--keep class de.tillhub.printengine.epson.EpsonPrinterWrapper {  *; }
--keep class de.tillhub.printengine.epson.EpsonPrintService {  *; }
 -keep class com.epson.** { *; }
 -dontwarn com.epson.**

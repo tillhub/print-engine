@@ -398,7 +398,6 @@ Add to your `build.gradle`
        context = context,
        printer = printer
    )
-
    printerEngine.initPrinter(service)
    printerEngine.printer.startPrintJob(printJob)
     ```
