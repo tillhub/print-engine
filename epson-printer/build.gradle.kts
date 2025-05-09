@@ -54,7 +54,6 @@ android {
             isIncludeAndroidResources = true
         }
     }
-    namespace = "com.tillhub.printengine.epson"
 }
 
 
