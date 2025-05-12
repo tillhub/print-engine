@@ -1,6 +1,5 @@
 package de.tillhub.printengine.star
 
-import StarPrintService
 import android.content.Context
 import de.tillhub.printengine.data.ConnectionType
 import de.tillhub.printengine.data.ExternalPrinter

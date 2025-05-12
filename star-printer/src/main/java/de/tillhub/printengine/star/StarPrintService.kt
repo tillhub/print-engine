@@ -1,3 +1,5 @@
+package de.tillhub.printengine.star
+
 import android.content.Context
 import com.starmicronics.stario10.InterfaceType
 import de.tillhub.printengine.data.ConnectionType
@@ -9,7 +11,6 @@ import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterState
-import de.tillhub.printengine.star.StarPrinterController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
