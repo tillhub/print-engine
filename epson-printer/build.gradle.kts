@@ -87,9 +87,9 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            create<MavenPublication>("print-engine-epson") {
-                groupId = "de.tillhub.printengine.epson"
-                artifactId = "print-engine-epson"
+            create<MavenPublication>("release-epson") {
+                groupId = "de.tillhub.printengine"
+                artifactId = "epson"
                 version = Configs.VERSION_CODE
 
                 from(components.getByName("release"))
