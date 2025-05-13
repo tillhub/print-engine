@@ -75,8 +75,8 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            create<MavenPublication>("print-engine-star") {
-                groupId = "de.tillhub.printengine.star"
+            create<MavenPublication>("print-engine") {
+                groupId = "de.tillhub.printengine"
                 artifactId = "print-engine-star"
                 version = Configs.VERSION_CODE
 
