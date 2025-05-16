@@ -12,6 +12,7 @@ import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
+import de.tillhub.printengine.data.toConnectionType
 import de.tillhub.printengine.external.PrinterDiscovery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -82,14 +83,6 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
             trySend(DiscoveryState.Error(e.message))
             EpsonDiscoveryWrapper.stop()
         }
-    }
-
-    private fun String.toConnectionType() = when (this) {
-        "TCPS" -> ConnectionType.LAN_SECURED
-        "TCP" -> ConnectionType.LAN
-        "BT" -> ConnectionType.BLUETOOTH
-        "USB" -> ConnectionType.USB
-        else -> throw IllegalArgumentException("Unsupported connection type: $this")
     }
 
     @VisibleForTesting

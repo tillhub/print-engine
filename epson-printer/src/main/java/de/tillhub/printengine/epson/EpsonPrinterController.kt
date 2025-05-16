@@ -10,6 +10,7 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.RawPrinterData
+import de.tillhub.printengine.data.fromConnectionType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.epson.epos2.printer.Printer as EpsonPrinter
@@ -107,13 +108,6 @@ internal class EpsonPrinterController(
 
     private fun ExternalPrinter.getTarget() =
         "${connectionType.fromConnectionType()}:$connectionAddress"
-
-    private fun ConnectionType.fromConnectionType() = when (this) {
-        ConnectionType.LAN_SECURED -> "TCPS"
-        ConnectionType.LAN -> "TCP"
-        ConnectionType.BLUETOOTH -> "BT"
-        ConnectionType.USB -> "USB"
-    }
 
     override suspend fun getPrinterInfo(): PrinterInfo = printerData.info
 
