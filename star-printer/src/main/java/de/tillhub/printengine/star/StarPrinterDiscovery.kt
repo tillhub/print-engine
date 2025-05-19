@@ -31,7 +31,7 @@ object StarPrinterDiscovery : PrinterDiscovery {
     override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> = channelFlow {
         trySend(DiscoveryState.Idle)
         discoverAllPrinters(context, ::trySend)
-    }.flowOn(Dispatchers.IO)
+    }.flowOn(Dispatchers.Main)
 
     private suspend fun discoverAllPrinters(
         context: Context,
