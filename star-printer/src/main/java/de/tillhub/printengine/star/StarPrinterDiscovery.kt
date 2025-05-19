@@ -1,56 +1,58 @@
 package de.tillhub.printengine.star
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import com.starmicronics.stario10.InterfaceType
 import com.starmicronics.stario10.StarDeviceDiscoveryManager
 import com.starmicronics.stario10.StarDeviceDiscoveryManagerFactory
 import com.starmicronics.stario10.StarPrinter
 import de.tillhub.printengine.data.ConnectionType
 import de.tillhub.printengine.data.DiscoveryState
-import de.tillhub.printengine.external.PrinterDiscovery
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
+import de.tillhub.printengine.external.PrinterDiscovery
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.flowOn
 
 object StarPrinterDiscovery : PrinterDiscovery {
-    private const val DISCOVERY_TIMEOUT_MS = 10000
+
+    private const val DISCOVERY_TIMEOUT_MS = 10000L
+    private const val CHARACTER_COUNT = 32
     private const val MANUFACTURER_STAR = "STAR"
 
-    override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> =
-        withContext(Dispatchers.IO) {
-            flow {
-                emit(DiscoveryState.Idle)
-                runCatching {
-                    val interfaceTypes = listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
-                    val discoveryManager = StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context)
-                        .apply { discoveryTime = DISCOVERY_TIMEOUT_MS }
+    private var discoveryTimeoutMs: Long = DISCOVERY_TIMEOUT_MS
 
-                    emitAll(discoverPrintersFlow(discoveryManager))
-                }.onFailure {
-                    emit(DiscoveryState.Error(it.message))
-                }
+    override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> = channelFlow {
+        trySend(DiscoveryState.Idle)
+        discoverAllPrinters(context, ::trySend)
+    }.flowOn(Dispatchers.Main)
+
+    private suspend fun discoverAllPrinters(
+        context: Context,
+        trySend: (DiscoveryState) -> Unit,
+    ) {
+        val discoveredPrinters = mutableListOf<ExternalPrinter>()
+
+        try {
+            val interfaceTypes = listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
+            val discoveryManager = StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context).apply {
+                discoveryTime = discoveryTimeoutMs.toInt()
             }
-        }
 
-    private fun discoverPrintersFlow(manager: StarDeviceDiscoveryManager): Flow<DiscoveryState> =
-        callbackFlow {
-            manager.callback = object : StarDeviceDiscoveryManager.Callback {
+            discoveryManager.callback = object : StarDeviceDiscoveryManager.Callback {
                 override fun onPrinterFound(printer: StarPrinter) {
                     val externalPrinter = ExternalPrinter(
                         info = PrinterInfo(
                             serialNumber = "n/a",
                             deviceModel = printer.information?.model?.name ?: "Unknown",
                             printerVersion = "n/a",
-                            printerPaperSpec = PrintingPaperSpec.External(characterCount = 32),
+                            printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT),
                             printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
                             printerHead = "n/a",
                             printedDistance = 0,
@@ -60,30 +62,34 @@ object StarPrinterDiscovery : PrinterDiscovery {
                         connectionAddress = printer.connectionSettings.identifier,
                         connectionType = printer.connectionSettings.interfaceType.toConnectionType()
                     )
-                    trySend(DiscoveryState.Discovering(listOf(externalPrinter)))
+
+                    discoveredPrinters.add(externalPrinter)
+                    trySend(DiscoveryState.Discovering(discoveredPrinters))
                 }
 
                 override fun onDiscoveryFinished() {
-                    trySend(DiscoveryState.Discovered(emptyList()))
-                    close()
+                    trySend(DiscoveryState.Discovered(discoveredPrinters))
                 }
             }
 
-            runCatching {
-                manager.startDiscovery()
-            }.onFailure {
-                trySend(DiscoveryState.Error(it.message))
-                close()
-            }
-            awaitClose {
-                manager.stopDiscovery()
-            }
-        }
-}
+            discoveryManager.startDiscovery()
+            delay(discoveryTimeoutMs)
+            discoveryManager.stopDiscovery()
 
-private fun InterfaceType.toConnectionType(): ConnectionType = when (this) {
-    InterfaceType.Lan -> ConnectionType.LAN
-    InterfaceType.Bluetooth -> ConnectionType.BLUETOOTH
-    InterfaceType.Usb -> ConnectionType.USB
-    else -> throw IllegalArgumentException("Unsupported interface type: $this")
+        } catch (e: Exception) {
+            trySend(DiscoveryState.Error(e.message))
+        }
+    }
+
+    private fun InterfaceType.toConnectionType(): ConnectionType = when (this) {
+        InterfaceType.Lan -> ConnectionType.LAN
+        InterfaceType.Bluetooth -> ConnectionType.BLUETOOTH
+        InterfaceType.Usb -> ConnectionType.USB
+        else -> throw IllegalArgumentException("Unsupported interface type: $this")
+    }
+
+    @VisibleForTesting
+    fun setDiscoveryTimeout(timeoutMs: Long) {
+        discoveryTimeoutMs = timeoutMs
+    }
 }
