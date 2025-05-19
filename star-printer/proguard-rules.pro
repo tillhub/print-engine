@@ -35,3 +35,5 @@
 -keep class * implements com.starmicronics.stario10.StarDeviceDiscoveryManager$Callback {
     *;
 }
+-keep class com.starmicronics.** { *; }
+-dontwarn com.starmicronics.**
