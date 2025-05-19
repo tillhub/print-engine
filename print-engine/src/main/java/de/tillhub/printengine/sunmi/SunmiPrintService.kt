@@ -67,9 +67,10 @@ internal class SunmiPrintService(context: Context) : PrintService() {
     private fun getServiceVersion(context: Context): PrinterServiceVersion {
         try {
             val packageInfo = context.packageManager.getPackageInfo("woyou.aidlservice.jiuiv5", 0)
-            if (packageInfo != null) {
+            val versionName = packageInfo.versionName
+            if (packageInfo != null && versionName != null) {
                 return PrinterServiceVersion.Info(
-                    packageInfo.versionName,
+                    versionName,
                     PackageInfoCompat.getLongVersionCode(packageInfo)
                 )
             }
