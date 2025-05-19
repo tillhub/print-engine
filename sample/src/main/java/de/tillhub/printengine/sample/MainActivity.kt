@@ -42,8 +42,10 @@ import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.epson.EpsonPrinterDiscovery
+import de.tillhub.printengine.epson.EpsonServiceProvider
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
 import de.tillhub.printengine.star.StarPrinterDiscovery
+import de.tillhub.printengine.star.StarServiceProvider
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -80,10 +82,17 @@ class MainActivity : ComponentActivity() {
                             if (printer != null && !initilazed) {
                                 initilazed = true
                                 lifecycleScope.launch {
-                                    val service = printer.manufacturer.build(
-                                        context = this@MainActivity,
-                                        printer
-                                    )
+                                    val service = when (printer.manufacturer) {
+                                        "EPSON" -> EpsonServiceProvider.build(
+                                            context = this@MainActivity,
+                                            printer
+                                        )
+
+                                        else -> StarServiceProvider.build(
+                                            context = this@MainActivity,
+                                            printer
+                                        )
+                                    }
                                     printerEngine.initPrinter(service)
                                 }
                             }
@@ -165,28 +174,28 @@ class MainActivity : ComponentActivity() {
                 StarPrinterDiscovery,
                 EpsonPrinterDiscovery
             ).collect { discoveryState ->
-                    when (discoveryState) {
-                        is DiscoveryState.Discovering -> {
-                            printers.apply {
-                                clear()
-                                addAll(discoveryState.printers)
-                            }
+                when (discoveryState) {
+                    is DiscoveryState.Discovering -> {
+                        printers.apply {
+                            clear()
+                            addAll(discoveryState.printers)
                         }
-
-                        is DiscoveryState.Discovered -> {
-                            printers.apply {
-                                clear()
-                                addAll(discoveryState.printers)
-                            }
-                        }
-
-                        is DiscoveryState.Error -> {
-                            showToast("Discovery error: ${discoveryState.message}")
-                        }
-
-                        DiscoveryState.Idle -> Unit
                     }
+
+                    is DiscoveryState.Discovered -> {
+                        printers.apply {
+                            clear()
+                            addAll(discoveryState.printers)
+                        }
+                    }
+
+                    is DiscoveryState.Error -> {
+                        showToast("Discovery error: ${discoveryState.message}")
+                    }
+
+                    DiscoveryState.Idle -> Unit
                 }
+            }
         }
     }
 

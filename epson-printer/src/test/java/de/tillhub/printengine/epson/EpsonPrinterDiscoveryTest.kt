@@ -71,7 +71,7 @@ class EpsonPrinterDiscoveryTest : FunSpec({
             state.shouldBeInstanceOf<DiscoveryState.Discovering>()
             state.printers.size shouldBe 1
             state.printers[0].let { printer ->
-                printer.manufacturer shouldBe EpsonManufacturer
+                printer.manufacturer shouldBe "EPSON"
                 printer.connectionAddress shouldBe "192.168.1.100"
                 printer.connectionType shouldBe ConnectionType.LAN
                 printer.info.deviceModel shouldBe "Epson TM-T88V"
@@ -81,7 +81,7 @@ class EpsonPrinterDiscoveryTest : FunSpec({
             state.shouldBeInstanceOf<DiscoveryState.Discovered>()
             state.printers.size shouldBe 1
             state.printers[0].let { printer ->
-                printer.manufacturer shouldBe EpsonManufacturer
+                printer.manufacturer shouldBe "EPSON"
                 printer.connectionAddress shouldBe "192.168.1.100"
                 printer.connectionType shouldBe ConnectionType.LAN
                 printer.info.deviceModel shouldBe "Epson TM-T88V"
