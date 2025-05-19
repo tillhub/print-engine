@@ -29,11 +29,16 @@ object StarPrinterDiscovery : PrinterDiscovery {
         withContext(Dispatchers.IO) {
             flow {
                 emit(DiscoveryState.Idle)
-                val interfaceTypes = listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
-                val discoveryManager = StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context)
-                    .apply { discoveryTime = DISCOVERY_TIMEOUT_MS }
+                runCatching {
+                    val interfaceTypes = listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
+                    val discoveryManager = StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context)
+                        .apply { discoveryTime = DISCOVERY_TIMEOUT_MS }
 
-                emitAll(discoverPrintersFlow(discoveryManager))
+                    emitAll(discoverPrintersFlow(discoveryManager))
+                }.onFailure {
+                    emit(DiscoveryState.Error(it.message))
+                }
+
             }
         }
 
