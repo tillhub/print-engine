@@ -40,41 +40,23 @@ object StarPrinterDiscovery : PrinterDiscovery {
         val discoveredPrinters = mutableListOf<ExternalPrinter>()
 
         try {
-            val interfaceTypes = listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
-            val discoveryManager = StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context).apply {
-                discoveryTime = discoveryTimeoutMs.toInt()
-            }
+            val externalPrinter = ExternalPrinter(
+                info = PrinterInfo(
+                    serialNumber = "n/a",
+                    deviceModel =  "Unknown",
+                    printerVersion = "n/a",
+                    printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT),
+                    printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+                    printerHead = "n/a",
+                    printedDistance = 0,
+                    serviceVersion = PrinterServiceVersion.Unknown
+                ),
+                manufacturer = MANUFACTURER_STAR,
+                connectionAddress = "efw",
+                connectionType =ConnectionType.LAN
+            )
 
-            discoveryManager.callback = object : StarDeviceDiscoveryManager.Callback {
-                override fun onPrinterFound(printer: StarPrinter) {
-                    val externalPrinter = ExternalPrinter(
-                        info = PrinterInfo(
-                            serialNumber = "n/a",
-                            deviceModel = printer.information?.model?.name ?: "Unknown",
-                            printerVersion = "n/a",
-                            printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT),
-                            printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-                            printerHead = "n/a",
-                            printedDistance = 0,
-                            serviceVersion = PrinterServiceVersion.Unknown
-                        ),
-                        manufacturer = MANUFACTURER_STAR,
-                        connectionAddress = printer.connectionSettings.identifier,
-                        connectionType = printer.connectionSettings.interfaceType.toConnectionType()
-                    )
-
-                    discoveredPrinters.add(externalPrinter)
-                    trySend(DiscoveryState.Discovering(discoveredPrinters))
-                }
-
-                override fun onDiscoveryFinished() {
-                    trySend(DiscoveryState.Discovered(discoveredPrinters))
-                }
-            }
-
-            discoveryManager.startDiscovery()
-            delay(discoveryTimeoutMs)
-            discoveryManager.stopDiscovery()
+            discoveredPrinters.add(externalPrinter)
 
         } catch (e: Exception) {
             trySend(DiscoveryState.Error(e.message))
