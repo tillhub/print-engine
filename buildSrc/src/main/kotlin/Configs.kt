@@ -5,6 +5,6 @@ object Configs {
     const val COMPILE_SDK = 34
     const val MIN_SDK = 23
     const val VERSION_CODE = "2.0.2"
-    val JAVA_VERSION = JavaVersion.VERSION_17
+    val JAVA_VERSION = JavaVersion.VERSION_1_8
     val JVM_TARGET = JAVA_VERSION.toString()
 }
