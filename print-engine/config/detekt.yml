@@ -777,3 +777,5 @@ libraries:
       - '**/main/java/de/tillhub/printengine/external/PrinterDiscovery.kt'
       - '**/main/java/de/tillhub/printengine/epson/EpsonPrintService.kt'
       - '**/main/java/de/tillhub/printengine/epson/EpsonPrinterDiscovery.kt'
+      - '**/main/java/de/tillhub/printengine/star/StarPrintService.kt'
+      - '**/main/java/de/tillhub/printengine/star/StarPrinterDiscovery.kt'
