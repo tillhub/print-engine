@@ -38,7 +38,6 @@ object StarPrinterDiscovery : PrinterDiscovery {
                 }.onFailure {
                     emit(DiscoveryState.Error(it.message))
                 }
-
             }
         }
 
