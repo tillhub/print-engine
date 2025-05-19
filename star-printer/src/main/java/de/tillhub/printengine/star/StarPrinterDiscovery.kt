@@ -31,7 +31,7 @@ object StarPrinterDiscovery : PrinterDiscovery {
     override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> = channelFlow {
         trySend(DiscoveryState.Idle)
         discoverAllPrinters(context, ::trySend)
-    }.flowOn(Dispatchers.Main)
+    }.flowOn(Dispatchers.IO)
 
     private suspend fun discoverAllPrinters(
         context: Context,
@@ -40,23 +40,11 @@ object StarPrinterDiscovery : PrinterDiscovery {
         val discoveredPrinters = mutableListOf<ExternalPrinter>()
 
         try {
-            val externalPrinter = ExternalPrinter(
-                info = PrinterInfo(
-                    serialNumber = "n/a",
-                    deviceModel =  "Unknown",
-                    printerVersion = "n/a",
-                    printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT),
-                    printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-                    printerHead = "n/a",
-                    printedDistance = 0,
-                    serviceVersion = PrinterServiceVersion.Unknown
-                ),
-                manufacturer = MANUFACTURER_STAR,
-                connectionAddress = "efw",
-                connectionType =ConnectionType.LAN
-            )
-
-            discoveredPrinters.add(externalPrinter)
+            val interfaceTypes = listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
+            val discoveryManager = StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context).apply {
+                discoveryTime = discoveryTimeoutMs.toInt()
+            }
+            discoveryManager.startDiscovery()
 
         } catch (e: Exception) {
             trySend(DiscoveryState.Error(e.message))
