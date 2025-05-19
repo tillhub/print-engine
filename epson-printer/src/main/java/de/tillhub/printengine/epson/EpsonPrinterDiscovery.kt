@@ -24,6 +24,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
 
     private const val DISCOVERY_TIMEOUT_MS = 10000L
     private const val CHARACTER_COUNT = 32
+    private const val MANUFACTURER_EPSON = "EPSON"
 
     private val discoveryFilters = FilterOption().apply {
         deviceType = Discovery.TYPE_PRINTER
@@ -64,7 +65,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
                                 printedDistance = 0,
                                 serviceVersion = PrinterServiceVersion.Unknown
                             ),
-                            manufacturer = EpsonManufacturer,
+                            manufacturer = MANUFACTURER_EPSON,
                             connectionAddress = address,
                             connectionType = protocol.toConnectionType(),
                         )

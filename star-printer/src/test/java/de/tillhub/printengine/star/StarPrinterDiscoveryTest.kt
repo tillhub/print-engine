@@ -85,7 +85,7 @@ class StarPrinterDiscoveryTest : FunSpec({
             info.printerHead shouldBe "n/a"
             info.printedDistance shouldBe 0
             info.serviceVersion shouldBe PrinterServiceVersion.Unknown
-            manufacturer shouldBe StarManufacturer
+            manufacturer shouldBe "STAR"
             connectionAddress shouldBe "SN123"
             connectionType shouldBe ConnectionType.LAN
         }

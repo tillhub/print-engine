@@ -8,7 +8,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
 
-class StarManufacturerTest : FunSpec({
+class StarServiceProviderTest : FunSpec({
 
     test("build should return StarPrintService") {
         val context = mockk<Context>(relaxed = true)
@@ -16,7 +16,7 @@ class StarManufacturerTest : FunSpec({
             every { connectionType } returns ConnectionType.LAN
         }
 
-        val result = StarManufacturer.build(context, printer)
+        val result = StarServiceProvider.build(context, printer)
 
         result.shouldBeInstanceOf<StarPrintService>()
     }

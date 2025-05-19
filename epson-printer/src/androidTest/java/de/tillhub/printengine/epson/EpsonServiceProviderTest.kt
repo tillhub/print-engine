@@ -10,14 +10,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class EpsonManufacturerTest {
+class EpsonServiceProviderTest {
 
     @Test
     fun build_shouldReturnEpsonPrintService() {
         val context: Context = ApplicationProvider.getApplicationContext()
         val printer = mockk<ExternalPrinter>(relaxed = true)
 
-        val result = EpsonManufacturer.build(context, printer)
+        val result = EpsonServiceProvider.build(context, printer)
 
         assertTrue(result is EpsonPrintService)
     }

@@ -22,4 +22,4 @@
 -keeppackagenames de.tillhub.printengine.star.**
 
 -keep class de.tillhub.printengine.star.StarPrinterDiscovery { *; }
--keep class de.tillhub.printengine.star.StarManufacturer { *; }
+-keep class de.tillhub.printengine.star.StarServiceProvider { *; }

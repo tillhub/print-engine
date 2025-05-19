@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 
 object StarPrinterDiscovery : PrinterDiscovery {
     private const val DISCOVERY_TIMEOUT_MS = 10000
+    private const val MANUFACTURER_STAR = "STAR"
 
     override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> =
         withContext(Dispatchers.IO) {
@@ -51,7 +52,7 @@ object StarPrinterDiscovery : PrinterDiscovery {
                             printedDistance = 0,
                             serviceVersion = PrinterServiceVersion.Unknown
                         ),
-                        manufacturer = StarManufacturer,
+                        manufacturer = MANUFACTURER_STAR,
                         connectionAddress = printer.connectionSettings.identifier,
                         connectionType = printer.connectionSettings.interfaceType.toConnectionType()
                     )

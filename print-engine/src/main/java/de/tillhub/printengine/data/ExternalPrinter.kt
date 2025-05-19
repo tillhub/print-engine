@@ -1,6 +1,5 @@
 package de.tillhub.printengine.data
 
-import de.tillhub.printengine.external.ExternalPrinterManufacturer
 import java.util.Objects
 
 class ExternalPrinter(
@@ -25,10 +24,10 @@ class ExternalPrinter(
     /**
      * The manufacturer of the printer.
      * Must be one of: "Star", "Epson"
-     * - "Star": Star Micronics printers
-     * - "Epson": Epson printers
+     * - "STAR": Star Micronics printers
+     * - "EPSON": Epson printers
      */
-    val manufacturer: ExternalPrinterManufacturer
+    val manufacturer: String
 ) {
     override fun toString(): String = "ExternalPrinter(" +
             "info=$info," +
