@@ -6,14 +6,17 @@ import com.epson.epos2.printer.Printer as EpsonPrinter
 @Suppress("TooManyFunctions")
 internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
     fun addCommand(bytes: ByteArray) {
+        epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.addCommand(bytes)
     }
 
     fun addTextFont(font: Int) {
+        epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.addTextFont(font)
     }
 
     fun addText(text: String) {
+        epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.addText(text)
     }
 
@@ -27,7 +30,6 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
     ) {
         epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.addBarcode(barcode, barcodeType, hriPosition, font, moduleWidth, height)
-        epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_LEFT)
     }
 
     fun addSymbol(
@@ -40,7 +42,6 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
     ) {
         epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.addSymbol(data, symbolType, level, width, height, param)
-        epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_LEFT)
     }
 
     fun addImage(
@@ -68,7 +69,6 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
             brightness,
             compress
         )
-        epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_LEFT)
     }
 
     fun addFeedLine(lines: Int) {
@@ -84,6 +84,7 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
     }
 
     fun sendData(param: Int) {
+        epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.sendData(param)
     }
 
