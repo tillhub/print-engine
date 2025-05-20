@@ -24,7 +24,10 @@ runner = "1.6.2"
 rules = "1.6.1"
 truth = "1.6.0"
 
-starPrinter = "1.8.0"
+# Downgraded to avoid runtime crash caused by instrumentation
+# when enableAndroidTestCoverage = true
+# See: https://github.com/star-micronics/StarXpand-SDK-Android/issues/18
+starPrinter = "1.0.1"
 
 
 lifecycle = "2.7.0"
