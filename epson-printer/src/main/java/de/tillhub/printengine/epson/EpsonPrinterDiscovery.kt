@@ -23,7 +23,7 @@ import org.jetbrains.annotations.VisibleForTesting
 object EpsonPrinterDiscovery : PrinterDiscovery {
 
     private const val DISCOVERY_TIMEOUT_MS = 10000L
-    private const val CHARACTER_COUNT = 32
+    private const val CHARACTER_COUNT = 42
     private const val MANUFACTURER_EPSON = "EPSON"
 
     private val discoveryFilters = FilterOption().apply {
