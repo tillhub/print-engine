@@ -23,14 +23,15 @@ import kotlinx.coroutines.withContext
 
 object StarPrinterDiscovery : PrinterDiscovery {
     private const val DISCOVERY_TIMEOUT_MS = 10000
-    private const val CHARACTER_COUNT = 48
+    private const val CHARACTER_COUNT = 52
     private const val MANUFACTURER_STAR = "STAR"
 
     override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> =
         withContext(Dispatchers.IO) {
             flow {
                 emit(DiscoveryState.Idle)
-                val interfaceTypes = listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
+                val interfaceTypes =
+                    listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
 
                 runCatching {
                     StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context)
@@ -48,7 +49,7 @@ object StarPrinterDiscovery : PrinterDiscovery {
 
     private fun discoverPrintersFlow(manager: StarDeviceDiscoveryManager): Flow<DiscoveryState> =
         callbackFlow {
-            val discoveredPrinters = mutableListOf<ExternalPrinter>()
+            var discoveredPrinters: List<ExternalPrinter> = emptyList()
 
             manager.callback = object : StarDeviceDiscoveryManager.Callback {
                 override fun onPrinterFound(printer: StarPrinter) {
@@ -67,12 +68,12 @@ object StarPrinterDiscovery : PrinterDiscovery {
                         connectionAddress = printer.connectionSettings.identifier,
                         connectionType = printer.connectionSettings.interfaceType.toConnectionType()
                     )
-                    discoveredPrinters.add(externalPrinter)
+                    discoveredPrinters = addPrinter(externalPrinter, discoveredPrinters)
                     trySend(DiscoveryState.Discovering(discoveredPrinters.toList()))
                 }
 
                 override fun onDiscoveryFinished() {
-                    trySend(DiscoveryState.Discovered(discoveredPrinters))
+                    trySend(DiscoveryState.Discovered(discoveredPrinters.toList()))
                     close()
                 }
             }
@@ -83,8 +84,18 @@ object StarPrinterDiscovery : PrinterDiscovery {
                 trySend(DiscoveryState.Error(e.message))
                 close()
             }
-            awaitClose { manager.callback = null}
+            awaitClose { manager.callback = null }
         }
+
+    private fun addPrinter(
+        newPrinter: ExternalPrinter,
+        existingPrinters: List<ExternalPrinter>
+    ): List<ExternalPrinter> {
+        if (existingPrinters.any { it.connectionAddress == newPrinter.connectionAddress }) {
+            return existingPrinters
+        }
+        return existingPrinters + newPrinter
+    }
 
     private fun InterfaceType.toConnectionType(): ConnectionType = when (this) {
         InterfaceType.Lan -> ConnectionType.LAN
