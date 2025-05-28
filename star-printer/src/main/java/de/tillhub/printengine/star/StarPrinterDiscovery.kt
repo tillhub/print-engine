@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 
 object StarPrinterDiscovery : PrinterDiscovery {
     private const val DISCOVERY_TIMEOUT_MS = 10000
+    private const val CHARACTER_COUNT = 48
     private const val MANUFACTURER_STAR = "STAR"
 
     override suspend fun discoverPrinter(context: Context): Flow<DiscoveryState> =
@@ -30,15 +31,25 @@ object StarPrinterDiscovery : PrinterDiscovery {
             flow {
                 emit(DiscoveryState.Idle)
                 val interfaceTypes = listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
-                val discoveryManager = StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context)
-                    .apply { discoveryTime = DISCOVERY_TIMEOUT_MS }
 
-                emitAll(discoverPrintersFlow(discoveryManager))
+                runCatching {
+                    StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context)
+                        .apply { discoveryTime = DISCOVERY_TIMEOUT_MS }
+                }.fold(
+                    onSuccess = { discoveryManager ->
+                        emitAll(discoverPrintersFlow(discoveryManager))
+                    },
+                    onFailure = { e ->
+                        emit(DiscoveryState.Error(e.message))
+                    }
+                )
             }
         }
 
     private fun discoverPrintersFlow(manager: StarDeviceDiscoveryManager): Flow<DiscoveryState> =
         callbackFlow {
+            val discoveredPrinters = mutableListOf<ExternalPrinter>()
+
             manager.callback = object : StarDeviceDiscoveryManager.Callback {
                 override fun onPrinterFound(printer: StarPrinter) {
                     val externalPrinter = ExternalPrinter(
@@ -46,7 +57,7 @@ object StarPrinterDiscovery : PrinterDiscovery {
                             serialNumber = "n/a",
                             deviceModel = printer.information?.model?.name ?: "Unknown",
                             printerVersion = "n/a",
-                            printerPaperSpec = PrintingPaperSpec.External(characterCount = 32),
+                            printerPaperSpec = PrintingPaperSpec.External(characterCount = CHARACTER_COUNT),
                             printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
                             printerHead = "n/a",
                             printedDistance = 0,
@@ -56,30 +67,29 @@ object StarPrinterDiscovery : PrinterDiscovery {
                         connectionAddress = printer.connectionSettings.identifier,
                         connectionType = printer.connectionSettings.interfaceType.toConnectionType()
                     )
-                    trySend(DiscoveryState.Discovering(listOf(externalPrinter)))
+                    discoveredPrinters.add(externalPrinter)
+                    trySend(DiscoveryState.Discovering(discoveredPrinters.toList()))
                 }
 
                 override fun onDiscoveryFinished() {
-                    trySend(DiscoveryState.Discovered(emptyList()))
+                    trySend(DiscoveryState.Discovered(discoveredPrinters))
                     close()
                 }
             }
 
             runCatching {
                 manager.startDiscovery()
-            }.onFailure {
-                trySend(DiscoveryState.Error(it.message))
+            }.onFailure { e ->
+                trySend(DiscoveryState.Error(e.message))
                 close()
             }
-            awaitClose {
-                manager.stopDiscovery()
-            }
+            awaitClose { manager.callback = null}
         }
-}
 
-private fun InterfaceType.toConnectionType(): ConnectionType = when (this) {
-    InterfaceType.Lan -> ConnectionType.LAN
-    InterfaceType.Bluetooth -> ConnectionType.BLUETOOTH
-    InterfaceType.Usb -> ConnectionType.USB
-    else -> throw IllegalArgumentException("Unsupported interface type: $this")
+    private fun InterfaceType.toConnectionType(): ConnectionType = when (this) {
+        InterfaceType.Lan -> ConnectionType.LAN
+        InterfaceType.Bluetooth -> ConnectionType.BLUETOOTH
+        InterfaceType.Usb -> ConnectionType.USB
+        else -> throw IllegalArgumentException("Unsupported interface type: $this")
+    }
 }
