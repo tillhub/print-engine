@@ -6,6 +6,7 @@ import com.epson.epos2.discovery.DeviceInfo
 import com.epson.epos2.discovery.Discovery
 import com.epson.epos2.discovery.FilterOption
 import de.tillhub.printengine.data.ConnectionType
+import de.tillhub.printengine.data.ConnectionType.entries
 import de.tillhub.printengine.data.DiscoveryState
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterInfo
@@ -94,13 +95,8 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
         return existingPrinters + newPrinter
     }
 
-    private fun String.toConnectionType() = when (this) {
-        "TCPS" -> ConnectionType.LAN_SECURED
-        "TCP" -> ConnectionType.LAN
-        "BT" -> ConnectionType.BLUETOOTH
-        "USB" -> ConnectionType.USB
-        else -> throw IllegalArgumentException("Unsupported connection type: $this")
-    }
+    private fun String.toConnectionType() = ConnectionType.entries.find { it.value == this }
+        ?: throw IllegalArgumentException("Unsupported connection type: $this")
 
     @VisibleForTesting
     fun setDiscoveryTimeout(timeoutMs: Long) {
