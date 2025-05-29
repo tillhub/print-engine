@@ -53,7 +53,7 @@ class StarPrinterControllerTest : FunSpec({
         printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
         printerBuilder = mockk(relaxed = true) {
             every { actionPrintText(any()) } returns this
-            every { actionFeedLine(any()) } returns this
+            every { styleAlignment(any()) } returns this
             every { actionPrintBarcode(any()) } returns this
             every { actionPrintImage(any()) } returns this
             every { actionPrintQRCode(any()) } returns this
@@ -104,7 +104,7 @@ class StarPrinterControllerTest : FunSpec({
 
         verifyOrder {
             printerBuilder.actionPrintText("Test Text")
-            printerBuilder.actionFeedLine(1)
+            printerBuilder.styleAlignment(Alignment.Center)
         }
     }
 
@@ -113,7 +113,7 @@ class StarPrinterControllerTest : FunSpec({
 
         verifyOrder {
             printerBuilder.actionPrintBarcode(any())
-            printerBuilder.actionFeedLine(1)
+            printerBuilder.styleAlignment(Alignment.Center)
         }
     }
 
@@ -124,7 +124,7 @@ class StarPrinterControllerTest : FunSpec({
 
         verifyOrder {
             printerBuilder.actionPrintQRCode(any())
-            printerBuilder.actionFeedLine(1)
+            printerBuilder.styleAlignment(Alignment.Center)
         }
     }
 
@@ -135,7 +135,7 @@ class StarPrinterControllerTest : FunSpec({
 
         verifyOrder {
             printerBuilder.actionPrintImage(any())
-            printerBuilder.actionFeedLine(1)
+            printerBuilder.styleAlignment(Alignment.Center)
         }
     }
 

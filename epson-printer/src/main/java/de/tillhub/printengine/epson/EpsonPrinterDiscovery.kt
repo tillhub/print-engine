@@ -6,6 +6,7 @@ import com.epson.epos2.discovery.DeviceInfo
 import com.epson.epos2.discovery.Discovery
 import com.epson.epos2.discovery.FilterOption
 import de.tillhub.printengine.data.ConnectionType
+import de.tillhub.printengine.data.ConnectionType.entries
 import de.tillhub.printengine.data.DiscoveryState
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterInfo
@@ -44,7 +45,7 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
         context: Context,
         trySend: (DiscoveryState) -> Unit,
     ) {
-        val discoveredPrinters = mutableListOf<ExternalPrinter>()
+        var discoveredPrinters: List<ExternalPrinter> = emptyList()
 
         try {
             EpsonDiscoveryWrapper.start(context, discoveryFilters) { deviceInfo ->
@@ -53,45 +54,49 @@ object EpsonPrinterDiscovery : PrinterDiscovery {
                     val protocol = deviceInfo.target.substring(0, connectionDividerIdx)
                     val address = deviceInfo.target.substring(connectionDividerIdx + 1)
 
-                    discoveredPrinters.add(
-                        ExternalPrinter(
-                            info = PrinterInfo(
-                                serialNumber = "n/a",
-                                deviceModel = deviceInfo.deviceName,
-                                printerVersion = "n/a",
-                                printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT),
-                                printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-                                printerHead = "n/a",
-                                printedDistance = 0,
-                                serviceVersion = PrinterServiceVersion.Unknown
-                            ),
-                            manufacturer = MANUFACTURER_EPSON,
-                            connectionAddress = address,
-                            connectionType = protocol.toConnectionType(),
-                        )
+                    val externalPrinter = ExternalPrinter(
+                        info = PrinterInfo(
+                            serialNumber = "n/a",
+                            deviceModel = deviceInfo.deviceName,
+                            printerVersion = "n/a",
+                            printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT),
+                            printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+                            printerHead = "n/a",
+                            printedDistance = 0,
+                            serviceVersion = PrinterServiceVersion.Unknown
+                        ),
+                        manufacturer = MANUFACTURER_EPSON,
+                        connectionAddress = address,
+                        connectionType = protocol.toConnectionType(),
                     )
 
-                    trySend(DiscoveryState.Discovering(discoveredPrinters))
+                    discoveredPrinters = addPrinter(externalPrinter, discoveredPrinters)
+                    trySend(DiscoveryState.Discovering(discoveredPrinters.toList()))
                 }
             }
 
             delay(discoveryTimeoutMs)
 
             EpsonDiscoveryWrapper.stop()
-            trySend(DiscoveryState.Discovered(discoveredPrinters))
+            trySend(DiscoveryState.Discovered(discoveredPrinters.toList()))
         } catch (e: Epos2Exception) {
             trySend(DiscoveryState.Error(e.message))
             EpsonDiscoveryWrapper.stop()
         }
     }
 
-    private fun String.toConnectionType() = when (this) {
-        "TCPS" -> ConnectionType.LAN_SECURED
-        "TCP" -> ConnectionType.LAN
-        "BT" -> ConnectionType.BLUETOOTH
-        "USB" -> ConnectionType.USB
-        else -> throw IllegalArgumentException("Unsupported connection type: $this")
+    private fun addPrinter(
+        newPrinter: ExternalPrinter,
+        existingPrinters: List<ExternalPrinter>
+    ): List<ExternalPrinter> {
+        if (existingPrinters.any { it.connectionAddress == newPrinter.connectionAddress }) {
+            return existingPrinters
+        }
+        return existingPrinters + newPrinter
     }
+
+    private fun String.toConnectionType() = ConnectionType.entries.find { it.value == this }
+        ?: throw IllegalArgumentException("Unsupported connection type: $this")
 
     @VisibleForTesting
     fun setDiscoveryTimeout(timeoutMs: Long) {

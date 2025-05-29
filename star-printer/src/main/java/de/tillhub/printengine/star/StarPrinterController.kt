@@ -56,7 +56,7 @@ internal class StarPrinterController(
 
     override fun printText(text: String) {
         printerBuilder.actionPrintText(text)
-            .actionFeedLine(SINGLE_FEED_LINE)
+            .styleAlignment(Alignment.Center)
     }
 
     override fun printBarcode(barcode: String) {
@@ -65,7 +65,7 @@ internal class StarPrinterController(
                 .setBarDots(BAR_DOTS)
                 .setHeight(BARCODE_HEIGHT)
                 .setPrintHri(true)
-        ).actionFeedLine(SINGLE_FEED_LINE)
+        ).styleAlignment(Alignment.Center)
     }
 
     override fun printQr(qrData: String) {
@@ -73,12 +73,12 @@ internal class StarPrinterController(
             QRCodeParameter(qrData)
                 .setLevel(QRCodeLevel.L)
                 .setCellSize(CELL_SIZE)
-        ).actionFeedLine(SINGLE_FEED_LINE)
+        ).styleAlignment(Alignment.Center)
     }
 
     override fun printImage(image: Bitmap) {
         printerBuilder.actionPrintImage(ImageParameter(image, IMAGE_WIDTH))
-            .actionFeedLine(SINGLE_FEED_LINE)
+            .styleAlignment(Alignment.Center)
     }
 
     override fun start() {

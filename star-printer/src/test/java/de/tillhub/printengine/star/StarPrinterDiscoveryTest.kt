@@ -80,7 +80,7 @@ class StarPrinterDiscoveryTest : FunSpec({
         discoveringState.printers shouldHaveSize 1
         with(discoveringState.printers[0]) {
             info.deviceModel shouldBe "StarModel"
-            info.printerPaperSpec.shouldBeTypeOf<PrintingPaperSpec.External>().characterCount shouldBe 48
+            info.printerPaperSpec.shouldBeTypeOf<PrintingPaperSpec.External>().characterCount shouldBe 52
             manufacturer shouldBe "STAR"
             connectionAddress shouldBe "SN123"
             connectionType shouldBe ConnectionType.LAN

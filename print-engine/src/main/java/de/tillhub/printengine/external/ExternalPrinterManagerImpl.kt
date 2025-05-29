@@ -20,62 +20,70 @@ internal class ExternalPrinterManagerImpl(
     private val dispatcherProvider: DispatcherProvider = DispatcherProviderImp()
 ) : ExternalPrinterManager {
 
-    override fun discoverExternalPrinters(vararg discoveries: PrinterDiscovery): Flow<DiscoveryState> = flow {
-        emit(DiscoveryState.Idle)
+    override fun discoverExternalPrinters(vararg discoveries: PrinterDiscovery): Flow<DiscoveryState> =
+        flow {
+            emit(DiscoveryState.Idle)
 
-        if (discoveries.isEmpty()) {
-            emit(DiscoveryState.Discovered(emptyList()))
-            return@flow
-        }
+            if (discoveries.isEmpty()) {
+                emit(DiscoveryState.Discovered(emptyList()))
+                return@flow
+            }
 
-        val uniquePrinters = mutableListOf<ExternalPrinter>()
-        var completedCount = 0
-        var errorCount = 0
+            var discoveredPrinters: List<ExternalPrinter> = emptyList()
+            var completedCount = 0
+            var errorCount = 0
 
-        discoveries
-            .map { it.discoverPrinter(context) }
-            .merge()
-            .collect { state ->
+            discoveries.map { it.discoverPrinter(context) }.merge().collect { state ->
                 when (state) {
                     is DiscoveryState.Discovering -> {
-                        addUniquePrinters(state.printers, uniquePrinters)
-                        emit(DiscoveryState.Discovering(uniquePrinters.toList()))
+                        discoveredPrinters =
+                            addUniquePrinters(state.printers, discoveredPrinters)
+                        emit(DiscoveryState.Discovering(discoveredPrinters.toList()))
                     }
 
                     is DiscoveryState.Discovered -> {
                         completedCount++
-                        emitFinalStateIfAllDone(uniquePrinters, completedCount, errorCount, discoveries.size)
+                        emitFinalStateIfAllDone(
+                            discoveredPrinters, completedCount, errorCount, discoveries.size
+                        )
                     }
 
                     is DiscoveryState.Error -> {
                         errorCount++
-                        emitFinalStateIfAllDone(uniquePrinters, completedCount, errorCount, discoveries.size)
+                        emitFinalStateIfAllDone(
+                            discoveredPrinters, completedCount, errorCount, discoveries.size
+                        )
                     }
 
                     is DiscoveryState.Idle -> Unit
                 }
             }
-    }.flowOn(dispatcherProvider.iO())
+        }.flowOn(dispatcherProvider.iO())
 
-    private fun addUniquePrinters(newPrinters: List<ExternalPrinter>, uniquePrinters: MutableList<ExternalPrinter>) {
+    private fun addUniquePrinters(
+        newPrinters: List<ExternalPrinter>,
+        existingPrinters: List<ExternalPrinter>
+    ): List<ExternalPrinter> {
+        val result = existingPrinters.toMutableList()
         newPrinters.forEach { printer ->
-            if (uniquePrinters.none { it.connectionAddress == printer.connectionAddress }) {
-                uniquePrinters.add(printer)
+            if (result.none { it.connectionAddress == printer.connectionAddress }) {
+                result.add(printer)
             }
         }
+        return result.toList()
     }
 
     private suspend fun FlowCollector<DiscoveryState>.emitFinalStateIfAllDone(
-        uniquePrinters: List<ExternalPrinter>,
+        discoveredPrinters: List<ExternalPrinter>,
         completedCount: Int,
         errorCount: Int,
         totalDiscoveries: Int
     ) {
         if (completedCount + errorCount == totalDiscoveries) {
             emit(
-                uniquePrinters.takeIf { it.isNotEmpty() }
-                    ?.let { DiscoveryState.Discovered(it) }
-                    ?: DiscoveryState.Error("All discoveries failed")
+                discoveredPrinters.takeIf { it.isNotEmpty() }
+                ?.let { DiscoveryState.Discovered(it.toList()) }
+                ?: DiscoveryState.Error("All discoveries failed")
             )
         }
     }

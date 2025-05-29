@@ -108,12 +108,7 @@ internal class EpsonPrinterController(
     private fun ExternalPrinter.getTarget() =
         "${connectionType.fromConnectionType()}:$connectionAddress"
 
-    private fun ConnectionType.fromConnectionType() = when (this) {
-        ConnectionType.LAN_SECURED -> "TCPS"
-        ConnectionType.LAN -> "TCP"
-        ConnectionType.BLUETOOTH -> "BT"
-        ConnectionType.USB -> "USB"
-    }
+    private fun ConnectionType.fromConnectionType() = this.value
 
     override suspend fun getPrinterInfo(): PrinterInfo = printerData.info
 
