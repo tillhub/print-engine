@@ -35,6 +35,7 @@
 -keep class de.tillhub.printengine.data.** { *; }
 -keep class de.tillhub.printengine.barcode.BarcodeEncoder {  *; }
 -keep class de.tillhub.printengine.barcode.BarcodeType { *; }
+-keep class de.tillhub.printengine.data.ConnectionType { *; }
 
 -keep class com.pax.** { *; }
 -keep public class com.sunmi.** {
