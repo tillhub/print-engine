@@ -17,10 +17,9 @@ import de.tillhub.printengine.verifone.VerifonePrintService
 import kotlinx.coroutines.flow.Flow
 
 class PrintEngine private constructor(context: Context) {
+
     private val externalPrinterManager: ExternalPrinterManager by lazy {
-        ExternalPrinterManagerImpl(
-            context
-        )
+        ExternalPrinterManagerImpl()
     }
 
     private var printAnalytics: PrintAnalytics? = null
@@ -43,13 +42,17 @@ class PrintEngine private constructor(context: Context) {
     fun discoverExternalPrinters(vararg discoveries: PrinterDiscovery): Flow<DiscoveryState> =
         externalPrinterManager.discoverExternalPrinters(*discoveries)
 
-    fun initPrinter(printService: PrintService) {
-        (printer as? ExternalPrinterContainer)?.initPrinter(
-            PrinterImpl(
-                printService,
-                printAnalytics
+    fun initPrinter(printService: PrintService): Result<Unit> {
+        return if (printer is ExternalPrinterContainer) {
+            (printer as ExternalPrinterContainer).initPrinter(
+                PrinterImpl(printService, printAnalytics)
             )
-        )
+            Result.success(Unit)
+        } else {
+            Result.failure(
+                IllegalStateException("Cannot initialize printer, it is not an external printer.")
+            )
+        }
     }
 
     companion object : SingletonHolder<PrintEngine, Context>(::PrintEngine)

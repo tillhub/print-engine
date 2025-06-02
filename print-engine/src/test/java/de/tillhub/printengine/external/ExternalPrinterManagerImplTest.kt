@@ -50,12 +50,12 @@ class ExternalPrinterManagerImplTest : FunSpec({
 
         coEvery { printerDiscovery1.discoverPrinter(context) } returns flow {
             emit(DiscoveryState.Discovering(listOf(printer1)))
-            emit(DiscoveryState.Discovered(listOf(printer1)))
+            emit(DiscoveryState.Finished(listOf(printer1)))
         }
 
         coEvery { printerDiscovery2.discoverPrinter(context) } returns flow {
             emit(DiscoveryState.Discovering(listOf(printer2, printer3)))
-            emit(DiscoveryState.Discovered(listOf(printer2, printer3)))
+            emit(DiscoveryState.Finished(listOf(printer2, printer3)))
         }
 
         val result = manager.discoverExternalPrinters(printerDiscovery1, printerDiscovery2)
@@ -64,7 +64,7 @@ class ExternalPrinterManagerImplTest : FunSpec({
         result[0] shouldBe DiscoveryState.Idle
         result[1].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1)
         result[2].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1, printer2)
-        result[3].shouldBeTypeOf<DiscoveryState.Discovered>().printers shouldBe listOf(printer1, printer2)
+        result[3].shouldBeTypeOf<DiscoveryState.Finished>().printers shouldBe listOf(printer1, printer2)
     }
 
     test("discoverExternalPrinters handles single discovery correctly") {
@@ -74,7 +74,7 @@ class ExternalPrinterManagerImplTest : FunSpec({
 
         coEvery { printerDiscovery1.discoverPrinter(context) } returns flow {
             emit(DiscoveryState.Discovering(listOf(printer1)))
-            emit(DiscoveryState.Discovered(listOf(printer1)))
+            emit(DiscoveryState.Finished(listOf(printer1)))
         }
 
         val result = manager.discoverExternalPrinters(printerDiscovery1)
@@ -82,7 +82,7 @@ class ExternalPrinterManagerImplTest : FunSpec({
 
         result[0] shouldBe DiscoveryState.Idle
         result[1].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1)
-        result[2].shouldBeTypeOf<DiscoveryState.Discovered>().printers shouldBe listOf(printer1)
+        result[2].shouldBeTypeOf<DiscoveryState.Finished>().printers shouldBe listOf(printer1)
     }
 
     test("discoverExternalPrinters ignores Error and Idle states from discoveries") {
@@ -94,7 +94,7 @@ class ExternalPrinterManagerImplTest : FunSpec({
             emit(DiscoveryState.Discovering(listOf(printer1)))
             emit(DiscoveryState.Error("Some error"))
             emit(DiscoveryState.Idle)
-            emit(DiscoveryState.Discovered(listOf(printer1)))
+            emit(DiscoveryState.Finished(listOf(printer1)))
         }
 
         val result = manager.discoverExternalPrinters(printerDiscovery1)
@@ -102,6 +102,6 @@ class ExternalPrinterManagerImplTest : FunSpec({
 
         result[0] shouldBe DiscoveryState.Idle
         result[1].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1)
-        result[2].shouldBeTypeOf<DiscoveryState.Discovered>().printers shouldBe listOf(printer1)
+        result[2].shouldBeTypeOf<DiscoveryState.Finished>().printers shouldBe listOf(printer1)
     }
 })

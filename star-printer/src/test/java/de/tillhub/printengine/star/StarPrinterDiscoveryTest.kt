@@ -86,9 +86,9 @@ class StarPrinterDiscoveryTest : FunSpec({
             connectionType shouldBe ConnectionType.LAN
         }
 
-        val discoveredState = result[2] as DiscoveryState.Discovered
-        discoveredState.printers shouldHaveSize 1
-        discoveredState.printers[0].connectionAddress shouldBe "SN123"
+        val finishedState = result[2] as DiscoveryState.Finished
+        finishedState.printers shouldHaveSize 1
+        finishedState.printers[0].connectionAddress shouldBe "SN123"
     }
 
     test("discoverPrinter emits Error state when discovery fails") {
@@ -115,7 +115,7 @@ class StarPrinterDiscoveryTest : FunSpec({
 
         result shouldHaveSize 2
         result[0] shouldBe DiscoveryState.Idle
-        result[1].shouldBeTypeOf<DiscoveryState.Discovered>().printers.shouldBeEmpty()
+        result[1].shouldBeTypeOf<DiscoveryState.Finished>().printers.shouldBeEmpty()
 
         verify {
             StarDeviceDiscoveryManagerFactory.create(
@@ -174,8 +174,8 @@ class StarPrinterDiscoveryTest : FunSpec({
         discovering2.printers[1].connectionAddress shouldBe "BT456"
         discovering2.printers[1].connectionType shouldBe ConnectionType.BLUETOOTH
 
-        val discovered = result[3] as DiscoveryState.Discovered
-        discovered.printers.map { it.connectionAddress } shouldBe listOf("SN123", "BT456")
+        val finished = result[3] as DiscoveryState.Finished
+        finished.printers.map { it.connectionAddress } shouldBe listOf("SN123", "BT456")
     }
 })
 

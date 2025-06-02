@@ -1,90 +1,38 @@
 package de.tillhub.printengine.external
 
-import android.content.Context
 import de.tillhub.printengine.data.DiscoveryState
 import de.tillhub.printengine.data.ExternalPrinter
-import de.tillhub.printengine.dispatcher.DispatcherProvider
-import de.tillhub.printengine.dispatcher.DispatcherProviderImp
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 
 /**
  * Manages external printer discovery, combining results from multiple discovery methods.
  * Emits [DiscoveryState.Error] only if all discoveries fail without finding printers.
  */
-internal class ExternalPrinterManagerImpl(
-    private val context: Context,
-    private val dispatcherProvider: DispatcherProvider = DispatcherProviderImp()
-) : ExternalPrinterManager {
+internal class ExternalPrinterManagerImpl : ExternalPrinterManager {
+
+    private val discoveredPrinters = mutableMapOf<String, ExternalPrinter>()
 
     override fun discoverExternalPrinters(vararg discoveries: PrinterDiscovery): Flow<DiscoveryState> =
-        flow {
-            emit(DiscoveryState.Idle)
-
-            if (discoveries.isEmpty()) {
-                emit(DiscoveryState.Discovered(emptyList()))
-                return@flow
-            }
-
-            var discoveredPrinters: List<ExternalPrinter> = emptyList()
-            var completedCount = 0
-            var errorCount = 0
-
-            discoveries.map { it.discoverPrinter(context) }.merge().collect { state ->
-                when (state) {
-                    is DiscoveryState.Discovering -> {
-                        discoveredPrinters =
-                            addUniquePrinters(state.printers, discoveredPrinters)
-                        emit(DiscoveryState.Discovering(discoveredPrinters.toList()))
-                    }
-
-                    is DiscoveryState.Discovered -> {
-                        completedCount++
-                        emitFinalStateIfAllDone(
-                            discoveredPrinters, completedCount, errorCount, discoveries.size
-                        )
-                    }
-
-                    is DiscoveryState.Error -> {
-                        errorCount++
-                        emitFinalStateIfAllDone(
-                            discoveredPrinters, completedCount, errorCount, discoveries.size
-                        )
-                    }
-
-                    is DiscoveryState.Idle -> Unit
+        discoveries.map { it.observePrinters }.merge().map { state ->
+            when (state) {
+                DiscoveryState.Idle,
+                is DiscoveryState.Error -> state
+                is DiscoveryState.Discovering -> {
+                    addUniquePrinters(state.printers)
+                    DiscoveryState.Discovering(discoveredPrinters.values.toList())
+                }
+                is DiscoveryState.Finished -> {
+                    addUniquePrinters(state.printers)
+                    DiscoveryState.Finished(discoveredPrinters.values.toList())
                 }
             }
-        }.flowOn(dispatcherProvider.iO())
-
-    private fun addUniquePrinters(
-        newPrinters: List<ExternalPrinter>,
-        existingPrinters: List<ExternalPrinter>
-    ): List<ExternalPrinter> {
-        val result = existingPrinters.toMutableList()
-        newPrinters.forEach { printer ->
-            if (result.none { it.connectionAddress == printer.connectionAddress }) {
-                result.add(printer)
-            }
         }
-        return result.toList()
-    }
 
-    private suspend fun FlowCollector<DiscoveryState>.emitFinalStateIfAllDone(
-        discoveredPrinters: List<ExternalPrinter>,
-        completedCount: Int,
-        errorCount: Int,
-        totalDiscoveries: Int
-    ) {
-        if (completedCount + errorCount == totalDiscoveries) {
-            emit(
-                discoveredPrinters.takeIf { it.isNotEmpty() }
-                ?.let { DiscoveryState.Discovered(it.toList()) }
-                ?: DiscoveryState.Error("All discoveries failed")
-            )
+    private fun addUniquePrinters(newPrinters: List<ExternalPrinter>) {
+        newPrinters.forEach { printer ->
+            discoveredPrinters[printer.connectionAddress] = printer
         }
     }
 }

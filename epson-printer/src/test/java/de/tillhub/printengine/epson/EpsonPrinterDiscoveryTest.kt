@@ -43,7 +43,7 @@ class EpsonPrinterDiscoveryTest : FunSpec({
 
         states.size shouldBe 2
         states[0] shouldBe DiscoveryState.Idle
-        states[1] shouldBe DiscoveryState.Discovered(emptyList())
+        states[1] shouldBe DiscoveryState.Finished(emptyList())
         verify {
             EpsonDiscoveryWrapper.start(any(), any(), any())
             EpsonDiscoveryWrapper.stop()
@@ -78,7 +78,7 @@ class EpsonPrinterDiscoveryTest : FunSpec({
             }
         }
         states[2].let { state ->
-            state.shouldBeInstanceOf<DiscoveryState.Discovered>()
+            state.shouldBeInstanceOf<DiscoveryState.Finished>()
             state.printers.size shouldBe 1
             state.printers[0].let { printer ->
                 printer.manufacturer shouldBe "EPSON"
@@ -127,7 +127,7 @@ class EpsonPrinterDiscoveryTest : FunSpec({
 
         val states = EpsonPrinterDiscovery.discoverPrinter(context).toList()
 
-        states[1] shouldBe DiscoveryState.Discovered(emptyList())
+        states[1] shouldBe DiscoveryState.Finished(emptyList())
         verify {
             EpsonDiscoveryWrapper.start(any(), any(), any())
             EpsonDiscoveryWrapper.stop()

@@ -187,7 +187,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    is DiscoveryState.Discovered -> {
+                    is DiscoveryState.Finished -> {
                         printers.apply {
                             clear()
                             addAll(discoveryState.printers)
