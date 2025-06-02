@@ -12,6 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -22,8 +23,8 @@ class ExternalPrinterManagerImplTest : FunSpec({
     lateinit var context: Context
     lateinit var testDispatcher: TestDispatcher
     lateinit var dispatcherProvider: DispatcherProvider
-    lateinit var printerDiscovery1: PrinterDiscovery
-    lateinit var printerDiscovery2: PrinterDiscovery
+    lateinit var epsonPrinterDiscovery: PrinterDiscovery
+    lateinit var starPrinterDiscovery: PrinterDiscovery
     lateinit var manager: ExternalPrinterManager
 
     beforeTest {
@@ -32,9 +33,9 @@ class ExternalPrinterManagerImplTest : FunSpec({
         dispatcherProvider = mockk {
             every { iO() } returns testDispatcher
         }
-        printerDiscovery1 = mockk()
-        printerDiscovery2 = mockk()
-        manager = ExternalPrinterManagerImpl(context, dispatcherProvider)
+        epsonPrinterDiscovery = mockk()
+        starPrinterDiscovery = mockk()
+        manager = ExternalPrinterManagerImpl()
     }
 
     test("discoverExternalPrinters emits Idle then Discovered with unique printers") {
@@ -48,23 +49,28 @@ class ExternalPrinterManagerImplTest : FunSpec({
             every { connectionAddress } returns "SN001"
         }
 
-        coEvery { printerDiscovery1.discoverPrinter(context) } returns flow {
+        coEvery { epsonPrinterDiscovery.observePrinters } returns flow {
             emit(DiscoveryState.Discovering(listOf(printer1)))
-            emit(DiscoveryState.Finished(listOf(printer1)))
         }
 
-        coEvery { printerDiscovery2.discoverPrinter(context) } returns flow {
+        coEvery { starPrinterDiscovery.observePrinters } returns flow {
             emit(DiscoveryState.Discovering(listOf(printer2, printer3)))
             emit(DiscoveryState.Finished(listOf(printer2, printer3)))
         }
 
-        val result = manager.discoverExternalPrinters(printerDiscovery1, printerDiscovery2)
-            .toList()
+        val result =
+            manager.discoverExternalPrinters(epsonPrinterDiscovery, starPrinterDiscovery).take(3)
+                .toList()
 
-        result[0] shouldBe DiscoveryState.Idle
-        result[1].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1)
-        result[2].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1, printer2)
-        result[3].shouldBeTypeOf<DiscoveryState.Finished>().printers shouldBe listOf(printer1, printer2)
+        result[0].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1)
+        result[1].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(
+            printer3,
+            printer2
+        )
+        result[2].shouldBeTypeOf<DiscoveryState.Finished>().printers shouldBe listOf(
+            printer3,
+            printer2
+        )
     }
 
     test("discoverExternalPrinters handles single discovery correctly") {
@@ -72,36 +78,57 @@ class ExternalPrinterManagerImplTest : FunSpec({
             every { connectionAddress } returns "SN001"
         }
 
-        coEvery { printerDiscovery1.discoverPrinter(context) } returns flow {
+        coEvery { epsonPrinterDiscovery.observePrinters } returns flow {
             emit(DiscoveryState.Discovering(listOf(printer1)))
             emit(DiscoveryState.Finished(listOf(printer1)))
         }
 
-        val result = manager.discoverExternalPrinters(printerDiscovery1)
+        val result = manager.discoverExternalPrinters(epsonPrinterDiscovery).take(2)
             .toList()
 
-        result[0] shouldBe DiscoveryState.Idle
-        result[1].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1)
-        result[2].shouldBeTypeOf<DiscoveryState.Finished>().printers shouldBe listOf(printer1)
+        result[0].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1)
+        result[1].shouldBeTypeOf<DiscoveryState.Finished>().printers shouldBe listOf(printer1)
     }
 
-    test("discoverExternalPrinters ignores Error and Idle states from discoveries") {
+    test("discoverExternalPrinters emits Error when all discoveries fail without printers") {
+        coEvery { epsonPrinterDiscovery.observePrinters } returns flow {
+            emit(DiscoveryState.Error("Discovery 1 failed"))
+        }
+
+        coEvery { starPrinterDiscovery.observePrinters } returns flow {
+            emit(DiscoveryState.Error("Discovery 2 failed"))
+        }
+
+        val result = manager.discoverExternalPrinters(epsonPrinterDiscovery, starPrinterDiscovery)
+            .take(1).toList()
+
+        result[0] shouldBe DiscoveryState.Error("Discovery 1 failed")
+    }
+
+    test("discoverExternalPrinters emits Discovered when at least one discovery succeeds") {
         val printer1 = mockk<ExternalPrinter> {
             every { connectionAddress } returns "SN001"
         }
 
-        coEvery { printerDiscovery1.discoverPrinter(context) } returns flow {
+        coEvery { epsonPrinterDiscovery.observePrinters } returns flow {
             emit(DiscoveryState.Discovering(listOf(printer1)))
-            emit(DiscoveryState.Error("Some error"))
-            emit(DiscoveryState.Idle)
             emit(DiscoveryState.Finished(listOf(printer1)))
         }
 
-        val result = manager.discoverExternalPrinters(printerDiscovery1)
+        coEvery { starPrinterDiscovery.observePrinters } returns flow {
+            emit(DiscoveryState.Error("Discovery 2 failed"))
+        }
+
+        val result = manager.discoverExternalPrinters(epsonPrinterDiscovery, starPrinterDiscovery)
             .toList()
 
-        result[0] shouldBe DiscoveryState.Idle
-        result[1].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1)
-        result[2].shouldBeTypeOf<DiscoveryState.Finished>().printers shouldBe listOf(printer1)
+        result[0].shouldBeTypeOf<DiscoveryState.Discovering>().printers shouldBe listOf(printer1)
+        result[1].shouldBeTypeOf<DiscoveryState.Finished>().printers shouldBe listOf(printer1)
+    }
+
+    test("discoverExternalPrinters emits Discovered with empty list when no discoveries provided") {
+        val result = manager.discoverExternalPrinters()
+            .toList()
+        result shouldBe emptyList()
     }
 })

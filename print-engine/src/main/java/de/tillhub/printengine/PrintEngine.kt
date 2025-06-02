@@ -17,7 +17,6 @@ import de.tillhub.printengine.verifone.VerifonePrintService
 import kotlinx.coroutines.flow.Flow
 
 class PrintEngine private constructor(context: Context) {
-
     private val externalPrinterManager: ExternalPrinterManager by lazy {
         ExternalPrinterManagerImpl()
     }

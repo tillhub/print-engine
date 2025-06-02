@@ -4,7 +4,6 @@ import java.util.Objects
 
 sealed class DiscoveryState {
     data object Idle : DiscoveryState()
-
     class Error(val message: String?) : DiscoveryState() {
         override fun toString() = "DiscoveryState.Error(" +
                 "message=$message" +

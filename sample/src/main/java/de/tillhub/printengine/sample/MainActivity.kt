@@ -176,8 +176,8 @@ class MainActivity : ComponentActivity() {
     private fun discoverPrinters() {
         lifecycleScope.launch {
             printerEngine.discoverExternalPrinters(
-                StarPrinterDiscovery,
-                EpsonPrinterDiscovery
+                StarPrinterDiscovery(this@MainActivity),
+                EpsonPrinterDiscovery(this@MainActivity)
             ).collect { discoveryState ->
                 when (discoveryState) {
                     is DiscoveryState.Discovering -> {
@@ -299,7 +299,18 @@ class MainActivity : ComponentActivity() {
                             "------------------------------------------\n" +
                             "              receipt-footer              \n"
                 ),
-                PrintCommand.Barcode("RT9F0C7378"),
+                PrintCommand.Text("This is a another line"),
+                PrintCommand.Text("-------"),
+                PrintCommand.Text("Barcode working:"),
+                PrintCommand.Barcode("RTC6093739"),
+                PrintCommand.Text("Barcode broken:"),
+                PrintCommand.Barcode("RTB183648B"),
+                PrintCommand.Text("Barcode more broken:"),
+                PrintCommand.Barcode("RTABCDEFAB"),
+                PrintCommand.Text("QR code:"),
+                PrintCommand.QrCode("123ABC"),
+                PrintCommand.Text("40 char line:"),
+                PrintCommand.Text("1234567890123456789012345678901234567890"),
                 PrintCommand.FeedPaper,
                 PrintCommand.CutPaper
             )

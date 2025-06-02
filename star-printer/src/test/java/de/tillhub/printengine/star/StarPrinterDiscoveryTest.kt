@@ -5,6 +5,7 @@ import com.starmicronics.stario10.InterfaceType
 import com.starmicronics.stario10.StarConnectionSettings
 import com.starmicronics.stario10.StarDeviceDiscoveryManager
 import com.starmicronics.stario10.StarDeviceDiscoveryManagerFactory
+import com.starmicronics.stario10.StarIO10Exception
 import com.starmicronics.stario10.StarPrinter
 import com.starmicronics.stario10.StarPrinterInformation
 import de.tillhub.printengine.data.ConnectionType
@@ -20,19 +21,21 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import io.mockk.verify
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
 
 class StarPrinterDiscoveryTest : FunSpec({
 
     lateinit var context: Context
     lateinit var discoveryManager: StarDeviceDiscoveryManager
     lateinit var starPrinter: StarPrinter
+    lateinit var starPrinterDiscovery: StarPrinterDiscovery
 
     beforeEach {
         context = mockk()
         discoveryManager = mockk(relaxed = true)
         starPrinter = mockk()
+        starPrinterDiscovery = StarPrinterDiscovery(context)
 
         mockkObject(StarDeviceDiscoveryManagerFactory)
         every {
@@ -41,15 +44,13 @@ class StarPrinterDiscoveryTest : FunSpec({
                 context
             )
         } returns discoveryManager
-
-        every { discoveryManager.discoveryTime } returns 10000
     }
 
     afterEach {
         unmockkObject(StarDeviceDiscoveryManagerFactory)
     }
 
-    test("discoverPrinter emits Discovering and Discovered states on successful discovery") {
+    test("observePrinters emits Discovering and Finished states on successful discovery") {
         val connectionSettings = mockk<StarConnectionSettings> {
             every { identifier } returns "SN123"
             every { interfaceType } returns InterfaceType.Lan
@@ -71,12 +72,12 @@ class StarPrinterDiscoveryTest : FunSpec({
             capturedCallback?.onDiscoveryFinished()
         }
 
-        val result = runBlocking { StarPrinterDiscovery.discoverPrinter(context).toList() }
+        val result = starPrinterDiscovery.observePrinters.take(3).toList()
 
         result shouldHaveSize 3
         result[0] shouldBe DiscoveryState.Idle
 
-        val discoveringState = result[1] as DiscoveryState.Discovering
+        val discoveringState = result[1].shouldBeTypeOf<DiscoveryState.Discovering>()
         discoveringState.printers shouldHaveSize 1
         with(discoveringState.printers[0]) {
             info.deviceModel shouldBe "StarModel"
@@ -86,22 +87,31 @@ class StarPrinterDiscoveryTest : FunSpec({
             connectionType shouldBe ConnectionType.LAN
         }
 
-        val finishedState = result[2] as DiscoveryState.Finished
+        val finishedState = result[2].shouldBeTypeOf<DiscoveryState.Finished>()
         finishedState.printers shouldHaveSize 1
         finishedState.printers[0].connectionAddress shouldBe "SN123"
     }
 
-    test("discoverPrinter emits Error state when discovery fails") {
-        every { discoveryManager.startDiscovery() } throws RuntimeException("Discovery failed")
+    test("observePrinters emits Error state when discovery fails") {
+        var capturedCallback: StarDeviceDiscoveryManager.Callback? = null
 
-        val result = runBlocking { StarPrinterDiscovery.discoverPrinter(context).toList() }
+        every { discoveryManager.startDiscovery() } throws StarIO10Exception("Discovery failed")
 
+        every { discoveryManager.callback = any() } answers {
+            capturedCallback = it.invocation.args[0] as? StarDeviceDiscoveryManager.Callback
+        }
+
+        val result = starPrinterDiscovery.observePrinters.take(2).toList()
+
+        capturedCallback shouldBe null
         result shouldHaveSize 2
         result[0] shouldBe DiscoveryState.Idle
         result[1].shouldBeTypeOf<DiscoveryState.Error>().message shouldBe "Discovery failed"
+
+        verify { discoveryManager.stopDiscovery() }
     }
 
-    test("discoverPrinter uses correct interface types and timeout") {
+    test("observePrinters uses correct interface types") {
         var capturedCallback: StarDeviceDiscoveryManager.Callback? = null
 
         every { discoveryManager.callback = any() } answers {
@@ -111,7 +121,7 @@ class StarPrinterDiscoveryTest : FunSpec({
             capturedCallback?.onDiscoveryFinished()
         }
 
-        val result = runBlocking { StarPrinterDiscovery.discoverPrinter(context).toList() }
+        val result = starPrinterDiscovery.observePrinters.take(2).toList()
 
         result shouldHaveSize 2
         result[0] shouldBe DiscoveryState.Idle
@@ -122,12 +132,11 @@ class StarPrinterDiscoveryTest : FunSpec({
                 listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb),
                 context
             )
-            discoveryManager.discoveryTime = 10000
             discoveryManager.startDiscovery()
         }
     }
 
-    test("discoverPrinter maps multiple printers correctly") {
+    test("observePrinters maps multiple printers correctly") {
         val printerInfo = mockk<StarPrinterInformation> {
             every { model } returns mockk { every { name } returns "StarModel" }
         }
@@ -159,23 +168,22 @@ class StarPrinterDiscoveryTest : FunSpec({
             capturedCallback?.onDiscoveryFinished()
         }
 
-        val result = runBlocking { StarPrinterDiscovery.discoverPrinter(context).toList() }
+        val result = starPrinterDiscovery.observePrinters.take(4).toList()
 
         result shouldHaveSize 4
         result[0] shouldBe DiscoveryState.Idle
 
-        val discovering1 = result[1] as DiscoveryState.Discovering
+        val discovering1 = result[1].shouldBeTypeOf<DiscoveryState.Discovering>()
         discovering1.printers shouldHaveSize 1
         discovering1.printers[0].connectionAddress shouldBe "SN123"
         discovering1.printers[0].connectionType shouldBe ConnectionType.LAN
 
-        val discovering2 = result[2] as DiscoveryState.Discovering
+        val discovering2 = result[2].shouldBeTypeOf<DiscoveryState.Discovering>()
         discovering2.printers shouldHaveSize 2
         discovering2.printers[1].connectionAddress shouldBe "BT456"
         discovering2.printers[1].connectionType shouldBe ConnectionType.BLUETOOTH
 
-        val finished = result[3] as DiscoveryState.Finished
+        val finished = result[3].shouldBeTypeOf<DiscoveryState.Finished>()
         finished.printers.map { it.connectionAddress } shouldBe listOf("SN123", "BT456")
     }
 })
-

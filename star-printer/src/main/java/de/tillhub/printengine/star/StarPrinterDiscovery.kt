@@ -37,30 +37,35 @@ class StarPrinterDiscovery(private val context: Context) : PrinterDiscovery {
             trySend(DiscoveryState.Idle)
 
             val discoveredPrinters = mutableMapOf<String, ExternalPrinter>()
-
-            try {
-                with(StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context)) {
-                    callback = object : StarDeviceDiscoveryManager.Callback {
-                        override fun onPrinterFound(printer: StarPrinter) {
-                            with(createPrinter(printer)) {
-                                // Use the connection address as a unique identifier
-                                discoveredPrinters[connectionAddress] = this
-                            }
-                            trySend(DiscoveryState.Discovering(discoveredPrinters.values.toList()))
-                        }
-
-                        override fun onDiscoveryFinished() {
-                            trySend(DiscoveryState.Finished(discoveredPrinters.values.toList()))
-                        }
-                    }
-                    startDiscovery()
-                    awaitClose {
-                        callback = null
-                        stopDiscovery()
-                    }
-                }
+            val discoveryManager = try {
+                StarDeviceDiscoveryManagerFactory.create(interfaceTypes, context)
             } catch (e: StarIO10Exception) {
                 trySend(DiscoveryState.Error(e.message))
+                return@callbackFlow
+            }
+
+            discoveryManager.callback = object : StarDeviceDiscoveryManager.Callback {
+                override fun onPrinterFound(printer: StarPrinter) {
+                    with(createPrinter(printer)) {
+                        discoveredPrinters[connectionAddress] = this
+                    }
+                    trySend(DiscoveryState.Discovering(discoveredPrinters.values.toList()))
+                }
+
+                override fun onDiscoveryFinished() {
+                    trySend(DiscoveryState.Finished(discoveredPrinters.values.toList()))
+                }
+            }
+
+            try {
+                discoveryManager.startDiscovery()
+            } catch (e: StarIO10Exception) {
+                trySend(DiscoveryState.Error(e.message))
+            }
+
+            awaitClose {
+                discoveryManager.callback = null
+                discoveryManager.stopDiscovery()
             }
         }
 

@@ -3,7 +3,6 @@ package de.tillhub.printengine.epson
 import android.graphics.Bitmap
 import com.epson.epos2.Epos2Exception
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.ConnectionType
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterState
@@ -106,9 +105,7 @@ internal class EpsonPrinterController(
     }
 
     private fun ExternalPrinter.getTarget() =
-        "${connectionType.fromConnectionType()}:$connectionAddress"
-
-    private fun ConnectionType.fromConnectionType() = this.value
+        "${connectionType.value}:$connectionAddress"
 
     override suspend fun getPrinterInfo(): PrinterInfo = printerData.info
 
