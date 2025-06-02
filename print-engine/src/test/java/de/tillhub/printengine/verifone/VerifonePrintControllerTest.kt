@@ -113,7 +113,7 @@ internal class VerifonePrintControllerTest : DescribeSpec({
         printerController.start()
 
         verify(ordering = Ordering.ORDERED) {
-            barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 420, 140)
+            barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 435, 140)
             printManager.printString(any(), payload, Printer.PRINTER_NO_CUTTER_LINE_FEED)
         }
     }
