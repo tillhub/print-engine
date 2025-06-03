@@ -7,16 +7,27 @@ import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import timber.log.Timber
+import androidx.core.graphics.createBitmap
 
 internal class BarcodeEncoderImpl : BarcodeEncoder {
 
-    override fun encodeAsBitmap(content: String, type: BarcodeType, imgWidth: Int, imgHeight: Int): Bitmap? {
+    override fun encodeAsBitmap(
+        content: String,
+        type: BarcodeType,
+        imgWidth: Int,
+        imgHeight: Int
+    ): Bitmap? {
         val hints = HashMap<EncodeHintType, Any>().apply {
             guessAppropriateEncoding(content)?.let { encoding ->
                 put(EncodeHintType.CHARACTER_SET, encoding)
             }
-            if (type == BarcodeType.QR_CODE) {
-                put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.Q)
+            when (type) {
+                BarcodeType.CODE_128 -> {
+                    put(EncodeHintType.MARGIN, 0)
+                }
+                BarcodeType.QR_CODE -> {
+                    put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.Q)
+                }
             }
         }
 
@@ -38,7 +49,7 @@ internal class BarcodeEncoderImpl : BarcodeEncoder {
             }
         }
 
-        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
+        return createBitmap(width, height).apply {
             setPixels(pixels, 0, width, 0, 0, width, height)
         }
     }

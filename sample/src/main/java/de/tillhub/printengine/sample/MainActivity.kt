@@ -41,6 +41,7 @@ import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterState
+import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.epson.EpsonPrinterDiscovery
 import de.tillhub.printengine.epson.EpsonServiceProvider
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
@@ -51,7 +52,11 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private var initilazed: Boolean = false
-    private val printerEngine by lazy { PrintEngine.getInstance(this) }
+    private val printerEngine by lazy {
+        PrintEngine.getInstance(this).also {
+            it.printer.settings.printingIntensity = PrintingIntensity.DEFAULT
+        }
+    }
     private val printers = mutableStateListOf<ExternalPrinter>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -257,8 +262,12 @@ class MainActivity : ComponentActivity() {
                 PrintCommand.Text("This is a line"),
                 PrintCommand.Text("This is a another line"),
                 PrintCommand.Text("-------"),
-                PrintCommand.Text("Barcode:"),
+                PrintCommand.Text("Barcode working:"),
                 PrintCommand.Barcode("RTC6093739"),
+                PrintCommand.Text("Barcode broken:"),
+                PrintCommand.Barcode("RTB183648B"),
+                PrintCommand.Text("Barcode more broken:"),
+                PrintCommand.Barcode("RTABCDEFAB"),
                 PrintCommand.Text("QR code:"),
                 PrintCommand.QrCode("123ABC"),
                 PrintCommand.Text("40 char line:"),

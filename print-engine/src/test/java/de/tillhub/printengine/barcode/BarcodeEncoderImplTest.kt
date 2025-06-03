@@ -5,6 +5,7 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import de.tillhub.printengine.BitmapAssertions
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
@@ -35,6 +36,12 @@ internal class BarcodeEncoderImplTest : FunSpec({
         }
     }
 
+    test("encodeAsBitmap barcode compare bitmap") {
+        val result = barcodeEncoder.encodeAsBitmap("RTB183648B", BarcodeType.CODE_128, 435, 140)
+
+        BitmapAssertions.assertBitmapMatches("barcode", result!!)
+    }
+
     test("encodeAsBitmap qr code") {
         val result = barcodeEncoder.encodeAsBitmap("qrcode", BarcodeType.QR_CODE, 500, 500)
 
@@ -56,6 +63,12 @@ internal class BarcodeEncoderImplTest : FunSpec({
                 result?.getPixel(x, y) shouldBe if (expectedResult.get(x, y)) BLACK else WHITE
             }
         }
+    }
+
+    test("encodeAsBitmap qr code compare bitmap") {
+        val result = barcodeEncoder.encodeAsBitmap("123ABC", BarcodeType.QR_CODE, 220, 220)
+
+        BitmapAssertions.assertBitmapMatches("qr", result!!)
     }
 }) {
     companion object {
