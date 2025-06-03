@@ -26,12 +26,17 @@ sealed class DiscoveryState {
         override fun hashCode() = Objects.hash(printers)
     }
 
-    class Discovered(val printers: List<ExternalPrinter>) : DiscoveryState() {
+    /**
+     * Represents the final state of discovery, containing a list of discovered printers.
+     * This state is emitted when the discovery process is complete and it's optional (supported by some printers).
+     * This state might not be the final state for other printers that continue to discover printers.
+     */
+    class Finished(val printers: List<ExternalPrinter>) : DiscoveryState() {
         override fun toString() = "DiscoveryState.Discovered(" +
                 "printers=$printers" +
                 ")"
 
-        override fun equals(other: Any?) = other is Discovered &&
+        override fun equals(other: Any?) = other is Finished &&
                 printers == other.printers
 
         override fun hashCode() = Objects.hash(printers)

@@ -176,8 +176,8 @@ class MainActivity : ComponentActivity() {
     private fun discoverPrinters() {
         lifecycleScope.launch {
             printerEngine.discoverExternalPrinters(
-                StarPrinterDiscovery,
-                EpsonPrinterDiscovery
+                StarPrinterDiscovery(this@MainActivity),
+                EpsonPrinterDiscovery(this@MainActivity)
             ).collect { discoveryState ->
                 when (discoveryState) {
                     is DiscoveryState.Discovering -> {
@@ -187,7 +187,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    is DiscoveryState.Discovered -> {
+                    is DiscoveryState.Finished -> {
                         printers.apply {
                             clear()
                             addAll(discoveryState.printers)
@@ -259,7 +259,46 @@ class MainActivity : ComponentActivity() {
     companion object {
         private val printJob = PrintJob(
             listOf(
-                PrintCommand.Text("This is a line"),
+                PrintCommand.Text(
+                            "              receipt-header              \n" +
+                            "------------------------------------------\n" +
+                            "Receipt:                                 1\n" +
+                            "Salesperson:                    staff name\n" +
+                            "Date and Time:             20.5.2020 20:00\n" +
+                            "Branch:                                  1\n" +
+                            "Register:                              123\n" +
+                            "------------------------------------------\n" +
+                            "Customer number:                    654321\n" +
+                            "------------------------------------------\n" +
+                            "  receipt-note                            \n" +
+                            "------------------------------------------\n" +
+                            "0011                                      \n" +
+                            "multiline long product item name for      \n" +
+                            "receipt att-desc                          \n" +
+                            "- addon_name                              \n" +
+                            "             10.00 €       1       10.00 €\n" +
+                            "  note                                    \n" +
+                            "voucher-code                              \n" +
+                            "                                          \n" +
+                            "------------------------------------------\n" +
+                            "Tips                                3.00 €\n" +
+                            "                                          \n" +
+                            "******************************************\n" +
+                            "Total (gross):                     10.00 €\n" +
+                            "******************************************\n" +
+                            "Given:                                    \n" +
+                            "Cash                               10.00 €\n" +
+                            "- including tip:                    3.00 €\n" +
+                            "------------------------------------------\n" +
+                            "Change:                            10.00 €\n" +
+                            "------------------------------------------\n" +
+                            "Vat                                       \n" +
+                            "    19 %                            1.00 €\n" +
+                            "------------------------------------------\n" +
+                            "Net:                               10.00 €\n" +
+                            "------------------------------------------\n" +
+                            "              receipt-footer              \n"
+                ),
                 PrintCommand.Text("This is a another line"),
                 PrintCommand.Text("-------"),
                 PrintCommand.Text("Barcode working:"),
@@ -272,7 +311,8 @@ class MainActivity : ComponentActivity() {
                 PrintCommand.QrCode("123ABC"),
                 PrintCommand.Text("40 char line:"),
                 PrintCommand.Text("1234567890123456789012345678901234567890"),
-                PrintCommand.FeedPaper
+                PrintCommand.FeedPaper,
+                PrintCommand.CutPaper
             )
         )
     }
