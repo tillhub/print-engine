@@ -95,5 +95,14 @@ afterEvaluate {
                 from(components.getByName("release"))
             }
         }
+        repositories {
+            maven {
+                url = uri("https://nexus.infra.unzer.io/repository/tillhub-print-engine-epson-hosted/")
+                credentials {
+                    username = System.getenv("NEXUS_USERNAME")
+                    password = System.getenv("NEXUS_PASSWORD")
+                }
+            }
+        }
     }
 }
