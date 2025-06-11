@@ -83,7 +83,7 @@ internal class StarPrinterController(
 
     override fun start() {
         scope.launch {
-            runCatching {
+            try {
                 val commandBuilder = commandBuilderFactory().apply {
                     addDocument(documentBuilderFactory().addPrinter(printerBuilder))
                 }
@@ -93,13 +93,13 @@ internal class StarPrinterController(
                 starPrinter.printAsync(commands).await()
 
                 printerBuilder = PrinterBuilder().styleAlignment(Alignment.Center)
-            }.onFailure { exception ->
+            } catch (exception: Exception) {
                 printerState.value = StarPrinterErrorState.convert(
                     StarPrinterErrorState.fromCode(
                         (exception as StarIO10Exception).errorCode.value
                     )
                 )
-            }.also {
+            } finally {
                 starPrinter.closeAsync().await()
             }
         }
