@@ -1,6 +1,7 @@
 package de.tillhub.printengine.star
 
 import android.graphics.Bitmap
+import android.util.Log
 import com.starmicronics.stario10.StarIO10Exception
 import com.starmicronics.stario10.StarPrinter
 import com.starmicronics.stario10.starxpandcommand.DocumentBuilder
@@ -94,6 +95,7 @@ internal class StarPrinterController(
 
                 printerBuilder = PrinterBuilder().styleAlignment(Alignment.Center)
             } catch (exception: Exception) {
+                Log.d("======","========${exception}")
                 printerState.value = StarPrinterErrorState.convert(
                     StarPrinterErrorState.fromCode(
                         (exception as StarIO10Exception).errorCode.value
