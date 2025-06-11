@@ -42,6 +42,7 @@ internal class StarPrinterController(
     override fun observePrinterState(): Flow<PrinterState> = printerState
 
     override fun sendRawData(data: RawPrinterData) {
+        Log.d("======","========sendRawData===${data}")
         scope.launch {
             starPrinter.openAsync().await()
             starPrinter.printRawDataAsync(data.bytes.toList()).await()
@@ -50,17 +51,20 @@ internal class StarPrinterController(
     }
 
     override fun setFontSize(fontSize: PrintingFontType) {
+        Log.d("======","========setFontSize===${fontSize}")
         when (fontSize) {
             PrintingFontType.DEFAULT_FONT_SIZE -> printerBuilder.styleFont(FontType.A)
         }
     }
 
     override fun printText(text: String) {
+        Log.d("======","========printText===${text}")
         printerBuilder.actionPrintText(text)
             .styleAlignment(Alignment.Center)
     }
 
     override fun printBarcode(barcode: String) {
+        Log.d("======","========printBarcode")
         printerBuilder.actionPrintBarcode(
             BarcodeParameter(barcode, BarcodeSymbology.Code128)
                 .setBarDots(BAR_DOTS)
@@ -70,6 +74,7 @@ internal class StarPrinterController(
     }
 
     override fun printQr(qrData: String) {
+        Log.d("======","========printQr")
         printerBuilder.actionPrintQRCode(
             QRCodeParameter(qrData)
                 .setLevel(QRCodeLevel.L)
@@ -78,11 +83,13 @@ internal class StarPrinterController(
     }
 
     override fun printImage(image: Bitmap) {
+        Log.d("======","========printImage")
         printerBuilder.actionPrintImage(ImageParameter(image, IMAGE_WIDTH))
             .styleAlignment(Alignment.Center)
     }
 
     override fun start() {
+        Log.d("======","========start")
         scope.launch {
             try {
                 val commandBuilder = commandBuilderFactory().apply {
@@ -95,7 +102,7 @@ internal class StarPrinterController(
 
                 printerBuilder = PrinterBuilder().styleAlignment(Alignment.Center)
             } catch (exception: Exception) {
-                Log.d("======","========${exception}")
+                Log.d("======","=====catch===${exception}")
                 printerState.value = StarPrinterErrorState.convert(
                     StarPrinterErrorState.fromCode(
                         (exception as StarIO10Exception).errorCode.value
@@ -108,15 +115,18 @@ internal class StarPrinterController(
     }
 
     override fun feedPaper() {
+        Log.d("======","========feedPaper")
         printerBuilder.actionFeedLine(SINGLE_FEED_LINE)
     }
 
     override fun cutPaper() {
+        Log.d("======","========cutPaper")
         printerBuilder.actionCut(CutType.Partial)
     }
 
-    override suspend fun getPrinterInfo(): PrinterInfo =
-        PrinterInfo(
+    override suspend fun getPrinterInfo(): PrinterInfo {
+        Log.d("======","========getPrinterInfo")
+       return PrinterInfo(
             serialNumber = "n/a",
             deviceModel = starPrinter.information?.model?.name ?: "Unknown",
             printerVersion = "n/a",
@@ -126,6 +136,8 @@ internal class StarPrinterController(
             printedDistance = 0,
             serviceVersion = PrinterServiceVersion.Unknown
         )
+    }
+
 
     override fun setIntensity(intensity: PrintingIntensity) = Unit
 

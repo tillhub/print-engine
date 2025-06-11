@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.callbackFlow
 class StarPrinterDiscovery(private val context: Context) : PrinterDiscovery {
 
     companion object {
-        private const val CHARACTER_COUNT = 52
+        private const val CHARACTER_COUNT = 58
         private const val MANUFACTURER_STAR = "STAR"
     }
 
