@@ -1,7 +1,6 @@
 package de.tillhub.printengine.star
 
 import android.content.Context
-import android.util.Log
 import com.starmicronics.stario10.InterfaceType
 import de.tillhub.printengine.data.ConnectionType
 import com.starmicronics.stario10.PrinterDelegate
@@ -24,7 +23,6 @@ class StarPrintService(context: Context, printer: ExternalPrinter) : PrintServic
     private val connectionListener = object : PrinterDelegate() {
         override fun onCommunicationError(e: StarIO10Exception) {
             super.onCommunicationError(e)
-            Log.d("==========","========error====${e}")
             connectionState.value = PrinterState.Error.ConnectionLost
         }
 
