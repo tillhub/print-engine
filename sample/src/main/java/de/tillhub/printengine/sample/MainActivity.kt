@@ -78,8 +78,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val printState by printerEngine.printer.printerState
-                        .collectAsState(PrinterState.CheckingForPrinter)
+                    val printState by printerEngine.printer.printerState.collectAsState(PrinterState.CheckingForPrinter)
                     PrinterLayout(
                         printState = printState,
                         printers = printers,

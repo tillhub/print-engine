@@ -1,6 +1,7 @@
 package de.tillhub.printengine.star
 
 import android.content.Context
+import android.util.Log
 import com.starmicronics.stario10.InterfaceType
 import de.tillhub.printengine.data.ConnectionType
 import com.starmicronics.stario10.PrinterDelegate
@@ -23,24 +24,29 @@ class StarPrintService(context: Context, printer: ExternalPrinter) : PrintServic
     private val connectionListener = object : PrinterDelegate() {
         override fun onCommunicationError(e: StarIO10Exception) {
             super.onCommunicationError(e)
+            Log.d("============","============${e.message}========${e}}")
             connectionState.value = PrinterState.Error.ConnectionLost
         }
 
         override fun onReady() {
             super.onReady()
+            Log.d("============","============onReady")
             connectionState.value = PrinterState.Connected
         }
 
         override fun onPaperReady() {
+            Log.d("============","============onPaperReady")
             connectionState.value = PrinterState.Connected
         }
 
         override fun onError() {
+            Log.d("============","============onError")
             connectionState.value = PrinterState.Error.Malfunctions
         }
 
         override fun onPaperEmpty() {
             super.onPaperEmpty()
+            Log.d("============","============onPaperEmpty")
             connectionState.value = PrinterState.Error.OutOfPaper
         }
 
@@ -49,6 +55,7 @@ class StarPrintService(context: Context, printer: ExternalPrinter) : PrintServic
     private val starPrinter: StarPrinter by lazy {
         val interfaceType = printer.connectionType.toStarConnectionType()
         val settings = StarConnectionSettings(interfaceType, printer.connectionAddress)
+        Log.d("============","============starPrinter")
         StarPrinter(settings, context).apply {
             printerDelegate = connectionListener
         }
