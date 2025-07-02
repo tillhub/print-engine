@@ -84,7 +84,6 @@ internal class StarPrinterController(
     override fun start() {
         scope.launch {
             runCatching {
-                cutPaper()
                 val commandBuilder = commandBuilderFactory().apply {
                     addDocument(documentBuilderFactory().addPrinter(printerBuilder))
                 }
