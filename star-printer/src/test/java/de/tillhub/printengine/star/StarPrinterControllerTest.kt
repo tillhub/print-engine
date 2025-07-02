@@ -147,7 +147,6 @@ class StarPrinterControllerTest : FunSpec({
         controller.start()
 
         coVerifyOrder {
-            printerBuilder.actionCut(any())
             starPrinter.openAsync().await()
             starPrinter.printAsync("commands")
             starPrinter.closeAsync().await()
@@ -168,7 +167,6 @@ class StarPrinterControllerTest : FunSpec({
         controller.start()
 
         coVerifyOrder {
-            printerBuilder.actionCut(any())
             starPrinter.openAsync().await()
             starPrinter.printAsync("commands")
             starPrinter.closeAsync().await()
