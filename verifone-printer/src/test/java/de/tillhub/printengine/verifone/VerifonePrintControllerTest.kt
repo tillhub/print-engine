@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import com.verifone.peripherals.DirectPrintManager
 import com.verifone.peripherals.Printer
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.html.HtmlUtils
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
 import de.tillhub.printengine.data.PrinterInfo
@@ -15,6 +14,7 @@ import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.html.FeedString
 import de.tillhub.printengine.html.FontSize
+import de.tillhub.printengine.html.HtmlUtils
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
@@ -79,7 +79,12 @@ internal class VerifonePrintControllerTest : DescribeSpec({
     }
 
     it("sendRawData") {
-        val payload = HtmlUtils.transformToHtml(HtmlUtils.monospaceText("raw_data", FontSize.VERIFONE.value) + "\n")
+        val payload = HtmlUtils.transformToHtml(
+            HtmlUtils.monospaceText(
+                "raw_data",
+                FontSize.VERIFONE.value
+            ) + "\n"
+        )
 
         val rawData = RawPrinterData("raw_data".toByteArray())
         printerController.sendRawData(rawData)
@@ -91,7 +96,12 @@ internal class VerifonePrintControllerTest : DescribeSpec({
     }
 
     it("printText") {
-        val payload = HtmlUtils.transformToHtml(HtmlUtils.monospaceText("text_to_print", FontSize.VERIFONE.value) + "\n")
+        val payload = HtmlUtils.transformToHtml(
+            HtmlUtils.monospaceText(
+                "text_to_print",
+                FontSize.VERIFONE.value
+            ) + "\n"
+        )
 
         printerController.printText("text_to_print")
         printerController.start()
@@ -105,7 +115,12 @@ internal class VerifonePrintControllerTest : DescribeSpec({
         val payload = HtmlUtils.transformToHtml(
             StringBuilder().apply {
                 append(HtmlUtils.generateImageHtml(bitmap))
-                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode"), FontSize.VERIFONE.value))
+                appendLine(
+                    HtmlUtils.monospaceText(
+                        HtmlUtils.singleLineCenteredText("barcode"),
+                        FontSize.VERIFONE.value
+                    )
+                )
             }.toString()
         )
 
@@ -166,9 +181,19 @@ internal class VerifonePrintControllerTest : DescribeSpec({
             StringBuilder().apply {
                 appendLine(HtmlUtils.monospaceText("start line", FontSize.VERIFONE.value))
                 append(HtmlUtils.generateImageHtml(bitmap))
-                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode"), FontSize.VERIFONE.value))
+                appendLine(
+                    HtmlUtils.monospaceText(
+                        HtmlUtils.singleLineCenteredText("barcode"),
+                        FontSize.VERIFONE.value
+                    )
+                )
                 append(HtmlUtils.generateImageHtml(bitmap))
-                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("qr_code"), FontSize.VERIFONE.value))
+                appendLine(
+                    HtmlUtils.monospaceText(
+                        HtmlUtils.singleLineCenteredText("qr_code"),
+                        FontSize.VERIFONE.value
+                    )
+                )
                 append(HtmlUtils.generateImageHtml(bitmap))
                 appendLine(HtmlUtils.monospaceText("end line", FontSize.VERIFONE.value))
                 append(FeedString.VERIFONE.value)

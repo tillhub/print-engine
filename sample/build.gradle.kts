@@ -52,7 +52,10 @@ dependencies {
     implementation(project(":print-engine"))
     implementation(project(":star-printer"))
     implementation(project(":epson-printer"))
-
+    implementation(project(":pax-printer"))
+    implementation(project(":sunmi-printer"))
+    implementation(project(":verifone-printer"))
+    
     implementation(libs.androidx.core)
     implementation(libs.bundles.compose)
     implementation(libs.bundles.lifecycle)

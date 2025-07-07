@@ -6,15 +6,11 @@ plugins {
 }
 
 android {
-    namespace = Configs.APPLICATION_ID
+    namespace = Configs.APPLICATION_ID + ".sunmi"
     compileSdk = Configs.COMPILE_SDK
 
     defaultConfig {
         minSdk = Configs.MIN_SDK
-    }
-
-    buildFeatures {
-        viewBinding = true
     }
 
     buildTypes {
@@ -59,24 +55,18 @@ android {
     }
 }
 
-detekt {
-    buildUponDefaultConfig = true // preconfigure defaults
-    allRules = false // activate all available (even unstable) rules.
-    config.setFrom("$projectDir/config/detekt.yml")
-}
-
 dependencies {
+    implementation(project(":print-engine"))
+
     // Core Dependencies
     implementation(libs.bundles.core)
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
-    // Pax Dependencies
-    implementation(libs.google.zxing)
-    
+    // Sunmi Dependencies
+    implementation(libs.sunmi.printer)
+
     // Utils
     implementation(libs.timber)
-    detektPlugins(libs.detekt.formatting)
-    detektPlugins(libs.detekt.libraries)
 
     // Unit tests
     testImplementation(libs.bundles.testing)
@@ -86,9 +76,9 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            create<MavenPublication>("release-core") {
+            create<MavenPublication>("release-sunmi") {
                 groupId = "de.tillhub.printengine"
-                artifactId = "core"
+                artifactId = "sunmi"
                 version = Configs.VERSION_CODE
 
                 from(components.getByName("release"))

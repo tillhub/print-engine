@@ -1,6 +1,5 @@
-package de.tillhub.printengine.external
+package de.tillhub.printengine
 
-import de.tillhub.printengine.Printer
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterResult
@@ -12,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 
-internal class ExternalPrinterContainer : Printer {
+internal class PrinterContainer : Printer {
     private val selectedPrinter = MutableStateFlow<Printer>(EmulatedPrinter())
 
     @OptIn(ExperimentalCoroutinesApi::class)

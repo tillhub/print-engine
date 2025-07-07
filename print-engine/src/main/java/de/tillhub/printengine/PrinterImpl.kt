@@ -10,9 +10,6 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.doOnError
 import de.tillhub.printengine.dispatcher.DispatcherProvider
 import de.tillhub.printengine.dispatcher.DispatcherProviderImp
-import de.tillhub.printengine.pax.PaxPrintService
-import de.tillhub.printengine.sunmi.SunmiPrintService
-import de.tillhub.printengine.verifone.VerifonePrintService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -22,14 +19,6 @@ internal class PrinterImpl(
     private val analytics: PrintAnalytics?,
     private val dispatcherProvider: DispatcherProvider = DispatcherProviderImp()
 ) : Printer {
-
-    init {
-        when (printService) {
-            is PaxPrintService -> logInfo("PaxPrintService initialized")
-            is SunmiPrintService -> logInfo("SunmiPrintService initialized")
-            is VerifonePrintService -> logInfo("VerifonePrintService initialized")
-        }
-    }
 
     override val settings: PrinterSettings by lazy {
         PrinterSettings()

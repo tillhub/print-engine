@@ -27,23 +27,21 @@
 -keep class de.tillhub.printengine.PrintService { *; }
 -keep class de.tillhub.printengine.PrinterController { *; }
 -keep class de.tillhub.printengine.external.PrinterDiscovery { *; }
--keep class de.tillhub.printengine.external.PrinterServiceProvider { *; }
+-keep class de.tillhub.printengine.PrinterServiceProvider { *; }
 -keep class de.tillhub.printengine.PrintEngine { *; }
 -keep class de.tillhub.printengine.PrintEngine$Companion { *; }
 -keep class de.tillhub.printengine.helper.SingletonHolder { *; }
 -keep class de.tillhub.printengine.analytics.PrintAnalytics { *; }
 -keep class de.tillhub.printengine.data.** { *; }
 -keep class de.tillhub.printengine.barcode.BarcodeEncoder {  *; }
+-keep class de.tillhub.printengine.barcode.BarcodeEncoderImpl {  *; }
 -keep class de.tillhub.printengine.barcode.BarcodeType { *; }
 -keep class de.tillhub.printengine.data.ConnectionType { *; }
+-keep class de.tillhub.printengine.html.FeedString { *; }
+-keep class de.tillhub.printengine.html.FontSize { *; }
+-keep class de.tillhub.printengine.html.QrCodeSize { *; }
+-keep class de.tillhub.printengine.html.BarcodeSize { *; }
+-keep class de.tillhub.printengine.html.HtmlPrinterController { *; }
+-keep class de.tillhub.printengine.html.HtmlPrinterController { *; }
 
 -keep class com.pax.** { *; }
--keep public class com.sunmi.** {
-    public protected *;
-}
--keep class com.verifone.peripherals.** { *; }
-
--dontwarn com.verifone.peripherals.CashDrawer
--dontwarn com.verifone.peripherals.Scanner
--dontwarn com.verifone.utilities.BaseParcel$ParcelCreator
--dontwarn com.verifone.utilities.BaseParcel

@@ -1,21 +1,21 @@
 package de.tillhub.printengine.html
 
-internal enum class FeedString(val value: String) {
+enum class FeedString(val value: String) {
     PAX("<br />"),
     VERIFONE("<br /><br /><br /><br /><br />")
 }
 
-internal enum class FontSize(val value: Int) {
+enum class FontSize(val value: Int) {
     PAX(13),
     VERIFONE(20)
 }
 
-internal enum class QrCodeSize(val value: Int) {
+enum class QrCodeSize(val value: Int) {
     PAX(220),
     VERIFONE(420)
 }
 
-internal enum class BarcodeSize(val height: Int, val width: Int) {
+enum class BarcodeSize(val height: Int, val width: Int) {
     PAX(140, 435),
     VERIFONE(140, 435)
 }

@@ -59,6 +59,7 @@ internal class SunmiPrintService(context: Context) : PrintService() {
             if (!InnerPrinterManager.getInstance().bindService(context, innerPrinterCallback)) {
                 connectionState.value = PrinterState.Error.NotAvailable
             }
+            Timber.i("printing: SunmiPrintService initialized")
         } catch (e: InnerPrinterException) {
             Timber.e(e)
         }

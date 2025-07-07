@@ -1,6 +1,5 @@
-package de.tillhub.printengine.external
+package de.tillhub.printengine
 
-import de.tillhub.printengine.Printer
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterResult
@@ -25,10 +24,10 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ExternalPrinterContainerTest : FunSpec({
+class PrinterContainerTest : FunSpec({
 
     lateinit var testDispatcher: TestDispatcher
-    lateinit var container: ExternalPrinterContainer
+    lateinit var container: PrinterContainer
     lateinit var printer: Printer
 
     beforeTest {
@@ -39,7 +38,7 @@ class ExternalPrinterContainerTest : FunSpec({
             coEvery { startPrintJob(any()) } returns PrinterResult.Success(Unit)
         }
         testDispatcher = UnconfinedTestDispatcher()
-        container = ExternalPrinterContainer()
+        container = PrinterContainer()
     }
 
     test("initial state should be CheckingForPrinter") {

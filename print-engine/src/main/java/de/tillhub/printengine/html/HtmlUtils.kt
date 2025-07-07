@@ -5,7 +5,7 @@ import android.util.Base64
 import androidx.annotation.VisibleForTesting
 import java.io.ByteArrayOutputStream
 
-internal object HtmlUtils {
+object HtmlUtils {
 
     fun transformToHtml(text: String, includeStyle: Boolean = false): String = if (includeStyle) {
         "<html>$STYLE_TAG<body>$text</body></html>"

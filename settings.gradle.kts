@@ -23,4 +23,7 @@ rootProject.name = "Tillhub Print Engine"
 include(":print-engine")
 include(":star-printer")
 include(":epson-printer")
+include(":pax-printer")
+include(":sunmi-printer")
+include(":verifone-printer")
 include(":sample")

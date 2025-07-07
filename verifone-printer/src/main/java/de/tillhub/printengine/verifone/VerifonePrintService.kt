@@ -8,12 +8,16 @@ import de.tillhub.printengine.barcode.BarcodeEncoderImpl
 import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import timber.log.Timber
 
 internal class VerifonePrintService(context: Context) : PrintService() {
 
     private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
     override val printerState: Flow<PrinterState> = connectionState
 
+    init {
+        Timber.i("printing: VerifonePrintService initialized")
+    }
     private val connectionListener = object : DirectPrintManager.DirectPrintServiceListener {
         override fun onPrintServiceReady() {
             connectionState.value = PrinterState.Connected
@@ -30,8 +34,9 @@ internal class VerifonePrintService(context: Context) : PrintService() {
     }
 
     private val printManager: DirectPrintManager by lazy {
-        DirectPrintManager.getInstance(context, false, connectionListener)
-            ?: throw IllegalStateException("Error occurred, DirectPrintManager is null")
+        checkNotNull(DirectPrintManager.getInstance(context, false, connectionListener)) {
+            "Error occurred, DirectPrintManager is null"
+        }
     }
 
     override var printController: PrinterController? = VerifonePrintController(

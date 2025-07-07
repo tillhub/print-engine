@@ -21,6 +21,7 @@ import kotlin.coroutines.suspendCoroutine
 /**
  * A wrapper to simplify access and interaction with [SunmiPrinterService].
  */
+@Suppress("TooManyFunctions")
 internal class SunmiPrinterController(
     private val printerService: SunmiPrinterService,
     private val serviceVersion: PrinterServiceVersion,

@@ -9,7 +9,7 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import timber.log.Timber
 import androidx.core.graphics.createBitmap
 
-internal class BarcodeEncoderImpl : BarcodeEncoder {
+class BarcodeEncoderImpl : BarcodeEncoder {
 
     override fun encodeAsBitmap(
         content: String,
