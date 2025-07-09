@@ -35,7 +35,7 @@
 -keep class de.tillhub.printengine.analytics.PrintAnalytics { *; }
 -keep class de.tillhub.printengine.data.** { *; }
 -keep class de.tillhub.printengine.barcode.BarcodeEncoder {  *; }
--keep class de.tillhub.printengine.barcode.BarcodeEncoderImpl {  *; }
+-keep class de.tillhub.printengine.barcode.BarcodeEncoderProvider {  *; }
 -keep class de.tillhub.printengine.barcode.BarcodeType { *; }
 -keep class de.tillhub.printengine.data.ConnectionType { *; }
 -keep class de.tillhub.printengine.html.FeedString { *; }
