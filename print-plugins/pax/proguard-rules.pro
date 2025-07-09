@@ -20,5 +20,6 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keeppackagenames de.tillhub.printengine.pax.**
+-keep class de.tillhub.printengine.pax.PaxServiceProvider {  *; }
 
 -keep class com.pax.** { *; }

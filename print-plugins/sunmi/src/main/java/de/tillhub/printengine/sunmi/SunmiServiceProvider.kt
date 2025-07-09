@@ -4,6 +4,6 @@ import android.content.Context
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.internal.InternalPrinterServiceProvider
 
-object SunmiServiceProviderInternal : InternalPrinterServiceProvider {
+object SunmiServiceProvider : InternalPrinterServiceProvider {
     override fun build(context: Context): PrintService = SunmiPrintService(context)
 }

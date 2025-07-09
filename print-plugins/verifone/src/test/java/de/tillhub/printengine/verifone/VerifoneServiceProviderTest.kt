@@ -16,7 +16,7 @@ internal class VerifoneServiceProviderTest : FunSpec({
     }
 
     test("build returns VerifonePrintService instance when externalPrinter is null") {
-        val result = VerifoneServiceProviderInternal.build(context)
+        val result = VerifoneServiceProvider.build(context)
         result.shouldBeInstanceOf<VerifonePrintService>()
     }
 })

@@ -8,7 +8,7 @@ import android.os.IBinder
 import android.os.Messenger
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.barcode.BarcodeEncoderImpl
+import de.tillhub.printengine.barcode.BarcodeEncoderProvider
 import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +33,7 @@ internal class PaxPrintService(context: Context) : PrintService() {
                     requestMessenger = Messenger(service)
                 ),
                 printerState = connectionState,
-                barcodeEncoder = BarcodeEncoderImpl()
+                barcodeEncoder = BarcodeEncoderProvider.get()
             )
         }
 

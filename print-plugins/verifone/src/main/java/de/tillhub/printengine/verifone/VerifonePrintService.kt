@@ -4,7 +4,7 @@ import android.content.Context
 import com.verifone.peripherals.DirectPrintManager
 import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.barcode.BarcodeEncoderImpl
+import de.tillhub.printengine.barcode.BarcodeEncoderProvider
 import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +42,7 @@ internal class VerifonePrintService(context: Context) : PrintService() {
     override var printController: PrinterController? = VerifonePrintController(
         printManager = printManager,
         printerState = connectionState,
-        barcodeEncoder = BarcodeEncoderImpl()
+        barcodeEncoder = BarcodeEncoderProvider.get()
     )
 
     companion object {

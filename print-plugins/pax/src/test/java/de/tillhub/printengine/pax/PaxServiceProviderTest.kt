@@ -16,7 +16,7 @@ internal class PaxServiceProviderTest : FunSpec({
     }
 
     test("build returns PaxPrintService instance when externalPrinter is null") {
-        val result = PaxServiceProviderInternal.build(context)
+        val result = PaxServiceProvider.build(context)
         result.shouldBeInstanceOf<PaxPrintService>()
     }
 })
