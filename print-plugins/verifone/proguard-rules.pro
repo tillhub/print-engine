@@ -22,7 +22,7 @@
 
 -keeppackagenames de.tillhub.printengine.verifone.**
 
--keep class de.tillhub.printengine.verifone.VerifoneServiceProvider {  *; }
+-keep class de.tillhub.printengine.verifone.VerifoneServiceProviderInternal {  *; }
 -keep class com.verifone.peripherals.** { *; }
 
 -dontwarn com.verifone.peripherals.CashDrawer

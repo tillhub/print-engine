@@ -21,7 +21,7 @@
 #-renamesourcefileattribute SourceFile
 -keeppackagenames de.tillhub.printengine.sunmi.**
 
--keep class de.tillhub.printengine.sunmi.SunmiServiceProvider { *; }
+-keep class de.tillhub.printengine.sunmi.SunmiServiceProviderInternal { *; }
 -keep public class com.sunmi.** {
  public protected *;
 }
