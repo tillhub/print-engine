@@ -21,9 +21,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "Tillhub Print Engine"
 include(":print-engine")
-include(":star-printer")
-include(":epson-printer")
-include(":pax-printer")
-include(":sunmi-printer")
-include(":verifone-printer")
+include(":print-plugins:star")
+include(":print-plugins:epson")
+include(":print-plugins:pax")
+include(":print-plugins:sunmi")
+include(":print-plugins:verifone")
 include(":sample")
