@@ -5,10 +5,10 @@ import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterManufacturer
 import de.tillhub.printengine.epson.EpsonServiceProvider
-import de.tillhub.printengine.pax.PaxServiceProvider
+import de.tillhub.printengine.pax.PaxServiceProviderInternal
 import de.tillhub.printengine.star.StarServiceProvider
-import de.tillhub.printengine.sunmi.SunmiServiceProvider
-import de.tillhub.printengine.verifone.VerifoneServiceProvider
+import de.tillhub.printengine.sunmi.SunmiServiceProviderInternal
+import de.tillhub.printengine.verifone.VerifoneServiceProviderInternal
 
 object PrinterServiceFactory {
 
@@ -17,9 +17,9 @@ object PrinterServiceFactory {
         externalPrinter: ExternalPrinter? = null
     ): PrintService {
         return when (PrinterManufacturer.get()) {
-            PrinterManufacturer.PAX -> PaxServiceProvider.build(context, externalPrinter)
-            PrinterManufacturer.SUNMI -> SunmiServiceProvider.build(context, externalPrinter)
-            PrinterManufacturer.VERIFONE -> VerifoneServiceProvider.build(context, externalPrinter)
+            PrinterManufacturer.PAX -> PaxServiceProviderInternal.build(context)
+            PrinterManufacturer.SUNMI -> SunmiServiceProviderInternal.build(context)
+            PrinterManufacturer.VERIFONE -> VerifoneServiceProviderInternal.build(context)
             PrinterManufacturer.UNKNOWN -> createExternalPrinterService(context, externalPrinter)
         }
     }
