@@ -1,6 +1,7 @@
 package de.tillhub.printengine.star
 
 import android.content.Context
+import android.util.Log
 import com.starmicronics.stario10.InterfaceType
 import de.tillhub.printengine.data.ConnectionType
 import com.starmicronics.stario10.PrinterDelegate
@@ -28,18 +29,22 @@ class StarPrintService(context: Context, printer: ExternalPrinter) : PrintServic
 
         override fun onReady() {
             super.onReady()
+            Log.d("StarPrintService", "onReady")
             connectionState.value = PrinterState.Connected
         }
 
         override fun onPaperReady() {
+            Log.d("StarPrintService", "onPaperReady")
             connectionState.value = PrinterState.Connected
         }
 
         override fun onError() {
+            Log.d("StarPrintService", "onPaperReady")
             connectionState.value = PrinterState.Error.Malfunctions
         }
 
         override fun onPaperEmpty() {
+            Log.d("StarPrintService", "onPaperReady")
             super.onPaperEmpty()
             connectionState.value = PrinterState.Error.OutOfPaper
         }
