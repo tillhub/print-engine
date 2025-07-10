@@ -2,6 +2,7 @@ package de.tillhub.printengine.sample
 
 import android.content.Context
 import de.tillhub.printengine.PrintService
+import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterManufacturer
 import de.tillhub.printengine.epson.EpsonServiceProvider
@@ -14,10 +15,11 @@ object PrinterServiceFactory {
 
     fun createPrinterService(
         context: Context,
-        externalPrinter: ExternalPrinter? = null
+        externalPrinter: ExternalPrinter? = null,
+        barcode: BarcodeEncoder? = null
     ): PrintService {
         return when (PrinterManufacturer.get()) {
-            PrinterManufacturer.PAX -> PaxServiceProvider.build(context)
+            PrinterManufacturer.PAX -> PaxServiceProvider.build(context, barcode = barcode)
             PrinterManufacturer.SUNMI -> SunmiServiceProvider.build(context)
             PrinterManufacturer.VERIFONE -> VerifoneServiceProvider.build(context)
             PrinterManufacturer.UNKNOWN -> createExternalPrinterService(context, externalPrinter)
