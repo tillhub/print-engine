@@ -82,14 +82,16 @@ class MainActivity : ComponentActivity() {
                         printState = printState,
                         printers = printers,
                         onPrinterSelected = { printer ->
-                            if (printer != null && !initilazed) {
+                            if (!initilazed) {
                                 initilazed = true
                                 lifecycleScope.launch {
-                                    val service = PrinterServiceFactory.createPrinterService(
-                                        context = this@MainActivity,
-                                        externalPrinter = printer
-                                    )
-                                    printerEngine.initPrinter(service)
+                                    printerEngine.initPrinter { barcodeEncoder ->
+                                        PrinterServiceFactory.createPrinterService(
+                                            context = this@MainActivity,
+                                            externalPrinter = printer,
+                                            barcode = barcodeEncoder
+                                        )
+                                    }
                                 }
                             }
                             lifecycleScope.launch {

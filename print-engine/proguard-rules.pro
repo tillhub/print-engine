@@ -27,8 +27,7 @@
 -keep class de.tillhub.printengine.PrintService { *; }
 -keep class de.tillhub.printengine.PrinterController { *; }
 -keep class de.tillhub.printengine.external.PrinterDiscovery { *; }
--keep class de.tillhub.printengine.external.ExternalPrinterServiceProvider { *; }
--keep class de.tillhub.printengine.internal.InternalPrinterServiceProvider { *; }
+-keep class de.tillhub.printengine.PrinterServiceProvider { *; }
 -keep class de.tillhub.printengine.PrintEngine { *; }
 -keep class de.tillhub.printengine.PrintEngine$Companion { *; }
 -keep class de.tillhub.printengine.helper.SingletonHolder { *; }

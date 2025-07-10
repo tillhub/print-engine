@@ -29,8 +29,10 @@ class PrintEngine private constructor() {
     fun discoverExternalPrinters(vararg discoveries: PrinterDiscovery): Flow<DiscoveryState> =
         externalPrinterManager.discoverExternalPrinters(*discoveries)
 
-    fun initPrinter(printService: PrintService): Printer {
-        (printer as PrinterContainer).initPrinter(PrinterImpl(printService, printAnalytics))
+    fun initPrinter(factory: (BarcodeEncoder) -> PrintService): Printer {
+        (printer as PrinterContainer).initPrinter(
+            PrinterImpl(factory(barcodeEncoder), printAnalytics)
+        )
         return printer
     }
 
