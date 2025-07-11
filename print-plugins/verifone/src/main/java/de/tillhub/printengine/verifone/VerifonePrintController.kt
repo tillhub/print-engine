@@ -23,11 +23,11 @@ internal class VerifonePrintController(
 ) : HtmlPrinterController(
     printerState = printerState,
     barcodeEncoder = barcodeEncoder,
-    barcodeSize = BarcodeSize.VERIFONE,
-    qrCodeSize = QrCodeSize.VERIFONE,
-    fontSize = FontSize.VERIFONE,
-    includeStyleTag = false,
-    feedString = FeedString.VERIFONE
+    barcodeSize = VERIFONE_BARCODE_SIZE,
+    qrCodeSize = VERIFONE_QR_CODE_SIZE,
+    fontSize = VERIFONE_FONT_SIZE,
+    feedString = VERIFONE_FEED_STRING,
+    includeStyleTag = false
 ) {
     private var useCutter = false
 
@@ -92,4 +92,11 @@ internal class VerifonePrintController(
             printedDistance = 0,
             serviceVersion = PrinterServiceVersion.Unknown
         )
+
+    companion object {
+        private val VERIFONE_FEED_STRING = FeedString("<br /><br /><br /><br /><br />")
+        private val VERIFONE_FONT_SIZE = FontSize(20)
+        private val VERIFONE_QR_CODE_SIZE = QrCodeSize(420)
+        private val VERIFONE_BARCODE_SIZE = BarcodeSize(140, 435)
+    }
 }

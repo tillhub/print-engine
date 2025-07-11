@@ -13,7 +13,7 @@ object HtmlUtils {
         "<html><body>$text</body></html>"
     }
 
-    fun monospaceText(text: String, fontSize: Int = FontSize.PAX.value): String =
+    fun monospaceText(text: String, fontSize: Int = FONT_SIZE): String =
         "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px;\">$text</pre>"
 
     fun singleLineCenteredText(text: String): String =
@@ -32,6 +32,7 @@ object HtmlUtils {
     }
 
     private const val PNG_QUALITY = 100
+    private const val FONT_SIZE = 13
     private const val STYLE_TAG = """
         <style type="text/css">
             @page {

@@ -70,7 +70,6 @@ dependencies {
     implementation(libs.bundles.core)
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
-    // Pax Dependencies
     implementation(libs.google.zxing)
     
     // Utils

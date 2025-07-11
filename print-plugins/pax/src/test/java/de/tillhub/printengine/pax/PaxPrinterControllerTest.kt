@@ -10,8 +10,6 @@ import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.RawPrinterData
-import de.tillhub.printengine.html.FeedString
-import de.tillhub.printengine.html.FontSize
 import de.tillhub.printengine.html.HtmlUtils
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.extensions.robolectric.RobolectricTest
@@ -80,7 +78,7 @@ internal class PaxPrinterControllerTest : DescribeSpec({
 
     it("setIntensity and printText") {
         val payload = HtmlUtils.transformToHtml(
-            text = HtmlUtils.monospaceText("text_to_print", FontSize.PAX.value) + "\n",
+            text = HtmlUtils.monospaceText("text_to_print",13) + "\n",
             includeStyle = true
         )
 
@@ -96,7 +94,7 @@ internal class PaxPrinterControllerTest : DescribeSpec({
 
     it("sendRawData") {
         val payload = HtmlUtils.transformToHtml(
-            text = HtmlUtils.monospaceText("raw_data", FontSize.PAX.value) + "\n",
+            text = HtmlUtils.monospaceText("raw_data",13) + "\n",
             includeStyle = true
         )
 
@@ -160,7 +158,7 @@ internal class PaxPrinterControllerTest : DescribeSpec({
     }
 
     it("feedPaper") {
-        val payload = HtmlUtils.transformToHtml(FeedString.PAX.value, true)
+        val payload = HtmlUtils.transformToHtml("<br />", true)
 
         target.feedPaper()
         target.start()
@@ -173,14 +171,14 @@ internal class PaxPrinterControllerTest : DescribeSpec({
     it("full print") {
         val payload = HtmlUtils.transformToHtml(
             text = StringBuilder().apply {
-                appendLine(HtmlUtils.monospaceText("start line", FontSize.PAX.value))
+                appendLine(HtmlUtils.monospaceText("start line",13))
                 append(HtmlUtils.generateImageHtml(bitmap))
-                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode"), FontSize.PAX.value))
+                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode"),13))
                 append(HtmlUtils.generateImageHtml(bitmap))
-                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("qr_code"), FontSize.PAX.value))
+                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("qr_code"),13))
                 append(HtmlUtils.generateImageHtml(bitmap))
-                appendLine(HtmlUtils.monospaceText("end line", FontSize.PAX.value))
-                append(FeedString.PAX.value)
+                appendLine(HtmlUtils.monospaceText("end line",13))
+                append("<br />")
             }.toString(),
             includeStyle = true
         )

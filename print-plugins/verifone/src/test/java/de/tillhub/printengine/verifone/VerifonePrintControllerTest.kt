@@ -12,8 +12,6 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.RawPrinterData
-import de.tillhub.printengine.html.FeedString
-import de.tillhub.printengine.html.FontSize
 import de.tillhub.printengine.html.HtmlUtils
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.extensions.robolectric.RobolectricTest
@@ -82,7 +80,7 @@ internal class VerifonePrintControllerTest : DescribeSpec({
         val payload = HtmlUtils.transformToHtml(
             HtmlUtils.monospaceText(
                 "raw_data",
-                FontSize.VERIFONE.value
+                20
             ) + "\n"
         )
 
@@ -99,7 +97,7 @@ internal class VerifonePrintControllerTest : DescribeSpec({
         val payload = HtmlUtils.transformToHtml(
             HtmlUtils.monospaceText(
                 "text_to_print",
-                FontSize.VERIFONE.value
+                20
             ) + "\n"
         )
 
@@ -118,7 +116,7 @@ internal class VerifonePrintControllerTest : DescribeSpec({
                 appendLine(
                     HtmlUtils.monospaceText(
                         HtmlUtils.singleLineCenteredText("barcode"),
-                        FontSize.VERIFONE.value
+                        20
                     )
                 )
             }.toString()
@@ -140,7 +138,7 @@ internal class VerifonePrintControllerTest : DescribeSpec({
                 appendLine(
                     HtmlUtils.monospaceText(
                         HtmlUtils.singleLineCenteredText("qr_code"),
-                        FontSize.VERIFONE.value
+                        20
                     )
                 )
             }.toString()
@@ -166,7 +164,7 @@ internal class VerifonePrintControllerTest : DescribeSpec({
     }
 
     it("feedPaper") {
-        val payload = HtmlUtils.transformToHtml(FeedString.VERIFONE.value)
+        val payload = HtmlUtils.transformToHtml("<br /><br /><br /><br /><br />")
 
         printerController.feedPaper()
         printerController.start()
@@ -179,24 +177,24 @@ internal class VerifonePrintControllerTest : DescribeSpec({
     it("full print, no cut") {
         val payload = HtmlUtils.transformToHtml(
             StringBuilder().apply {
-                appendLine(HtmlUtils.monospaceText("start line", FontSize.VERIFONE.value))
+                appendLine(HtmlUtils.monospaceText("start line", 20))
                 append(HtmlUtils.generateImageHtml(bitmap))
                 appendLine(
                     HtmlUtils.monospaceText(
                         HtmlUtils.singleLineCenteredText("barcode"),
-                        FontSize.VERIFONE.value
+                        20
                     )
                 )
                 append(HtmlUtils.generateImageHtml(bitmap))
                 appendLine(
                     HtmlUtils.monospaceText(
                         HtmlUtils.singleLineCenteredText("qr_code"),
-                        FontSize.VERIFONE.value
+                        20
                     )
                 )
                 append(HtmlUtils.generateImageHtml(bitmap))
-                appendLine(HtmlUtils.monospaceText("end line", FontSize.VERIFONE.value))
-                append(FeedString.VERIFONE.value)
+                appendLine(HtmlUtils.monospaceText("end line", 20))
+                append("<br /><br /><br /><br /><br />")
             }.toString()
         )
 
@@ -216,24 +214,24 @@ internal class VerifonePrintControllerTest : DescribeSpec({
     it("full print, full cut") {
         val payload = HtmlUtils.transformToHtml(
             StringBuilder().apply {
-                appendLine(HtmlUtils.monospaceText("start line", FontSize.VERIFONE.value))
+                appendLine(HtmlUtils.monospaceText("start line", 20))
                 append(HtmlUtils.generateImageHtml(bitmap))
                 appendLine(
                     HtmlUtils.monospaceText(
                         HtmlUtils.singleLineCenteredText("barcode"),
-                        FontSize.VERIFONE.value
+                        20
                     )
                 )
                 append(HtmlUtils.generateImageHtml(bitmap))
                 appendLine(
                     HtmlUtils.monospaceText(
                         HtmlUtils.singleLineCenteredText("qr_code"),
-                        FontSize.VERIFONE.value
+                        20
                     )
                 )
                 append(HtmlUtils.generateImageHtml(bitmap))
-                appendLine(HtmlUtils.monospaceText("end line", FontSize.VERIFONE.value))
-                append(FeedString.VERIFONE.value)
+                appendLine(HtmlUtils.monospaceText("end line", 20))
+                append("<br /><br /><br /><br /><br />")
             }.toString()
         )
 

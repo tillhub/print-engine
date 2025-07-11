@@ -22,11 +22,11 @@ internal class PaxPrinterController(
 ) : HtmlPrinterController(
     printerState = printerState,
     barcodeEncoder = barcodeEncoder,
-    barcodeSize = BarcodeSize.PAX,
-    qrCodeSize = QrCodeSize.PAX,
-    fontSize = FontSize.PAX,
-    includeStyleTag = true,
-    feedString = FeedString.PAX
+    barcodeSize = PAX_BARCODE_SIZE,
+    qrCodeSize = PAX_QR_CODE_SIZE,
+    fontSize = PAX_FONT_SIZE,
+    feedString = PAX_FEED_STRING,
+    includeStyleTag = true
 ) {
     private var printingIntensity: Int = DEFAULT_INTENSITY
 
@@ -90,5 +90,9 @@ internal class PaxPrinterController(
         private const val DARK_INTENSITY = 70
         private const val DARKER_INTENSITY = 85
         private const val DARKEST_INTENSITY = 100
+        private val PAX_QR_CODE_SIZE = QrCodeSize(220)
+        private val PAX_BARCODE_SIZE = BarcodeSize(140, 435)
+        private val PAX_FEED_STRING = FeedString("<br />")
+        private val PAX_FONT_SIZE = FontSize(13)
     }
 }

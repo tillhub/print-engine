@@ -43,5 +43,3 @@
 -keep class de.tillhub.printengine.html.BarcodeSize { *; }
 -keep class de.tillhub.printengine.html.HtmlPrinterController { *; }
 -keep class de.tillhub.printengine.html.HtmlPrinterController { *; }
-
--keep class com.pax.** { *; }
