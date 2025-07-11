@@ -777,5 +777,7 @@ libraries:
       - '**/main/java/de/tillhub/printengine/PrinterServiceProvider.kt'
       - '**/main/java/de/tillhub/printengine/epson/EpsonPrintService.kt'
       - '**/main/java/de/tillhub/printengine/epson/EpsonPrinterDiscovery.kt'
+      - '**/main/java/de/tillhub/printengine/star/StarServiceProvider.kt'
+      - '**/main/java/de/tillhub/printengine/star/StarPrinterDiscovery.kt'
       - '**/main/java/de/tillhub/printengine/html/HtmlParams.kt'
       - '**/main/java/de/tillhub/printengine/html/HtmlPrinterController.kt'

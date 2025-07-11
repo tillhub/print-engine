@@ -11,6 +11,11 @@ object VerifoneServiceProvider : PrinterServiceProvider {
         context: Context,
         printer: ExternalPrinter?,
         barcode: BarcodeEncoder?
-    ): PrintService = VerifonePrintService(context)
+    ): PrintService {
+        requireNotNull(barcode) {
+            "VerifoneServiceProvider requires a BarcodeEncoder configuration"
+        }
+        return VerifonePrintService(context, barcode)
+    }
 }
 
