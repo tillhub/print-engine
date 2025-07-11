@@ -11,6 +11,7 @@ android {
 
     defaultConfig {
         minSdk = Configs.MIN_SDK
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -46,6 +47,13 @@ android {
             freeCompilerArgs = listOf(
                 "-Xstring-concat=inline"
             )
+        }
+    }
+
+    packaging {
+        resources {
+            excludes.add("META-INF/*")
+            excludes.add("MANIFEST.MF")
         }
     }
 
