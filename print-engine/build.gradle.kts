@@ -69,14 +69,9 @@ dependencies {
     // Core Dependencies
     implementation(libs.bundles.core)
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    // Pax Dependencies
     implementation(libs.google.zxing)
-
-    // Sunmi Dependencies
-    implementation(libs.sunmi.printer)
-
+    
     // Utils
     implementation(libs.timber)
     detektPlugins(libs.detekt.formatting)

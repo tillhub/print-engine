@@ -13,14 +13,14 @@ import de.tillhub.printengine.html.HtmlUtils.generateImageHtml
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-internal abstract class HtmlPrinterController(
+abstract class HtmlPrinterController(
     private val printerState: MutableStateFlow<PrinterState>,
     private val barcodeEncoder: BarcodeEncoder,
-    protected val barcodeSize: BarcodeSize,
-    protected val qrCodeSize: QrCodeSize,
-    protected val fontSize: FontSize,
-    protected val includeStyleTag: Boolean,
-    protected val feedString: FeedString,
+    val barcodeSize: BarcodeSize,
+    val qrCodeSize: QrCodeSize,
+    val fontSize: FontSize,
+    val includeStyleTag: Boolean,
+    val feedString: FeedString,
 ) : PrinterController {
 
     private val batchSB = StringBuilder()
