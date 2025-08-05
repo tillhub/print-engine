@@ -76,12 +76,12 @@ class EpsonPrinterControllerTest : FunSpec({
 
         verify {
             printerWrapper.addBarcode(
-                barcode,
+                "{B$barcode",
                 BARCODE_CODE128,
                 HRI_BELOW,
                 FONT_A,
-                4,
-                200
+                3,
+                100
             )
         }
         printerState.value shouldBe PrinterState.Preparing
