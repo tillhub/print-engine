@@ -194,7 +194,7 @@ class EpsonPrinterControllerTest : FunSpec({
 
         controller.feedPaper()
 
-        verify { printerWrapper.addFeedLine(3) }
+        verify { printerWrapper.addFeedLine(2) }
         printerState.value shouldBe PrinterState.Preparing
     }
 
