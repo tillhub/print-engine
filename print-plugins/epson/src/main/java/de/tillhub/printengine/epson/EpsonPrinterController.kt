@@ -46,6 +46,7 @@ internal class EpsonPrinterController(
             BARCODE_MODULE_WIDTH,
             BARCODE_HEIGHT
         )
+        printerWrapper.addFeedLine(THREE_FEED_LINES)
     }
 
     override fun printQr(qrData: String) = executeEpsonCommand {
@@ -75,7 +76,7 @@ internal class EpsonPrinterController(
     }
 
     override fun feedPaper() = executeEpsonCommand {
-        printerWrapper.addFeedLine(TWO_FEED_LINES)
+        printerWrapper.addFeedLine(ONE_FEED_LINE)
     }
 
     override fun cutPaper() = executeEpsonCommand {
@@ -113,7 +114,9 @@ internal class EpsonPrinterController(
         private const val QR_DIMENSION = 240
         private const val BARCODE_HEIGHT = 70
         private const val BARCODE_MODULE_WIDTH = 3
-        private const val TWO_FEED_LINES = 2
+
+        private const val ONE_FEED_LINE = 1
+        private const val THREE_FEED_LINES = 3
         private const val IMAGE_BRIGHTNESS = 1.0
         private const val IMAGE_START_XY = 0
     }
