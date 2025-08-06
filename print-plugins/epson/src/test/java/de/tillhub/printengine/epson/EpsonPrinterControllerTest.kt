@@ -84,7 +84,7 @@ class EpsonPrinterControllerTest : FunSpec({
                 HRI_BELOW,
                 FONT_A,
                 3,
-                70
+                100
             )
             printerWrapper.addFeedLine(3)
         }

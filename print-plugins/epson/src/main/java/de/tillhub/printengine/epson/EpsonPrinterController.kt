@@ -112,7 +112,7 @@ internal class EpsonPrinterController(
 
     companion object {
         private const val QR_DIMENSION = 240
-        private const val BARCODE_HEIGHT = 70
+        private const val BARCODE_HEIGHT = 100
         private const val BARCODE_MODULE_WIDTH = 3
 
         private const val ONE_FEED_LINE = 1
