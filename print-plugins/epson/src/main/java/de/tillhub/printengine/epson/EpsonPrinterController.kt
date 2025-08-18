@@ -1,7 +1,6 @@
 package de.tillhub.printengine.epson
 
 import android.graphics.Bitmap
-import com.epson.epos2.Epos2Exception
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterInfo
@@ -12,6 +11,7 @@ import de.tillhub.printengine.data.RawPrinterData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.epson.epos2.printer.Printer as EpsonPrinter
+import com.epson.epos2.Epos2Exception
 
 internal class EpsonPrinterController(
     private val printerData: ExternalPrinter,
@@ -39,13 +39,14 @@ internal class EpsonPrinterController(
 
     override fun printBarcode(barcode: String) = executeEpsonCommand {
         printerWrapper.addBarcode(
-            barcode,
+            "{B$barcode", //"{B" forces the printer to use (Code Set B) https://files.support.epson.com/pdf/pos/bulk/tm-i_epos-print_um_en_revk.pdf
             EpsonPrinter.BARCODE_CODE128,
             EpsonPrinter.HRI_BELOW,
             EpsonPrinter.FONT_A,
             BARCODE_MODULE_WIDTH,
             BARCODE_HEIGHT
         )
+        printerWrapper.addFeedLine(THREE_FEED_LINES)
     }
 
     override fun printQr(qrData: String) = executeEpsonCommand {
@@ -75,7 +76,7 @@ internal class EpsonPrinterController(
     }
 
     override fun feedPaper() = executeEpsonCommand {
-        printerWrapper.addFeedLine(SINGLE_FEED_LINE)
+        printerWrapper.addFeedLine(ONE_FEED_LINE)
     }
 
     override fun cutPaper() = executeEpsonCommand {
@@ -111,9 +112,11 @@ internal class EpsonPrinterController(
 
     companion object {
         private const val QR_DIMENSION = 240
-        private const val BARCODE_HEIGHT = 200
-        private const val BARCODE_MODULE_WIDTH = 4
-        private const val SINGLE_FEED_LINE = 1
+        private const val BARCODE_HEIGHT = 100
+        private const val BARCODE_MODULE_WIDTH = 3
+
+        private const val ONE_FEED_LINE = 1
+        private const val THREE_FEED_LINES = 3
         private const val IMAGE_BRIGHTNESS = 1.0
         private const val IMAGE_START_XY = 0
     }

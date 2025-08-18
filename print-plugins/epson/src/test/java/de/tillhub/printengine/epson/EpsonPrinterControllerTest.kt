@@ -19,6 +19,7 @@ import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.Ordering
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -36,8 +37,10 @@ class EpsonPrinterControllerTest : FunSpec({
 
     beforeTest {
         printerData = mockk()
-        printerWrapper = mockk()
-        printerState = MutableStateFlow<PrinterState>(PrinterState.Preparing)
+        printerWrapper = mockk {
+            every { addFeedLine(any()) } just Runs
+        }
+        printerState = MutableStateFlow(PrinterState.Preparing)
         controller = EpsonPrinterController(
             printerData = printerData,
             printerWrapper = printerWrapper,
@@ -74,15 +77,16 @@ class EpsonPrinterControllerTest : FunSpec({
 
         controller.printBarcode(barcode)
 
-        verify {
+        verify(Ordering.ORDERED) {
             printerWrapper.addBarcode(
-                barcode,
+                "{B$barcode",
                 BARCODE_CODE128,
                 HRI_BELOW,
                 FONT_A,
-                4,
-                200
+                3,
+                100
             )
+            printerWrapper.addFeedLine(3)
         }
         printerState.value shouldBe PrinterState.Preparing
     }
@@ -190,8 +194,6 @@ class EpsonPrinterControllerTest : FunSpec({
     }
 
     test("feedPaper should call addFeedLine") {
-        every { printerWrapper.addFeedLine(any()) } just Runs
-
         controller.feedPaper()
 
         verify { printerWrapper.addFeedLine(1) }
