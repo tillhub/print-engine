@@ -26,8 +26,9 @@ import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
+// Test stays here due to the limitation of testing with Bitmaps
 @RobolectricTest
-internal class PrinterImplTest : DescribeSpec({
+internal class PrinterImplWImageTest : DescribeSpec({
 
     lateinit var bitmap: Bitmap
     lateinit var footerBitmap: Bitmap
@@ -80,74 +81,9 @@ internal class PrinterImplTest : DescribeSpec({
         bitmap.recycle()
     }
 
-    describe("independent") {
-
-        it("observePrinterState") {
-            printer.printerState.first() shouldBe PrinterState.Connected
-        }
-
-        it("getPrinterInfo") {
-            printer.getPrinterInfo() shouldBe PrinterResult.Success(
-                PrinterInfo(
-                    serialNumber = "n/a",
-                    deviceModel = "P9 pro",
-                    printerVersion = "n/a",
-                    printerPaperSpec = PrintingPaperSpec.SunmiPaper56mm,
-                    printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-                    printerHead = "n/a",
-                    printedDistance = 0,
-                    serviceVersion = PrinterServiceVersion.Unknown
-                )
-            )
-        }
-    }
-
     describe("printer enabled") {
         beforeTest {
             printer.settings.enabled = true
-        }
-
-        it("printText") {
-            printer.startPrintJob(
-                PrintJob(
-                    listOf(
-                        PrintCommand.Text("text_to_print"),
-                        PrintCommand.FeedPaper
-                    )
-                )
-            )
-
-            coVerify(ordering = Ordering.ORDERED) {
-                controller.setIntensity(PrintingIntensity.DEFAULT)
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printText("text_to_print")
-                controller.feedPaper()
-                controller.start()
-                analytics.logPrintReceipt(
-                    "text_to_print\n" +
-                            "-----FEED PAPER-----"
-                )
-            }
-        }
-
-        it("printText with DARK Intensity") {
-            printer.settings.printingIntensity = PrintingIntensity.DARK
-            printer.startPrintJob(
-                PrintJob(
-                    listOf(
-                        PrintCommand.Text("text_to_print"),
-                        PrintCommand.FeedPaper
-                    )
-                )
-            )
-
-            coVerify(ordering = Ordering.ORDERED) {
-                controller.setIntensity(PrintingIntensity.DARK)
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printText("text_to_print")
-                controller.feedPaper()
-                controller.start()
-            }
         }
 
         it("printReceipt with image") {
@@ -207,59 +143,11 @@ internal class PrinterImplTest : DescribeSpec({
                 )
             }
         }
-
-        it("print RawReceipt") {
-            val rawPrinterData = RawPrinterData("raw_data".toByteArray())
-            printer.startPrintJob(
-                PrintJob(
-                    listOf(
-                        PrintCommand.RawData(rawPrinterData)
-                    )
-                )
-            )
-
-            coVerify(ordering = Ordering.ORDERED) {
-                controller.setIntensity(PrintingIntensity.DEFAULT)
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.sendRawData(rawPrinterData)
-                controller.start()
-                analytics.logPrintReceipt("raw_data")
-            }
-        }
     }
 
     describe("printer disabled") {
         beforeTest {
             printer.settings.enabled = false
-        }
-
-        it("printText") {
-            printer.startPrintJob(
-                PrintJob(
-                    listOf(
-                        PrintCommand.Text("text_to_print"),
-                        PrintCommand.FeedPaper
-                    )
-                )
-            )
-
-            verify(inverse = true) {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printText(any())
-            }
-        }
-
-        it("printReceipt without image") {
-//            printer.printReceipt("receipt_to_print", null)
-
-            verify(inverse = true) {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.printText("receipt_to_print")
-            }
-
-            verify(inverse = true) {
-                controller.printImage(any())
-            }
         }
 
         it("printReceipt") {
@@ -284,22 +172,6 @@ internal class PrinterImplTest : DescribeSpec({
                 controller.printBarcode(any())
                 controller.printImage(any())
                 controller.feedPaper()
-            }
-        }
-
-        it("print RawReceipt") {
-            printer.startPrintJob(
-                PrintJob(
-                    listOf(
-                        PrintCommand.RawData(RawPrinterData("raw_data".toByteArray())),
-                        PrintCommand.FeedPaper
-                    )
-                )
-            )
-
-            coVerify(inverse = true) {
-                controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                controller.sendRawData(any())
             }
         }
     }

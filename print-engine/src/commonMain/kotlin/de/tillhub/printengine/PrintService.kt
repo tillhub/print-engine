@@ -7,15 +7,15 @@ import kotlinx.coroutines.flow.Flow
 abstract class PrintService {
     abstract var printController: PrinterController?
     abstract val printerState: Flow<PrinterState>
+}
 
-    @Suppress("TooGenericExceptionCaught")
-    inline fun <T> withPrinterCatching(body: (PrinterController) -> T): PrinterResult<T> {
-        return printController?.let {
-            try {
-                PrinterResult.Success(body(it))
-            } catch (e: Exception) {
-                PrinterResult.Error.WithException(e)
-            }
-        } ?: PrinterResult.Error.PrinterNotConnected
-    }
+@Suppress("TooGenericExceptionCaught")
+inline fun <T> PrintService.withPrinterCatching(body: (PrinterController) -> T): PrinterResult<T> {
+    return printController?.let {
+        try {
+            PrinterResult.Success(body(it))
+        } catch (e: Exception) {
+            PrinterResult.Error.WithException(e)
+        }
+    } ?: PrinterResult.Error.PrinterNotConnected
 }
