@@ -1,5 +1,6 @@
 package de.tillhub.printengine.emulated
 
+import co.touchlab.kermit.Logger
 import de.tillhub.printengine.Printer
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterInfo
@@ -11,7 +12,6 @@ import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import timber.log.Timber
 
 /**
  * EmulatedPrinter is used when Printer is not available or supported by device
@@ -58,6 +58,6 @@ internal class EmulatedPrinter : Printer {
     }
 
     private fun logInfo(message: String) {
-        Timber.i("EmulatedPrinter: $message")
+        Logger.i("EmulatedPrinter: $message")
     }
 }

@@ -1,5 +1,6 @@
 package de.tillhub.printengine
 
+import co.touchlab.kermit.Logger
 import de.tillhub.printengine.analytics.PrintAnalytics
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
@@ -12,7 +13,6 @@ import de.tillhub.printengine.dispatcher.DispatcherProvider
 import de.tillhub.printengine.dispatcher.DispatcherProviderImp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 internal class PrinterImpl(
     private val printService: PrintService,
@@ -80,10 +80,10 @@ internal class PrinterImpl(
         }
 
     private fun logInfo(message: String) {
-        Timber.i("printing: $message")
+        Logger.i("printing: $message")
     }
 
     private fun logWarning(reason: String) {
-        Timber.w("Printer not connected for: $reason")
+        Logger.w("Printer not connected for: $reason")
     }
 }

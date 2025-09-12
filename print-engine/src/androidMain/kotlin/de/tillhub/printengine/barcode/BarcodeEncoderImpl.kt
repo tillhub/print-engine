@@ -6,8 +6,8 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
-import timber.log.Timber
 import androidx.core.graphics.createBitmap
+import co.touchlab.kermit.Logger
 
 internal class BarcodeEncoderImpl : BarcodeEncoder {
 
@@ -35,7 +35,7 @@ internal class BarcodeEncoderImpl : BarcodeEncoder {
         val result: BitMatrix = try {
             writer.encode(content, typeConverter(type), imgWidth, imgHeight, hints)
         } catch (e: IllegalArgumentException) {
-            Timber.e(e)
+            Logger.e("error encoding barcode", e)
             return null
         }
 

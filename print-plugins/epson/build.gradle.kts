@@ -1,7 +1,8 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.detekt)
     id("maven-publish")
 }
 
@@ -41,13 +42,8 @@ android {
         useJUnitPlatform()
     }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = Configs.JVM_TARGET
-            freeCompilerArgs = listOf(
-                "-Xstring-concat=inline"
-            )
-        }
+    kotlin {
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
     }
 
     packaging {
@@ -64,25 +60,17 @@ android {
     }
 }
 
-
-detekt {
-    buildUponDefaultConfig = true // preconfigure defaults
-    allRules = false // activate all available (even unstable) rules.
-    config.setFrom("$rootDir/print-engine/config/detekt.yml")
-}
-
 dependencies {
     implementation(project(":print-engine"))
 
     // Core Dependencies
-    implementation(libs.bundles.core)
+    implementation(libs.androidx.core)
+    implementation(libs.kotlin.coroutines)
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     // Utils
-    implementation(libs.timber)
-    detektPlugins(libs.detekt.formatting)
-    detektPlugins(libs.detekt.libraries)
+    implementation(libs.kermit)
 
     // Unit tests
     testImplementation(libs.bundles.testing)

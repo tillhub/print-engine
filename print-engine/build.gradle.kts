@@ -1,8 +1,70 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.detekt)
+    alias(libs.plugins.kotlinMultiplatform)
     id("maven-publish")
+}
+
+kotlin {
+    compilerOptions {
+        // removes warnings for expect/actual classes
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
+    androidTarget {
+        // Keep JVM target consistent with Java 17
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+
+        dependencies {
+            // Core Dependencies
+            implementation(libs.androidx.core)
+            implementation(libs.kotlin.coroutines)
+            coreLibraryDesugaring(libs.android.desugarJdkLibs)
+
+            implementation(libs.google.zxing)
+
+            // Utils
+            implementation(libs.kermit)
+
+            // Unit tests
+            testImplementation(libs.bundles.testing)
+            testImplementation(libs.bundles.robolectric)
+        }
+    }
+
+    val xcfName = "print-engine"
+    iosX64 { binaries.framework { baseName = xcfName } }
+    iosArm64 { binaries.framework { baseName = xcfName } }
+    iosSimulatorArm64 { binaries.framework { baseName = xcfName } }
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+
+        val androidMain by getting {
+            // Reuse existing Android sources under src/main/kotlin to avoid moving files now
+            kotlin.srcDirs("src/androidMain/kotlin")
+            dependencies {
+            }
+        }
+        val androidUnitTest by getting {
+            // Reuse existing Android unit tests under src/test/kotlin
+            kotlin.srcDirs("src/androidTest/kotlin")
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+    }
 }
 
 android {
@@ -11,10 +73,6 @@ android {
 
     defaultConfig {
         minSdk = Configs.MIN_SDK
-    }
-
-    buildFeatures {
-        viewBinding = true
     }
 
     buildTypes {
@@ -43,15 +101,6 @@ android {
         useJUnitPlatform()
     }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = Configs.JVM_TARGET
-            freeCompilerArgs = listOf(
-                "-Xstring-concat=inline"
-            )
-        }
-    }
-
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -59,39 +108,16 @@ android {
     }
 }
 
-detekt {
-    buildUponDefaultConfig = true // preconfigure defaults
-    allRules = false // activate all available (even unstable) rules.
-    config.setFrom("$projectDir/config/detekt.yml")
-}
-
-dependencies {
-    // Core Dependencies
-    implementation(libs.bundles.core)
-    coreLibraryDesugaring(libs.android.desugarJdkLibs)
-
-    implementation(libs.google.zxing)
-    
-    // Utils
-    implementation(libs.timber)
-    detektPlugins(libs.detekt.formatting)
-    detektPlugins(libs.detekt.libraries)
-
-    // Unit tests
-    testImplementation(libs.bundles.testing)
-    testImplementation(libs.bundles.robolectric)
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release-core") {
-                groupId = "de.tillhub.printengine"
-                artifactId = "core"
-                version = Configs.VERSION_CODE
-
-                from(components.getByName("release"))
-            }
-        }
-    }
-}
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            create<MavenPublication>("release-core") {
+//                groupId = "de.tillhub.printengine"
+//                artifactId = "core"
+//                version = Configs.VERSION_CODE
+//
+//                from(components.getByName("release"))
+//            }
+//        }
+//    }
+//}

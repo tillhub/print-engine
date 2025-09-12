@@ -2,6 +2,7 @@ package de.tillhub.printengine.sunmi
 
 import android.graphics.Bitmap
 import android.os.RemoteException
+import co.touchlab.kermit.Logger
 import com.sunmi.peripheral.printer.InnerResultCallback
 import com.sunmi.peripheral.printer.SunmiPrinterService
 import de.tillhub.printengine.PrinterController
@@ -14,7 +15,6 @@ import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingIntensity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -143,7 +143,7 @@ internal class SunmiPrinterController(
         try {
             printerService.autoOutPaper(printListener)
         } catch (e: RemoteException) {
-            Timber.e(e)
+            Logger.e("Error feeding paper", e)
             print3Line()
         }
     }
@@ -160,7 +160,7 @@ internal class SunmiPrinterController(
         try {
             printerService.cutPaper(printListener)
         } catch (e: RemoteException) {
-            Timber.e(e)
+            Logger.e("Error cutting paper", e)
             // not handled
         }
     }

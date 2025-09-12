@@ -1,15 +1,34 @@
 [versions]
-# Define the dependency versions
-agp = "8.2.2"
-kotlin = "1.9.22"
-kotlinCoroutines = "1.7.3"
+# Build tools
+kotlin = "2.2.0"
+agp = "8.11.1"
+spotless = "7.1.0"
+mokkery = "2.9.0"
+
+# Core Android libraries
 core = "1.12.0"
+lifecycle = "2.7.0"
+androidDesugarJdkLibs = "1.2.2"
+
+# Kotlin libraries
+kotlinCoroutines = "1.7.3"
+
+# Logging
+kermit = "2.0.8"
+
+# Compose
+compose = "1.8.2"
+activityCompose = "1.10.1"
+
+# External libraries
 zxing = "3.5.3"
 sunmiPrinter = "1.0.19"
-timber = "5.0.1"
-androidDesugarJdkLibs = "1.2.2"
-detekt = "1.23.6"
+# Downgraded to avoid runtime crash caused by instrumentation
+# when enableAndroidTestCoverage = true
+# See: https://github.com/star-micronics/StarXpand-SDK-Android/issues/18
+starPrinter = "1.0.1"
 
+# Testing libraries
 junit = "4.13.2"
 mockk = "1.14.0"
 robolectric = "4.10"
@@ -17,51 +36,37 @@ kotest = "4.6.4"
 kotestRobolectric = "0.4.0"
 coreTest = "1.6.0"
 androidx-test-ext-junit = "1.2.1"
-espresso-core = "3.5.1"
-appcompat = "1.6.1"
-material = "1.11.0"
 runner = "1.6.2"
 rules = "1.6.1"
 truth = "1.6.0"
 
-# Downgraded to avoid runtime crash caused by instrumentation
-# when enableAndroidTestCoverage = true
-# See: https://github.com/star-micronics/StarXpand-SDK-Android/issues/18
-starPrinter = "1.0.1"
-
-
-lifecycle = "2.7.0"
-activity-compose = "1.8.2"
-compose-bom = "2024.02.00"
-material3 = "1.2.0"
-uiToolingPreviewAndroid = "1.6.1"
-
 [libraries]
-# Define the libraries
-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+# Kotlin libraries
 kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinCoroutines" }
 kotlin-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinCoroutines" }
-android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
-timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
+# Android core libraries
+android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
 androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
 
-google-zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
-sunmi-printer = { group = "com.sunmi", name = "printerlibrary", version.ref = "sunmiPrinter" }
-
-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
-compose-ui = { group = "androidx.compose.ui", name = "ui" }
-compose-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
-compose-material3 = { group = "androidx.compose.material3", name = "material3",version.ref = "material3" }
-
+# Lifecycle libraries
 androidx-lifecycle-common = { group = "androidx.lifecycle", name = "lifecycle-common", version.ref = "lifecycle" }
 androidx-lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime", version.ref = "lifecycle" }
 
-#Printer sdks
+# Compose libraries
+activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+
+# External libraries
+google-zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+
+# Printer SDKs
+sunmi-printer = { group = "com.sunmi", name = "printerlibrary", version.ref = "sunmiPrinter" }
 star-printer = { group = "com.starmicronics", name = "stario10", version.ref = "starPrinter" }
 
-# Unit testing
+# Logging
+kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
+
+# Testing libraries
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
@@ -73,43 +78,34 @@ kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core-jvm", 
 kotest-property = { group = "io.kotest", name = "kotest-property-jvm", version.ref = "kotest" }
 kotest-robolectric = { group = "io.kotest.extensions", name = "kotest-extensions-robolectric", version.ref = "kotestRobolectric" }
 
+# Android testing libraries
 androidx-test-core = { group = "androidx.test", name = "core-ktx", version.ref = "coreTest" }
-
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
 androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "rules" }
-androidx-test-truth = { group = "androidx.test.ext", name = "truth", version.ref = "truth" }
-
-# Dependencies of the included build-logic
-gradlePlugin-android = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
-gradlePlugin-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
-detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
-detekt-libraries = { group = "io.gitlab.arturbosch.detekt", name = "detekt-rules-libraries", version.ref = "detekt" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-test-truth = { group = "androidx.test.ext", name = "truth", version.ref = "truth" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose = { id = "org.jetbrains.compose", version.ref = "compose" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 
 [bundles]
-core = [
-    "androidx.core",
-    "kotlin.coroutines"
-]
 testing = [
     "junit",
     "mockk",
-    "mockk.agent",
-    "mockk.android",
-    "kotest.runner",
-    "kotest.assertions",
-    "kotest.property",
+    "mockk-agent",
+    "mockk-android",
+    "kotest-runner",
+    "kotest-assertions",
+    "kotest-property",
     "kotest-api",
-    "kotlin.coroutines.test"
+    "kotlin-coroutines-test"
 ]
 testing-android = [
     "androidx-test-core",
@@ -118,21 +114,14 @@ testing-android = [
     "androidx-test-ext-junit",
     "androidx-test-truth",
     "mockk-agent",
-    "mockk-android",
+    "mockk-android"
 ]
 robolectric = [
     "robolectric",
-    "kotest.robolectric",
-    "androidx.test.core"
-]
-compose = [
-    "activity.compose",
-    "compose.bom",
-    "compose.ui",
-    "compose.material3",
-    "compose-preview-android",
+    "kotest-robolectric",
+    "androidx-test-core"
 ]
 lifecycle = [
-    "androidx.lifecycle.common",
-    "androidx.lifecycle.runtime",
+    "androidx-lifecycle-common",
+    "androidx-lifecycle-runtime"
 ]

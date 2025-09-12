@@ -1,6 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.compose)
 }
 
 android {
@@ -32,21 +36,12 @@ android {
         useJUnitPlatform()
     }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = Configs.JVM_TARGET
-        }
-    }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.9"
+    kotlin {
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
 dependencies {
-
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
     implementation(project(":print-engine"))
@@ -57,6 +52,12 @@ dependencies {
     implementation(project(":print-plugins:verifone"))
 
     implementation(libs.androidx.core)
-    implementation(libs.bundles.compose)
+    implementation(libs.kotlin.coroutines)
     implementation(libs.bundles.lifecycle)
+
+    implementation(compose.runtime)
+    implementation(compose.ui)
+    implementation(compose.material3)
+    implementation(compose.components.uiToolingPreview)
+    implementation(libs.activity.compose)
 }

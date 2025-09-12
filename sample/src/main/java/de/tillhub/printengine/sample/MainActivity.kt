@@ -32,7 +32,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import de.tillhub.printengine.PrintEngine
@@ -46,6 +45,7 @@ import de.tillhub.printengine.epson.EpsonPrinterDiscovery
 import de.tillhub.printengine.star.StarPrinterDiscovery
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 class MainActivity : ComponentActivity() {
 

@@ -3,6 +3,7 @@ package de.tillhub.printengine.sunmi
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.pm.PackageInfoCompat
+import co.touchlab.kermit.Logger
 import com.sunmi.peripheral.printer.InnerPrinterCallback
 import com.sunmi.peripheral.printer.InnerPrinterException
 import com.sunmi.peripheral.printer.InnerPrinterManager
@@ -13,7 +14,6 @@ import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import timber.log.Timber
 
 /**
  * Print service for encapsulating connection handling, error handling and convenience methods for working with
@@ -36,7 +36,7 @@ internal class SunmiPrintService(context: Context) : PrintService() {
             try {
                 InnerPrinterManager.getInstance().hasPrinter(service)
             } catch (e: InnerPrinterException) {
-                Timber.e(e)
+                Logger.e("Error getting printer", e)
                 false
             }.let {
                 connectionState.value = when (it) {
@@ -60,7 +60,7 @@ internal class SunmiPrintService(context: Context) : PrintService() {
                 connectionState.value = PrinterState.Error.NotAvailable
             }
         } catch (e: InnerPrinterException) {
-            Timber.e(e)
+            Logger.e("Error binding service", e)
         }
     }
 
@@ -69,12 +69,12 @@ internal class SunmiPrintService(context: Context) : PrintService() {
             val packageInfo = context.packageManager.getPackageInfo("woyou.aidlservice.jiuiv5", 0)
             if (packageInfo != null) {
                 return PrinterServiceVersion.Info(
-                    packageInfo.versionName,
+                    packageInfo.versionName!!,
                     PackageInfoCompat.getLongVersionCode(packageInfo)
                 )
             }
         } catch (e: PackageManager.NameNotFoundException) {
-            Timber.e(e)
+            Logger.e("Error getting service version", e)
         }
 
         return PrinterServiceVersion.Unknown
