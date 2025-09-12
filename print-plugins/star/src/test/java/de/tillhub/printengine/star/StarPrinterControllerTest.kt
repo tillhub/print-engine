@@ -3,7 +3,6 @@ package de.tillhub.printengine.star
 import android.graphics.Bitmap
 import com.starmicronics.stario10.StarIO10ErrorCode
 import com.starmicronics.stario10.StarIO10Exception
-import com.starmicronics.stario10.StarIO10IllegalHostDeviceStateException
 import com.starmicronics.stario10.StarPrinter
 import com.starmicronics.stario10.starxpandcommand.DocumentBuilder
 import com.starmicronics.stario10.starxpandcommand.PrinterBuilder
@@ -17,7 +16,6 @@ import de.tillhub.printengine.data.RawPrinterData
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +26,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StarPrinterControllerTest : FunSpec({

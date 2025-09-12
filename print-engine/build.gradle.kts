@@ -21,13 +21,9 @@ kotlin {
         dependencies {
             // Core Dependencies
             implementation(libs.androidx.core)
-            implementation(libs.kotlin.coroutines)
             coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
             implementation(libs.google.zxing)
-
-            // Utils
-            implementation(libs.kermit)
 
             // Unit tests
             testImplementation(libs.bundles.testing)
@@ -43,6 +39,10 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                implementation(libs.kotlin.coroutines)
+
+                // Utils
+                implementation(libs.kermit)
             }
         }
         val commonTest by getting {
