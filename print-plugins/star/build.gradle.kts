@@ -2,8 +2,76 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlinMultiplatform)
     id("maven-publish")
+}
+
+kotlin {
+    compilerOptions {
+        // removes warnings for expect/actual classes
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
+    androidTarget {
+        // Keep JVM target consistent with Java 17
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+
+        dependencies {
+            // Core Dependencies
+            implementation(libs.androidx.core)
+            coreLibraryDesugaring(libs.android.desugarJdkLibs)
+
+            // Printer Dependencies
+            implementation(libs.star.printer)
+
+            // Unit tests
+            testImplementation(libs.bundles.testing)
+            testImplementation(libs.bundles.robolectric)
+
+        }
+    }
+
+    val xcfName = "print-engine"
+    iosX64 { binaries.framework { baseName = xcfName } }
+    iosArm64 { binaries.framework { baseName = xcfName } }
+    iosSimulatorArm64 { binaries.framework { baseName = xcfName } }
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(project(":print-engine"))
+
+                implementation(libs.kotlin.coroutines)
+
+                // Utils
+                implementation(libs.kermit)
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+
+                implementation(libs.kotlin.coroutines.test)
+            }
+        }
+
+        val androidMain by getting {
+            // Reuse existing Android sources under src/main/kotlin to avoid moving files now
+            kotlin.srcDirs("src/androidMain/kotlin")
+            dependencies {
+                implementation(libs.kotlin.coroutines.android)
+            }
+        }
+        val androidUnitTest by getting {
+            // Reuse existing Android unit tests under src/test/kotlin
+            kotlin.srcDirs("src/androidTest/kotlin")
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+    }
 }
 
 android {
@@ -40,10 +108,6 @@ android {
         useJUnitPlatform()
     }
 
-    kotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
-    }
-
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -51,34 +115,16 @@ android {
     }
 }
 
-dependencies {
-    implementation(project(":print-engine"))
-
-    // Core Dependencies
-    implementation(libs.androidx.core)
-    implementation(libs.kotlin.coroutines)
-    coreLibraryDesugaring(libs.android.desugarJdkLibs)
-
-    // Printer Dependencies
-    implementation(libs.star.printer)
-
-    // Utils
-    implementation(libs.kermit)
-
-    // Unit tests
-    testImplementation(libs.bundles.testing)
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release-star") {
-                groupId = "de.tillhub.printengine"
-                artifactId = "star"
-                version = Configs.VERSION_CODE
-
-                from(components.getByName("release"))
-            }
-        }
-    }
-}
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            create<MavenPublication>("release-star") {
+//                groupId = "de.tillhub.printengine"
+//                artifactId = "star"
+//                version = Configs.VERSION_CODE
+//
+//                from(components.getByName("release"))
+//            }
+//        }
+//    }
+//}
