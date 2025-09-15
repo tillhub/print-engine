@@ -58,6 +58,7 @@ kotlin {
             // Reuse existing Android sources under src/main/kotlin to avoid moving files now
             kotlin.srcDirs("src/androidMain/kotlin")
             dependencies {
+                implementation(libs.kotlin.coroutines.android)
             }
         }
         val androidUnitTest by getting {
