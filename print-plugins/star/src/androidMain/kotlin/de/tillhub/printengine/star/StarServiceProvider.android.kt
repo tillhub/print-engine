@@ -6,7 +6,7 @@ import de.tillhub.printengine.PrinterServiceProvider
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.data.ExternalPrinter
 
-object StarServiceProvider : PrinterServiceProvider {
+actual object StarServiceProvider : PrinterServiceProvider {
     override fun build(
         context: Context,
         printer: ExternalPrinter?,

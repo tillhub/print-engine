@@ -18,7 +18,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-class StarPrinterDiscovery(private val context: Context) : PrinterDiscovery {
+actual class StarPrinterDiscovery(private val context: Context) : PrinterDiscovery {
 
     companion object {
         private const val CHARACTER_COUNT = 52
@@ -32,7 +32,7 @@ class StarPrinterDiscovery(private val context: Context) : PrinterDiscovery {
     private val interfaceTypes =
         listOf(InterfaceType.Lan, InterfaceType.Bluetooth, InterfaceType.Usb)
 
-    override val observePrinters: Flow<DiscoveryState>
+    actual override val observePrinters: Flow<DiscoveryState>
         get() = callbackFlow {
             trySend(DiscoveryState.Idle)
 

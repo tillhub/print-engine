@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @Suppress("TooManyFunctions")
-internal class StarPrinterController(
+internal actual class StarPrinterController(
     private val starPrinter: StarPrinter,
     private val printerState: MutableStateFlow<PrinterState>,
     private val commandBuilderFactory: () -> StarXpandCommandBuilder = { StarXpandCommandBuilder() },
@@ -38,9 +38,9 @@ internal class StarPrinterController(
     private var printerBuilder: PrinterBuilder = PrinterBuilder().styleAlignment(Alignment.Center)
 ) : PrinterController {
 
-    override fun observePrinterState(): Flow<PrinterState> = printerState
+    actual override fun observePrinterState(): Flow<PrinterState> = printerState
 
-    override fun sendRawData(data: RawPrinterData) {
+    actual override fun sendRawData(data: RawPrinterData) {
         scope.launch {
             starPrinter.openAsync().await()
             starPrinter.printRawDataAsync(data.bytes.toList()).await()
@@ -48,18 +48,18 @@ internal class StarPrinterController(
         }
     }
 
-    override fun setFontSize(fontSize: PrintingFontType) {
+    actual override fun setFontSize(fontSize: PrintingFontType) {
         when (fontSize) {
             PrintingFontType.DEFAULT_FONT_SIZE -> printerBuilder.styleFont(FontType.A)
         }
     }
 
-    override fun printText(text: String) {
+    actual override fun printText(text: String) {
         printerBuilder.actionPrintText(text)
             .styleAlignment(Alignment.Center)
     }
 
-    override fun printBarcode(barcode: String) {
+    actual override fun printBarcode(barcode: String) {
         printerBuilder.actionPrintBarcode(
             BarcodeParameter(barcode, BarcodeSymbology.Code128)
                 .setBarDots(BAR_DOTS)
@@ -68,7 +68,7 @@ internal class StarPrinterController(
         ).styleAlignment(Alignment.Center)
     }
 
-    override fun printQr(qrData: String) {
+    actual override fun printQr(qrData: String) {
         printerBuilder.actionPrintQRCode(
             QRCodeParameter(qrData)
                 .setLevel(QRCodeLevel.L)
@@ -76,12 +76,12 @@ internal class StarPrinterController(
         ).styleAlignment(Alignment.Center)
     }
 
-    override fun printImage(image: Bitmap) {
+    actual override fun printImage(image: Bitmap) {
         printerBuilder.actionPrintImage(ImageParameter(image, IMAGE_WIDTH))
             .styleAlignment(Alignment.Center)
     }
 
-    override fun start() {
+    actual override fun start() {
         scope.launch {
             runCatching {
                 val commandBuilder = commandBuilderFactory().apply {
@@ -105,15 +105,15 @@ internal class StarPrinterController(
         }
     }
 
-    override fun feedPaper() {
+    actual override fun feedPaper() {
         printerBuilder.actionFeedLine(SINGLE_FEED_LINE)
     }
 
-    override fun cutPaper() {
+    actual override fun cutPaper() {
         printerBuilder.actionCut(CutType.Partial)
     }
 
-    override suspend fun getPrinterInfo(): PrinterInfo =
+    actual override suspend fun getPrinterInfo(): PrinterInfo =
         PrinterInfo(
             serialNumber = "n/a",
             deviceModel = starPrinter.information?.model?.name ?: "Unknown",
@@ -125,7 +125,7 @@ internal class StarPrinterController(
             serviceVersion = PrinterServiceVersion.Unknown
         )
 
-    override fun setIntensity(intensity: PrintingIntensity) = Unit
+    actual  override fun setIntensity(intensity: PrintingIntensity) = Unit
 
     companion object {
         private const val BARCODE_HEIGHT = 12.0

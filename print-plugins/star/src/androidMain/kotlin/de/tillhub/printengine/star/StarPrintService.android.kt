@@ -14,10 +14,10 @@ import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class StarPrintService(context: Context, printer: ExternalPrinter) : PrintService() {
+actual class StarPrintService(context: Context, printer: ExternalPrinter) : PrintService() {
 
     private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
-    override val printerState: Flow<PrinterState> = connectionState
+    actual override val printerState: Flow<PrinterState> = connectionState
 
 
     private val connectionListener = object : PrinterDelegate() {
@@ -54,7 +54,7 @@ class StarPrintService(context: Context, printer: ExternalPrinter) : PrintServic
         }
     }
 
-    override var printController: PrinterController? = StarPrinterController(
+    actual override var printController: PrinterController? = StarPrinterController(
         starPrinter,
         connectionState,
     )
