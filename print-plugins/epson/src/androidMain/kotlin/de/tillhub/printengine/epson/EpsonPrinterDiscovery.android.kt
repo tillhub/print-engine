@@ -17,7 +17,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-class EpsonPrinterDiscovery(private val context: Context) : PrinterDiscovery {
+actual class EpsonPrinterDiscovery(private val context: Context) : PrinterDiscovery {
 
     companion object {
         private const val CHARACTER_COUNT = 42
@@ -34,7 +34,7 @@ class EpsonPrinterDiscovery(private val context: Context) : PrinterDiscovery {
         deviceModel = Discovery.MODEL_ALL
     }
 
-    override val observePrinters: Flow<DiscoveryState>
+    actual override val observePrinters: Flow<DiscoveryState>
         get() = callbackFlow {
             trySend(DiscoveryState.Idle)
 

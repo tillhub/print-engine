@@ -6,14 +6,15 @@ import de.tillhub.printengine.PrintService
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterState
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.epson.epos2.printer.Printer as EpsonPrinter
 
-internal class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintService() {
+internal actual class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintService() {
 
     private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
-    override val printerState: StateFlow<PrinterState> = connectionState
+    actual override val printerState: Flow<PrinterState> = connectionState
 
     private val receiveListener = ReceiveListener { _, code, status, _ ->
         connectionState.value = EpsonPrinterErrorState.epsonStatusToState(code, status)
@@ -34,7 +35,7 @@ internal class EpsonPrintService(context: Context, printer: ExternalPrinter) : P
         )
     }
 
-    override var printController: PrinterController? = EpsonPrinterController(
+    actual override var printController: PrinterController? = EpsonPrinterController(
         printerData = printer,
         printerWrapper = epsonPrinter,
         printerState = connectionState

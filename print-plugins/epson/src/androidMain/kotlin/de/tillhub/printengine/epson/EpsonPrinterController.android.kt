@@ -12,20 +12,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.epson.epos2.printer.Printer as EpsonPrinter
 import com.epson.epos2.Epos2Exception
+import kotlinx.coroutines.flow.Flow
 
-internal class EpsonPrinterController(
+internal actual class EpsonPrinterController(
     private val printerData: ExternalPrinter,
     private val printerWrapper: EpsonPrinterWrapper,
     private val printerState: MutableStateFlow<PrinterState>,
 ) : PrinterController {
 
-    override fun sendRawData(data: RawPrinterData) = executeEpsonCommand {
+    actual override fun sendRawData(data: RawPrinterData) = executeEpsonCommand {
         printerWrapper.addCommand(data.bytes)
     }
 
-    override fun observePrinterState(): StateFlow<PrinterState> = printerState
+    actual override fun observePrinterState(): Flow<PrinterState> = printerState
 
-    override fun setFontSize(fontSize: PrintingFontType) = executeEpsonCommand {
+    actual override fun setFontSize(fontSize: PrintingFontType) = executeEpsonCommand {
         printerWrapper.addTextFont(
             when (fontSize) {
                 PrintingFontType.DEFAULT_FONT_SIZE -> EpsonPrinter.FONT_A
@@ -33,11 +34,11 @@ internal class EpsonPrinterController(
         )
     }
 
-    override fun printText(text: String) = executeEpsonCommand {
+    actual override fun printText(text: String) = executeEpsonCommand {
         printerWrapper.addText("$text\n")
     }
 
-    override fun printBarcode(barcode: String) = executeEpsonCommand {
+    actual override fun printBarcode(barcode: String) = executeEpsonCommand {
         printerWrapper.addBarcode(
             "{B$barcode", //"{B" forces the printer to use (Code Set B) https://files.support.epson.com/pdf/pos/bulk/tm-i_epos-print_um_en_revk.pdf
             EpsonPrinter.BARCODE_CODE128,
@@ -49,7 +50,7 @@ internal class EpsonPrinterController(
         printerWrapper.addFeedLine(THREE_FEED_LINES)
     }
 
-    override fun printQr(qrData: String) = executeEpsonCommand {
+    actual override fun printQr(qrData: String) = executeEpsonCommand {
         printerWrapper.addSymbol(
             qrData,
             EpsonPrinter.SYMBOL_QRCODE_MODEL_1,
@@ -60,7 +61,7 @@ internal class EpsonPrinterController(
         )
     }
 
-    override fun printImage(image: Bitmap) = executeEpsonCommand {
+    actual override fun printImage(image: Bitmap) = executeEpsonCommand {
         printerWrapper.addImage(
             image,
             IMAGE_START_XY,
@@ -75,17 +76,17 @@ internal class EpsonPrinterController(
         )
     }
 
-    override fun feedPaper() = executeEpsonCommand {
+    actual override fun feedPaper() = executeEpsonCommand {
         printerWrapper.addFeedLine(ONE_FEED_LINE)
     }
 
-    override fun cutPaper() = executeEpsonCommand {
+    actual override fun cutPaper() = executeEpsonCommand {
         printerWrapper.addCut(EpsonPrinter.CUT_NO_FEED)
     }
 
-    override fun setIntensity(intensity: PrintingIntensity) = Unit
+    actual override fun setIntensity(intensity: PrintingIntensity) = Unit
 
-    override fun start() {
+    actual override fun start() {
         executeEpsonCommand {
             if (printerWrapper.status.connection != EpsonPrinter.TRUE) {
                 printerWrapper.connect(printerData.getTarget(), EpsonPrinter.PARAM_DEFAULT)
@@ -108,7 +109,7 @@ internal class EpsonPrinterController(
     private fun ExternalPrinter.getTarget() =
         "${connectionType.value}:$connectionAddress"
 
-    override suspend fun getPrinterInfo(): PrinterInfo = printerData.info
+    actual override suspend fun getPrinterInfo(): PrinterInfo = printerData.info
 
     companion object {
         private const val QR_DIMENSION = 240

@@ -31,6 +31,7 @@ kotlin {
             testImplementation(libs.bundles.robolectric)
 
             // Android tests
+            androidTestImplementation(libs.bundles.testing)
             androidTestImplementation(libs.bundles.testing.android)
         }
     }
