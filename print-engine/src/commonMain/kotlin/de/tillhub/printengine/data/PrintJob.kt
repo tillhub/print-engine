@@ -2,7 +2,9 @@ package de.tillhub.printengine.data
 
 import de.tillhub.printengine.helpers.HashHelper
 
-class PrintJob(val commands: List<PrintCommand>) {
+class PrintJob(
+    val commands: List<PrintCommand>,
+) {
     val isNotEmpty = commands.isNotEmpty()
     val description: String by lazy {
         commands.joinToString(separator = "\n") { command ->
@@ -19,11 +21,11 @@ class PrintJob(val commands: List<PrintCommand>) {
     }
 
     override fun toString() = "PrintJob(" +
-            "commands=$commands" +
-            ")"
+        "commands=$commands" +
+        ")"
 
     override fun equals(other: Any?) = other is PrintJob &&
-            commands == other.commands
+        commands == other.commands
 
     override fun hashCode() = HashHelper.hash(commands)
 }

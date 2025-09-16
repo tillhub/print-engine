@@ -10,7 +10,7 @@ actual object StarServiceProvider : PrinterServiceProvider {
     override fun build(
         context: Context,
         printer: ExternalPrinter?,
-        barcode: BarcodeEncoder?
+        barcode: BarcodeEncoder?,
     ): PrintService {
         requireNotNull(printer) { "StarServiceProvider requires an ExternalPrinter configuration" }
         return StarPrintService(context, printer)

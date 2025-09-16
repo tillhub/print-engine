@@ -6,7 +6,9 @@ import kotlinx.coroutines.internal.synchronized
 import kotlin.concurrent.Volatile
 
 @OptIn(InternalCoroutinesApi::class)
-open class SingletonHolder<out T : Any>(creator: () -> T) : SynchronizedObject() {
+open class SingletonHolder<out T : Any>(
+    creator: () -> T,
+) : SynchronizedObject() {
     private var creator: (() -> T)? = creator
 
     @Volatile

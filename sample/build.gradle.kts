@@ -51,7 +51,6 @@ kotlin {
                 implementation(project(":print-plugins:star"))
                 implementation(project(":print-plugins:epson"))
 
-
                 implementation(compose.runtime)
                 implementation(compose.ui)
                 implementation(compose.material3)

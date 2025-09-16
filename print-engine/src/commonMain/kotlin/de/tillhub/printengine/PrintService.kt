@@ -10,12 +10,10 @@ abstract class PrintService {
 }
 
 @Suppress("TooGenericExceptionCaught")
-inline fun <T> PrintService.withPrinterCatching(body: (PrinterController) -> T): PrinterResult<T> {
-    return printController?.let {
-        try {
-            PrinterResult.Success(body(it))
-        } catch (e: Exception) {
-            PrinterResult.Error.WithException(e)
-        }
-    } ?: PrinterResult.Error.PrinterNotConnected
-}
+inline fun <T> PrintService.withPrinterCatching(body: (PrinterController) -> T): PrinterResult<T> = printController?.let {
+    try {
+        PrinterResult.Success(body(it))
+    } catch (e: Exception) {
+        PrinterResult.Error.WithException(e)
+    }
+} ?: PrinterResult.Error.PrinterNotConnected

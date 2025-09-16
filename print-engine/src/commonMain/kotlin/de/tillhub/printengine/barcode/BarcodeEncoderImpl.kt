@@ -7,6 +7,6 @@ internal expect class BarcodeEncoderImpl() : BarcodeEncoder {
         content: String,
         type: BarcodeType,
         imgWidth: Int,
-        imgHeight: Int
+        imgHeight: Int,
     ): ImageBitmap?
 }

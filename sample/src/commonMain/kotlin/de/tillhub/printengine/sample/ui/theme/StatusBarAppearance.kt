@@ -6,5 +6,5 @@ import androidx.compose.runtime.Composable
 @Composable
 expect fun StatusBarAppearance(
     darkTheme: Boolean,
-    colorScheme: ColorScheme
+    colorScheme: ColorScheme,
 )

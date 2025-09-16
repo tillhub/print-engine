@@ -1,6 +1,7 @@
 package de.tillhub.printengine.epson
 
 import android.graphics.Bitmap
+import com.epson.epos2.Epos2Exception
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterInfo
@@ -8,18 +9,15 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.RawPrinterData
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import com.epson.epos2.printer.Printer as EpsonPrinter
-import com.epson.epos2.Epos2Exception
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import com.epson.epos2.printer.Printer as EpsonPrinter
 
 internal actual class EpsonPrinterController(
     private val printerData: ExternalPrinter,
     private val printerWrapper: EpsonPrinterWrapper,
     private val printerState: MutableStateFlow<PrinterState>,
 ) : PrinterController {
-
     actual override fun sendRawData(data: RawPrinterData) = executeEpsonCommand {
         printerWrapper.addCommand(data.bytes)
     }
@@ -30,7 +28,7 @@ internal actual class EpsonPrinterController(
         printerWrapper.addTextFont(
             when (fontSize) {
                 PrintingFontType.DEFAULT_FONT_SIZE -> EpsonPrinter.FONT_A
-            }
+            },
         )
     }
 
@@ -40,12 +38,14 @@ internal actual class EpsonPrinterController(
 
     actual override fun printBarcode(barcode: String) = executeEpsonCommand {
         printerWrapper.addBarcode(
-            "{B$barcode", //"{B" forces the printer to use (Code Set B) https://files.support.epson.com/pdf/pos/bulk/tm-i_epos-print_um_en_revk.pdf
+            // "{B" forces the printer to use (Code Set B)
+            // https://files.support.epson.com/pdf/pos/bulk/tm-i_epos-print_um_en_revk.pdf
+            "{B$barcode",
             EpsonPrinter.BARCODE_CODE128,
             EpsonPrinter.HRI_BELOW,
             EpsonPrinter.FONT_A,
             BARCODE_MODULE_WIDTH,
-            BARCODE_HEIGHT
+            BARCODE_HEIGHT,
         )
         printerWrapper.addFeedLine(THREE_FEED_LINES)
     }
@@ -57,7 +57,7 @@ internal actual class EpsonPrinterController(
             EpsonPrinter.LEVEL_M,
             QR_DIMENSION,
             QR_DIMENSION,
-            EpsonPrinter.PARAM_UNSPECIFIED
+            EpsonPrinter.PARAM_UNSPECIFIED,
         )
     }
 
@@ -72,7 +72,7 @@ internal actual class EpsonPrinterController(
             EpsonPrinter.MODE_MONO,
             EpsonPrinter.HALFTONE_DITHER,
             IMAGE_BRIGHTNESS,
-            EpsonPrinter.COMPRESS_AUTO
+            EpsonPrinter.COMPRESS_AUTO,
         )
     }
 
@@ -106,8 +106,7 @@ internal actual class EpsonPrinterController(
         }
     }
 
-    private fun ExternalPrinter.getTarget() =
-        "${connectionType.value}:$connectionAddress"
+    private fun ExternalPrinter.getTarget() = "${connectionType.value}:$connectionAddress"
 
     actual override suspend fun getPrinterInfo(): PrinterInfo = printerData.info
 

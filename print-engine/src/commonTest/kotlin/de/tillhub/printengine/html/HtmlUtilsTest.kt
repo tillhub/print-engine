@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class HtmlUtilsTest {
-
     @Test
     fun transformToHtml() {
         val result = HtmlUtils.transformToHtml("Receipt text")
@@ -44,15 +43,21 @@ class HtmlUtilsTest {
     @Test
     fun `monospaceText`() {
         val result = HtmlUtils.monospaceText("Line text")
-        assertEquals("<pre style=\"font-family: monospace; " +
-                "letter-spacing: 0px; font-size: 13px;\">Line text</pre>", result)
+        assertEquals(
+            "<pre style=\"font-family: monospace; " +
+                "letter-spacing: 0px; font-size: 13px;\">Line text</pre>",
+            result,
+        )
     }
 
     @Test
     fun `monospaceText with custom size`() {
         val result = HtmlUtils.monospaceText("Line text", fontSize = 15)
-        assertEquals("<pre style=\"font-family: monospace; " +
-                "letter-spacing: 0px; font-size: 15px;\">Line text</pre>", result)
+        assertEquals(
+            "<pre style=\"font-family: monospace; " +
+                "letter-spacing: 0px; font-size: 15px;\">Line text</pre>",
+            result,
+        )
     }
 
     @Test

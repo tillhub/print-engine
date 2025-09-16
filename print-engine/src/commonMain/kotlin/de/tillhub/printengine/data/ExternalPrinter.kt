@@ -27,24 +27,25 @@ class ExternalPrinter(
      * - "STAR": Star Micronics printers
      * - "EPSON": Epson printers
      */
-    val manufacturer: String
+    val manufacturer: String,
 ) {
     override fun toString(): String = "ExternalPrinter(" +
-            "info=$info," +
-            "connectionType=$connectionType," +
-            "connectionAddress='$connectionAddress'," +
-            "manufacturer=$manufacturer" +
-            ")"
+        "info=$info," +
+        "connectionType=$connectionType," +
+        "connectionAddress='$connectionAddress'," +
+        "manufacturer=$manufacturer" +
+        ")"
 
-    override fun equals(other: Any?): Boolean = other is ExternalPrinter && info == other.info &&
-            connectionType == other.connectionType &&
-            connectionAddress == other.connectionAddress &&
-            manufacturer == other.manufacturer
+    override fun equals(other: Any?): Boolean = other is ExternalPrinter &&
+        info == other.info &&
+        connectionType == other.connectionType &&
+        connectionAddress == other.connectionAddress &&
+        manufacturer == other.manufacturer
 
     override fun hashCode(): Int = HashHelper.hash(
         info,
         connectionType,
         connectionAddress,
-        manufacturer
+        manufacturer,
     )
 }

@@ -28,19 +28,19 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PrinterContainerTest {
-
     private lateinit var testDispatcher: TestDispatcher
     private lateinit var container: PrinterContainer
     private lateinit var printer: Printer
 
     @BeforeTest
     fun beforeTest() {
-        printer = mock {
-            every { settings } returns PrinterSettings()
-            every { printerState } returns MutableStateFlow(PrinterState.CheckingForPrinter)
-            everySuspend { getPrinterInfo() } returns PrinterResult.Success(PRINTER_INFO)
-            everySuspend { startPrintJob(any()) } returns PrinterResult.Success(Unit)
-        }
+        printer =
+            mock {
+                every { settings } returns PrinterSettings()
+                every { printerState } returns MutableStateFlow(PrinterState.CheckingForPrinter)
+                everySuspend { getPrinterInfo() } returns PrinterResult.Success(PRINTER_INFO)
+                everySuspend { startPrintJob(any()) } returns PrinterResult.Success(Unit)
+            }
         testDispatcher = UnconfinedTestDispatcher()
         container = PrinterContainer()
     }
@@ -103,18 +103,20 @@ class PrinterContainerTest {
     }
 
     companion object {
-        private val PRINTER_INFO = PrinterInfo(
-            serialNumber = "n/a",
-            deviceModel = "Emulated Printer",
-            printerVersion = "n/a",
-            printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
-            printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-            printerHead = "n/a",
-            printedDistance = 0,
-            serviceVersion = PrinterServiceVersion.Info(
-                serviceVersionName = "1.0.0",
-                serviceVersionCode = 1
+        private val PRINTER_INFO =
+            PrinterInfo(
+                serialNumber = "n/a",
+                deviceModel = "Emulated Printer",
+                printerVersion = "n/a",
+                printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
+                printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+                printerHead = "n/a",
+                printedDistance = 0,
+                serviceVersion =
+                PrinterServiceVersion.Info(
+                    serviceVersionName = "1.0.0",
+                    serviceVersionCode = 1,
+                ),
             )
-        )
     }
 }

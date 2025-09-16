@@ -12,26 +12,24 @@ import de.tillhub.printengine.sunmi.SunmiServiceProvider
 import de.tillhub.printengine.verifone.VerifoneServiceProvider
 
 object PrinterServiceFactory {
-
     fun createPrinterService(
         context: Context,
         externalPrinter: ExternalPrinter? = null,
-        barcode: BarcodeEncoder? = null
-    ): PrintService {
-        return when (PrinterManufacturer.get()) {
-            PrinterManufacturer.PAX -> PaxServiceProvider.build(context, barcode = barcode)
-            PrinterManufacturer.SUNMI -> SunmiServiceProvider.build(context)
-            PrinterManufacturer.VERIFONE -> VerifoneServiceProvider.build(context)
-            PrinterManufacturer.UNKNOWN -> createExternalPrinterService(context, externalPrinter)
-        }
+        barcode: BarcodeEncoder? = null,
+    ): PrintService = when (PrinterManufacturer.get()) {
+        PrinterManufacturer.PAX -> PaxServiceProvider.build(context, barcode = barcode)
+        PrinterManufacturer.SUNMI -> SunmiServiceProvider.build(context)
+        PrinterManufacturer.VERIFONE -> VerifoneServiceProvider.build(context)
+        PrinterManufacturer.UNKNOWN -> createExternalPrinterService(context, externalPrinter)
     }
 
     private fun createExternalPrinterService(
         context: Context,
-        externalPrinter: ExternalPrinter?
+        externalPrinter: ExternalPrinter?,
     ): PrintService {
-        val printer = externalPrinter
-            ?: throw IllegalArgumentException("External printer info required for UNKNOWN manufacturer")
+        val printer =
+            externalPrinter
+                ?: throw IllegalArgumentException("External printer info required for UNKNOWN manufacturer")
         return when (printer.manufacturer.uppercase()) {
             "EPSON" -> EpsonServiceProvider.build(context, externalPrinter)
             "STAR" -> StarServiceProvider.build(context, externalPrinter)

@@ -57,5 +57,4 @@ internal actual class EpsonPrinterController : PrinterController {
     actual override suspend fun getPrinterInfo(): PrinterInfo {
         TODO("Not yet implemented")
     }
-
 }

@@ -12,29 +12,29 @@ internal object StarPrinterErrorCodes {
     const val USB_UNAVAILABLE_CODE = 2002
 }
 
-internal enum class StarPrinterErrorState(val code: Int) {
+internal enum class StarPrinterErrorState(
+    val code: Int,
+) {
     Unknown(StarPrinterErrorCodes.UNKNOWN_CODE),
     DeviceHasError(StarPrinterErrorCodes.DEVICE_HAS_ERROR_CODE),
     PrinterHoldingPaper(StarPrinterErrorCodes.PRINTER_HOLDING_PAPER_CODE),
     PrintingTimeout(StarPrinterErrorCodes.PRINTING_TIMEOUT_CODE),
     BluetoothUnavailable(StarPrinterErrorCodes.BLUETOOTH_UNAVAILABLE_CODE),
     NetworkUnavailable(StarPrinterErrorCodes.NETWORK_UNAVAILABLE_CODE),
-    UsbUnavailable(StarPrinterErrorCodes.USB_UNAVAILABLE_CODE);
+    UsbUnavailable(StarPrinterErrorCodes.USB_UNAVAILABLE_CODE),
+    ;
 
     companion object {
-        fun fromCode(code: Int): StarPrinterErrorState =
-            entries.firstOrNull { it.code == code } ?: Unknown
+        fun fromCode(code: Int): StarPrinterErrorState = entries.firstOrNull { it.code == code } ?: Unknown
 
-        fun convert(state: StarPrinterErrorState): PrinterState =
-            when (state) {
-                Unknown -> PrinterState.Error.Unknown
-                DeviceHasError -> PrinterState.Error.AbnormalCommunication
-                PrinterHoldingPaper -> PrinterState.Error.PaperJam
-                PrintingTimeout -> PrinterState.Error.PrintingUnfinished
-                BluetoothUnavailable -> PrinterState.Error.NotAvailable
-                NetworkUnavailable -> PrinterState.Error.NotAvailable
-                UsbUnavailable -> PrinterState.Error.NotAvailable
-            }
+        fun convert(state: StarPrinterErrorState): PrinterState = when (state) {
+            Unknown -> PrinterState.Error.Unknown
+            DeviceHasError -> PrinterState.Error.AbnormalCommunication
+            PrinterHoldingPaper -> PrinterState.Error.PaperJam
+            PrintingTimeout -> PrinterState.Error.PrintingUnfinished
+            BluetoothUnavailable -> PrinterState.Error.NotAvailable
+            NetworkUnavailable -> PrinterState.Error.NotAvailable
+            UsbUnavailable -> PrinterState.Error.NotAvailable
+        }
     }
 }
-

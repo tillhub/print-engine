@@ -17,18 +17,17 @@ import kotlinx.coroutines.withContext
 internal class PrinterImpl(
     private val printService: PrintService,
     private val analytics: PrintAnalytics?,
-    private val dispatcherProvider: DispatcherProvider = DispatcherProviderImp()
+    private val dispatcherProvider: DispatcherProvider = DispatcherProviderImp(),
 ) : Printer {
-
     override val settings: PrinterSettings by lazy {
         PrinterSettings()
     }
 
     override val printerState: Flow<PrinterState> = printService.printerState
 
-    override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
-        withContext(dispatcherProvider.iO()) {
-            printService.withPrinterCatching {
+    override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> = withContext(dispatcherProvider.iO()) {
+        printService
+            .withPrinterCatching {
                 it.getPrinterInfo().let { info ->
                     PrinterInfo(
                         info.serialNumber,
@@ -38,23 +37,23 @@ internal class PrinterImpl(
                         info.printingFontType,
                         info.printerHead,
                         info.printedDistance,
-                        info.serviceVersion
+                        info.serviceVersion,
                     )
                 }
             }.doOnError {
                 logWarning("getting printer info")
             }
-        }
+    }
 
-    override suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit> =
-        withContext(dispatcherProvider.iO()) {
-            printService.withPrinterCatching { controller ->
+    override suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit> = withContext(dispatcherProvider.iO()) {
+        printService
+            .withPrinterCatching { controller ->
                 logInfo(
                     """receipt: START #################
                    |${job.description}
                    |receipt END #################
                    |
-                   """.trimMargin()
+                    """.trimMargin(),
                 )
                 if (settings.enabled && job.isNotEmpty) {
                     controller.setIntensity(settings.printingIntensity)
@@ -77,7 +76,7 @@ internal class PrinterImpl(
                 logWarning("printing job '${job.description}'")
                 analytics?.logErrorPrintReceipt("printing text '${job.description}'")
             }
-        }
+    }
 
     private fun logInfo(message: String) {
         Logger.i("printing: $message")

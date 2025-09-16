@@ -14,5 +14,5 @@ enum class PrintingIntensity {
     LIGHT,
     DARK,
     DARKER,
-    DARKEST
+    DARKEST,
 }

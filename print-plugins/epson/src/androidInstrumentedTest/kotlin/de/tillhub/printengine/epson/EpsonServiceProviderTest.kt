@@ -12,7 +12,6 @@ import org.junit.runner.RunWith
 // TODO this test is not working
 @RunWith(AndroidJUnit4::class)
 class EpsonServiceProviderTest {
-
     @Test
     fun build_shouldReturnEpsonPrintService() {
         val context: Context = ApplicationProvider.getApplicationContext()

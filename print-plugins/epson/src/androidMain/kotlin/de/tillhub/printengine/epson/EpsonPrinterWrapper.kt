@@ -4,7 +4,9 @@ import android.graphics.Bitmap
 import com.epson.epos2.printer.Printer as EpsonPrinter
 
 @Suppress("TooManyFunctions")
-internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
+internal class EpsonPrinterWrapper(
+    private val epsonPrinter: EpsonPrinter,
+) {
     fun addCommand(bytes: ByteArray) {
         epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.addCommand(bytes)
@@ -26,7 +28,7 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
         hriPosition: Int,
         font: Int,
         moduleWidth: Int,
-        height: Int
+        height: Int,
     ) {
         epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.addBarcode(barcode, barcodeType, hriPosition, font, moduleWidth, height)
@@ -38,7 +40,7 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
         level: Int,
         width: Int,
         height: Int,
-        param: Int
+        param: Int,
     ) {
         epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.addSymbol(data, symbolType, level, width, height, param)
@@ -54,7 +56,7 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
         mode: Int,
         halftone: Int,
         brightness: Double,
-        compress: Int
+        compress: Int,
     ) {
         epsonPrinter.addTextAlign(EpsonPrinter.ALIGN_CENTER)
         epsonPrinter.addImage(
@@ -67,7 +69,7 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
             mode,
             halftone,
             brightness,
-            compress
+            compress,
         )
     }
 
@@ -79,7 +81,10 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
         epsonPrinter.addCut(cutType)
     }
 
-    fun connect(target: String, param: Int) {
+    fun connect(
+        target: String,
+        param: Int,
+    ) {
         epsonPrinter.connect(target, param)
     }
 
@@ -100,4 +105,6 @@ internal class EpsonPrinterWrapper(private val epsonPrinter: EpsonPrinter) {
         get() = PrinterStatus(epsonPrinter.status.connection)
 }
 
-internal data class PrinterStatus(val connection: Int)
+internal data class PrinterStatus(
+    val connection: Int,
+)

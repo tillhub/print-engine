@@ -10,7 +10,7 @@ actual object EpsonServiceProvider : PrinterServiceProvider {
     override fun build(
         context: Context,
         printer: ExternalPrinter?,
-        barcode: BarcodeEncoder?
+        barcode: BarcodeEncoder?,
     ): PrintService {
         requireNotNull(printer) {
             "EpsonServiceProvider requires an ExternalPrinter configuration"

@@ -35,9 +35,8 @@ internal actual class StarPrinterController(
     private val commandBuilderFactory: () -> StarXpandCommandBuilder = { StarXpandCommandBuilder() },
     private val documentBuilderFactory: () -> DocumentBuilder = { DocumentBuilder() },
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
-    private var printerBuilder: PrinterBuilder = PrinterBuilder().styleAlignment(Alignment.Center)
+    private var printerBuilder: PrinterBuilder = PrinterBuilder().styleAlignment(Alignment.Center),
 ) : PrinterController {
-
     actual override fun observePrinterState(): Flow<PrinterState> = printerState
 
     actual override fun sendRawData(data: RawPrinterData) {
@@ -55,38 +54,43 @@ internal actual class StarPrinterController(
     }
 
     actual override fun printText(text: String) {
-        printerBuilder.actionPrintText(text)
+        printerBuilder
+            .actionPrintText(text)
             .styleAlignment(Alignment.Center)
     }
 
     actual override fun printBarcode(barcode: String) {
-        printerBuilder.actionPrintBarcode(
-            BarcodeParameter(barcode, BarcodeSymbology.Code128)
-                .setBarDots(BAR_DOTS)
-                .setHeight(BARCODE_HEIGHT)
-                .setPrintHri(true)
-        ).styleAlignment(Alignment.Center)
+        printerBuilder
+            .actionPrintBarcode(
+                BarcodeParameter(barcode, BarcodeSymbology.Code128)
+                    .setBarDots(BAR_DOTS)
+                    .setHeight(BARCODE_HEIGHT)
+                    .setPrintHri(true),
+            ).styleAlignment(Alignment.Center)
     }
 
     actual override fun printQr(qrData: String) {
-        printerBuilder.actionPrintQRCode(
-            QRCodeParameter(qrData)
-                .setLevel(QRCodeLevel.L)
-                .setCellSize(CELL_SIZE)
-        ).styleAlignment(Alignment.Center)
+        printerBuilder
+            .actionPrintQRCode(
+                QRCodeParameter(qrData)
+                    .setLevel(QRCodeLevel.L)
+                    .setCellSize(CELL_SIZE),
+            ).styleAlignment(Alignment.Center)
     }
 
     actual override fun printImage(image: Bitmap) {
-        printerBuilder.actionPrintImage(ImageParameter(image, IMAGE_WIDTH))
+        printerBuilder
+            .actionPrintImage(ImageParameter(image, IMAGE_WIDTH))
             .styleAlignment(Alignment.Center)
     }
 
     actual override fun start() {
         scope.launch {
             runCatching {
-                val commandBuilder = commandBuilderFactory().apply {
-                    addDocument(documentBuilderFactory().addPrinter(printerBuilder))
-                }
+                val commandBuilder =
+                    commandBuilderFactory().apply {
+                        addDocument(documentBuilderFactory().addPrinter(printerBuilder))
+                    }
                 val commands = commandBuilder.getCommands()
 
                 starPrinter.openAsync().await()
@@ -94,11 +98,12 @@ internal actual class StarPrinterController(
 
                 printerBuilder = PrinterBuilder().styleAlignment(Alignment.Center)
             }.onFailure { exception ->
-                printerState.value = StarPrinterErrorState.convert(
-                    StarPrinterErrorState.fromCode(
-                        (exception as StarIO10Exception).errorCode.value
+                printerState.value =
+                    StarPrinterErrorState.convert(
+                        StarPrinterErrorState.fromCode(
+                            (exception as StarIO10Exception).errorCode.value,
+                        ),
                     )
-                )
             }.also {
                 starPrinter.closeAsync().await()
             }
@@ -113,19 +118,18 @@ internal actual class StarPrinterController(
         printerBuilder.actionCut(CutType.Partial)
     }
 
-    actual override suspend fun getPrinterInfo(): PrinterInfo =
-        PrinterInfo(
-            serialNumber = "n/a",
-            deviceModel = starPrinter.information?.model?.name ?: "Unknown",
-            printerVersion = "n/a",
-            printerPaperSpec = PrintingPaperSpec.External(characterCount = 32),
-            printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-            printerHead = "n/a",
-            printedDistance = 0,
-            serviceVersion = PrinterServiceVersion.Unknown
-        )
+    actual override suspend fun getPrinterInfo(): PrinterInfo = PrinterInfo(
+        serialNumber = "n/a",
+        deviceModel = starPrinter.information?.model?.name ?: "Unknown",
+        printerVersion = "n/a",
+        printerPaperSpec = PrintingPaperSpec.External(characterCount = 32),
+        printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+        printerHead = "n/a",
+        printedDistance = 0,
+        serviceVersion = PrinterServiceVersion.Unknown,
+    )
 
-    actual  override fun setIntensity(intensity: PrintingIntensity) = Unit
+    actual override fun setIntensity(intensity: PrintingIntensity) = Unit
 
     companion object {
         private const val BARCODE_HEIGHT = 12.0

@@ -9,7 +9,7 @@ internal object EpsonDiscoveryWrapper {
     fun start(
         context: Context,
         filterOption: FilterOption,
-        callback: (DeviceInfo) -> Unit
+        callback: (DeviceInfo) -> Unit,
     ) = Discovery.start(context, filterOption) { deviceInfo ->
         callback(deviceInfo)
     }

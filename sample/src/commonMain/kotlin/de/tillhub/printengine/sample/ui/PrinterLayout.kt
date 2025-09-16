@@ -29,17 +29,17 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 fun PrinterLayout(
     printState: PrinterState,
     printers: List<ExternalPrinter>,
-    onPrinterSelected: (ExternalPrinter?) -> Unit
+    onPrinterSelected: (ExternalPrinter?) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "Printer state: $printState",
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
         )
         Spacer(modifier = Modifier.height(36.dp))
         Button(onClick = { onPrinterSelected(null) }) {
@@ -50,7 +50,7 @@ fun PrinterLayout(
             items(printers, key = { it.connectionAddress }) { printer ->
                 PrinterItem(
                     printerInfo = printer,
-                    onClick = { onPrinterSelected(printer) }
+                    onClick = { onPrinterSelected(printer) },
                 )
             }
         }
@@ -60,23 +60,23 @@ fun PrinterLayout(
 @Composable
 private fun PrinterItem(
     printerInfo: ExternalPrinter,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = printerInfo.connectionAddress,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
             Text(
                 text = printerInfo.info.deviceModel,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }

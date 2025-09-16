@@ -7,5 +7,4 @@ import kotlinx.coroutines.flow.Flow
 actual class EpsonPrinterDiscovery : PrinterDiscovery {
     actual override val observePrinters: Flow<DiscoveryState>
         get() = TODO("Not yet implemented")
-
 }

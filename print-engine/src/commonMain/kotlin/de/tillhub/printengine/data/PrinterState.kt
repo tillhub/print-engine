@@ -85,7 +85,9 @@ sealed class PrinterState {
          */
         sealed class Epson : Error() {
             data object MemoryError : Epson()
+
             data object DataError : Epson()
+
             data object InternalError : Epson()
         }
     }

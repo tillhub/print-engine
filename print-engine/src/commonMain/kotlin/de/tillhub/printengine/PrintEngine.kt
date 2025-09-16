@@ -26,12 +26,11 @@ class PrintEngine private constructor() {
 
     val barcodeEncoder: BarcodeEncoder by lazy { BarcodeEncoderImpl() }
 
-    fun discoverExternalPrinters(vararg discoveries: PrinterDiscovery): Flow<DiscoveryState> =
-        externalPrinterManager.discoverExternalPrinters(*discoveries)
+    fun discoverExternalPrinters(vararg discoveries: PrinterDiscovery): Flow<DiscoveryState> = externalPrinterManager.discoverExternalPrinters(*discoveries)
 
     fun initPrinter(factory: (BarcodeEncoder) -> PrintService): Printer {
         (printer as PrinterContainer).initPrinter(
-            PrinterImpl(factory(barcodeEncoder), printAnalytics)
+            PrinterImpl(factory(barcodeEncoder), printAnalytics),
         )
         return printer
     }

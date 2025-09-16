@@ -12,14 +12,24 @@ interface PrinterController {
     fun sendRawData(data: RawPrinterData)
 
     fun observePrinterState(): Flow<PrinterState>
+
     fun setFontSize(fontSize: PrintingFontType)
+
     fun printText(text: String)
+
     fun printBarcode(barcode: String)
+
     fun printQr(qrData: String)
+
     fun printImage(image: ImageBitmap)
+
     fun feedPaper()
+
     fun cutPaper()
+
     fun setIntensity(intensity: PrintingIntensity)
+
     fun start()
+
     suspend fun getPrinterInfo(): PrinterInfo
 }

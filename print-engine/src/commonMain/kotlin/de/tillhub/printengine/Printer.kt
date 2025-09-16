@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.Flow
 interface Printer {
     val settings: PrinterSettings
     val printerState: Flow<PrinterState>
+
     suspend fun getPrinterInfo(): PrinterResult<PrinterInfo>
+
     suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit>
 
     companion object {

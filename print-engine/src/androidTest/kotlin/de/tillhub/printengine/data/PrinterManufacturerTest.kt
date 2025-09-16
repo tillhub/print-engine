@@ -6,20 +6,21 @@ import io.kotest.matchers.shouldBe
 import org.robolectric.shadows.ShadowBuild
 
 @RobolectricTest
-internal class PrinterManufacturerTest : FunSpec({
+internal class PrinterManufacturerTest :
+    FunSpec({
 
-    test("SUNMI device") {
-        ShadowBuild.setManufacturer("SUNMI")
-        PrinterManufacturer.get() shouldBe PrinterManufacturer.SUNMI
-    }
+        test("SUNMI device") {
+            ShadowBuild.setManufacturer("SUNMI")
+            PrinterManufacturer.get() shouldBe PrinterManufacturer.SUNMI
+        }
 
-    test("PAX device") {
-        ShadowBuild.setManufacturer("PAX")
-        PrinterManufacturer.get() shouldBe PrinterManufacturer.PAX
-    }
+        test("PAX device") {
+            ShadowBuild.setManufacturer("PAX")
+            PrinterManufacturer.get() shouldBe PrinterManufacturer.PAX
+        }
 
-    test("Verifone device") {
-        ShadowBuild.setManufacturer("Verifone")
-        PrinterManufacturer.get() shouldBe PrinterManufacturer.VERIFONE
-    }
-})
+        test("Verifone device") {
+            ShadowBuild.setManufacturer("Verifone")
+            PrinterManufacturer.get() shouldBe PrinterManufacturer.VERIFONE
+        }
+    })

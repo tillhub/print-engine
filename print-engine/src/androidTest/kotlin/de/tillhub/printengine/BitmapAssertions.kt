@@ -9,8 +9,12 @@ object BitmapAssertions {
         goldenName: String,
         bitmap: Bitmap,
     ) {
-        val golden = InstrumentationRegistry.getInstrumentation()
-            .context.resources.assets.open("$goldenName.png").use { BitmapFactory.decodeStream(it) }
+        val golden =
+            InstrumentationRegistry
+                .getInstrumentation()
+                .context.resources.assets
+                .open("$goldenName.png")
+                .use { BitmapFactory.decodeStream(it) }
 
         golden.compare(bitmap)
     }
@@ -32,7 +36,10 @@ object BitmapAssertions {
         }
     }
 
-    private fun Bitmap.getRow(pixels: IntArray, column: Int) {
+    private fun Bitmap.getRow(
+        pixels: IntArray,
+        column: Int,
+    ) {
         this.getPixels(pixels, 0, width, 0, column, width, 1)
     }
 }

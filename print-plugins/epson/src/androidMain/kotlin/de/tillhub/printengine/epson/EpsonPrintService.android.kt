@@ -8,38 +8,44 @@ import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrinterState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import com.epson.epos2.printer.Printer as EpsonPrinter
 
-internal actual class EpsonPrintService(context: Context, printer: ExternalPrinter) : PrintService() {
-
+internal actual class EpsonPrintService(
+    context: Context,
+    printer: ExternalPrinter,
+) : PrintService() {
     private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
     actual override val printerState: Flow<PrinterState> = connectionState
 
-    private val receiveListener = ReceiveListener { _, code, status, _ ->
-        connectionState.value = EpsonPrinterErrorState.epsonStatusToState(code, status)
-    }
+    private val receiveListener =
+        ReceiveListener { _, code, status, _ ->
+            connectionState.value = EpsonPrinterErrorState.epsonStatusToState(code, status)
+        }
 
     private val epsonPrinter: EpsonPrinterWrapper by lazy {
         connectionState.value = PrinterState.Preparing
         EpsonPrinterWrapper(
-            epsonPrinter = EpsonPrinter(
-                printer.info.deviceModel.uppercase().toModel(),
+            epsonPrinter =
+            EpsonPrinter(
+                printer.info.deviceModel
+                    .uppercase()
+                    .toModel(),
                 EpsonPrinter.MODEL_ANK,
-                context
+                context,
             ).apply {
                 setReceiveEventListener(receiveListener)
 
                 connectionState.value = PrinterState.Connected
-            }
+            },
         )
     }
 
-    actual override var printController: PrinterController? = EpsonPrinterController(
-        printerData = printer,
-        printerWrapper = epsonPrinter,
-        printerState = connectionState
-    )
+    actual override var printController: PrinterController? =
+        EpsonPrinterController(
+            printerData = printer,
+            printerWrapper = epsonPrinter,
+            printerState = connectionState,
+        )
 
     @Suppress("CyclomaticComplexMethod")
     private fun String.toModel() = when (this.substringBefore('_')) {
@@ -81,7 +87,8 @@ internal actual class EpsonPrintService(context: Context, printer: ExternalPrint
 
         // based on the documentation these 2 can be valid
         "TM PRINTER",
-        "" -> EpsonPrinter.TM_T88
+        "",
+        -> EpsonPrinter.TM_T88
 
         else -> throw IllegalArgumentException("Unsupported printer type: $this")
     }

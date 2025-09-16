@@ -11,7 +11,7 @@ import androidx.core.view.WindowCompat
 @Composable
 actual fun StatusBarAppearance(
     darkTheme: Boolean,
-    colorScheme: ColorScheme
+    colorScheme: ColorScheme,
 ) {
     val view = LocalView.current
     if (!view.isInEditMode) {

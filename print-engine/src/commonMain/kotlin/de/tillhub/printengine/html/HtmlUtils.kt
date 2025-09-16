@@ -4,22 +4,24 @@ import de.tillhub.printengine.data.ImageBitmap
 import de.tillhub.printengine.data.encodeToBase64
 
 object HtmlUtils {
-
-    fun transformToHtml(text: String, includeStyle: Boolean = false): String = if (includeStyle) {
+    fun transformToHtml(
+        text: String,
+        includeStyle: Boolean = false,
+    ): String = if (includeStyle) {
         "<html>$STYLE_TAG<body>$text</body></html>"
     } else {
         "<html><body>$text</body></html>"
     }
 
-    fun monospaceText(text: String, fontSize: Int = FONT_SIZE): String =
-        "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px;\">$text</pre>"
+    fun monospaceText(
+        text: String,
+        fontSize: Int = FONT_SIZE,
+    ): String = "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px;\">$text</pre>"
 
-    fun singleLineCenteredText(text: String): String =
-        "<div style=\"text-align:center;\">$text</div>"
+    fun singleLineCenteredText(text: String): String = "<div style=\"text-align:center;\">$text</div>"
 
-    fun generateImageHtml(image: ImageBitmap): String =
-        "<div style=\"text-align:center;\">" +
-            "<img src=\"data:image/png;base64,${image.encodeToBase64()}\"/>" +
+    fun generateImageHtml(image: ImageBitmap): String = "<div style=\"text-align:center;\">" +
+        "<img src=\"data:image/png;base64,${image.encodeToBase64()}\"/>" +
         "</div>"
 
     private const val FONT_SIZE = 13

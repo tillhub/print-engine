@@ -31,7 +31,6 @@ import de.tillhub.printengine.star.StarPrinterDiscovery
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-
     private var initilazed: Boolean = false
     private val printerEngine by lazy {
         PrintEngine.getInstance().also {
@@ -43,21 +42,22 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val requestBluetoothPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            if (permissions.all { it.value }) {
-                discoverPrinters()
-            } else {
-                showToast("Bluetooth permission is required to connect to printers")
+        val requestBluetoothPermissionLauncher =
+            registerForActivityResult(
+                ActivityResultContracts.RequestMultiplePermissions(),
+            ) { permissions ->
+                if (permissions.all { it.value }) {
+                    discoverPrinters()
+                } else {
+                    showToast("Bluetooth permission is required to connect to printers")
+                }
             }
-        }
 
         setContent {
             TillhubPrintEngineTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     val printState by printerEngine.printer.printerState
                         .collectAsState(PrinterState.CheckingForPrinter)
@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
                                         PrinterServiceFactory.createPrinterService(
                                             context = this@MainActivity,
                                             externalPrinter = printer,
-                                            barcode = barcodeEncoder
+                                            barcode = barcodeEncoder,
                                         )
                                     }
                                 }
@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity() {
                             lifecycleScope.launch {
                                 printerEngine.printer.startPrintJob(printJob)
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -91,75 +91,77 @@ class MainActivity : ComponentActivity() {
 
     private fun discoverPrinters() {
         lifecycleScope.launch {
-            printerEngine.discoverExternalPrinters(
-                StarPrinterDiscovery(this@MainActivity),
-                EpsonPrinterDiscovery(this@MainActivity)
-            ).collect { discoveryState ->
-                when (discoveryState) {
-                    is DiscoveryState.Discovering -> {
-                        printers.apply {
-                            clear()
-                            addAll(discoveryState.printers)
+            printerEngine
+                .discoverExternalPrinters(
+                    StarPrinterDiscovery(this@MainActivity),
+                    EpsonPrinterDiscovery(this@MainActivity),
+                ).collect { discoveryState ->
+                    when (discoveryState) {
+                        is DiscoveryState.Discovering -> {
+                            printers.apply {
+                                clear()
+                                addAll(discoveryState.printers)
+                            }
                         }
-                    }
 
-                    is DiscoveryState.Finished -> {
-                        printers.apply {
-                            clear()
-                            addAll(discoveryState.printers)
+                        is DiscoveryState.Finished -> {
+                            printers.apply {
+                                clear()
+                                addAll(discoveryState.printers)
+                            }
                         }
-                    }
 
-                    is DiscoveryState.Error -> {
-                        showToast("Discovery error: ${discoveryState.message}")
-                    }
+                        is DiscoveryState.Error -> {
+                            showToast("Discovery error: ${discoveryState.message}")
+                        }
 
-                    DiscoveryState.Idle -> Unit
+                        DiscoveryState.Idle -> Unit
+                    }
                 }
-            }
         }
     }
 
     private fun requestBluetoothPermission(launcher: ActivityResultLauncher<Array<String>>) {
-        val permissions = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-            mutableListOf<String>().apply {
-                if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
-                    add(Manifest.permission.BLUETOOTH)
-                }
+        val permissions =
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                mutableListOf<String>().apply {
+                    if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                        add(Manifest.permission.BLUETOOTH)
+                    }
 
-                if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
-                    add(Manifest.permission.BLUETOOTH_ADMIN)
-                }
+                    if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                        add(Manifest.permission.BLUETOOTH_ADMIN)
+                    }
 
-                if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    }
+                }
+            } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                mutableListOf<String>().apply {
+                    if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                        add(Manifest.permission.BLUETOOTH)
+                    }
+
+                    if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                        add(Manifest.permission.BLUETOOTH_ADMIN)
+                    }
+
+                    if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        add(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
+                }
+            } else {
+                mutableListOf<String>().apply {
+                    if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                        add(Manifest.permission.BLUETOOTH_SCAN)
+                    }
+
+                    if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        add(Manifest.permission.BLUETOOTH_CONNECT)
+                    }
                 }
             }
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            mutableListOf<String>().apply {
-                if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
-                    add(Manifest.permission.BLUETOOTH)
-                }
-
-                if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
-                    add(Manifest.permission.BLUETOOTH_ADMIN)
-                }
-
-                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    add(Manifest.permission.ACCESS_FINE_LOCATION)
-                }
-            }
-        } else {
-            mutableListOf<String>().apply {
-                if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                    add(Manifest.permission.BLUETOOTH_SCAN)
-                }
-
-                if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    add(Manifest.permission.BLUETOOTH_CONNECT)
-                }
-            }
-        }
 
         if (permissions.isNotEmpty()) {
             launcher.launch(permissions.toTypedArray())
@@ -173,10 +175,11 @@ class MainActivity : ComponentActivity() {
     }
 
     companion object {
-        private val printJob = PrintJob(
-            listOf(
-                PrintCommand.Text(
-                            "              receipt-header              \n" +
+        private val printJob =
+            PrintJob(
+                listOf(
+                    PrintCommand.Text(
+                        "              receipt-header              \n" +
                             "------------------------------------------\n" +
                             "Receipt:                                 1\n" +
                             "Salesperson:                    staff name\n" +
@@ -213,23 +216,23 @@ class MainActivity : ComponentActivity() {
                             "------------------------------------------\n" +
                             "Net:                               10.00 €\n" +
                             "------------------------------------------\n" +
-                            "              receipt-footer              \n"
+                            "              receipt-footer              \n",
+                    ),
+                    PrintCommand.Text("This is a another line"),
+                    PrintCommand.Text("-------"),
+                    PrintCommand.Text("Barcode working:"),
+                    PrintCommand.Barcode("RTC6093739"),
+                    PrintCommand.Text("Barcode broken:"),
+                    PrintCommand.Barcode("RTB183648B"),
+                    PrintCommand.Text("Barcode more broken:"),
+                    PrintCommand.Barcode("RTABCDEFAB"),
+                    PrintCommand.Text("QR code:"),
+                    PrintCommand.QrCode("123ABC"),
+                    PrintCommand.Text("40 char line:"),
+                    PrintCommand.Text("1234567890123456789012345678901234567890"),
+                    PrintCommand.FeedPaper,
+                    PrintCommand.CutPaper,
                 ),
-                PrintCommand.Text("This is a another line"),
-                PrintCommand.Text("-------"),
-                PrintCommand.Text("Barcode working:"),
-                PrintCommand.Barcode("RTC6093739"),
-                PrintCommand.Text("Barcode broken:"),
-                PrintCommand.Barcode("RTB183648B"),
-                PrintCommand.Text("Barcode more broken:"),
-                PrintCommand.Barcode("RTABCDEFAB"),
-                PrintCommand.Text("QR code:"),
-                PrintCommand.QrCode("123ABC"),
-                PrintCommand.Text("40 char line:"),
-                PrintCommand.Text("1234567890123456789012345678901234567890"),
-                PrintCommand.FeedPaper,
-                PrintCommand.CutPaper
             )
-        )
     }
 }

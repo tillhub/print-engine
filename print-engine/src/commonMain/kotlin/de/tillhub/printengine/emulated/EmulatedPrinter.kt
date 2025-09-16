@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.flowOf
  * EmulatedPrinter is used when Printer is not available or supported by device
  */
 internal class EmulatedPrinter : Printer {
-
     init {
         logInfo("EmulatedPrintService initialized")
     }
@@ -28,23 +27,22 @@ internal class EmulatedPrinter : Printer {
 
     override val printerState: Flow<PrinterState> = flowOf(PrinterState.Error.NotAvailable)
 
-    override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> {
-        return PrinterResult.Success(
-            PrinterInfo(
-                serialNumber = "n/a",
-                deviceModel = "Emulated Printer",
-                printerVersion = "n/a",
-                printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
-                printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-                printerHead = "n/a",
-                printedDistance = 0,
-                serviceVersion = PrinterServiceVersion.Info(
-                    serviceVersionName = "1.0.0",
-                    serviceVersionCode = 1
-                )
-            )
-        )
-    }
+    override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> = PrinterResult.Success(
+        PrinterInfo(
+            serialNumber = "n/a",
+            deviceModel = "Emulated Printer",
+            printerVersion = "n/a",
+            printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
+            printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+            printerHead = "n/a",
+            printedDistance = 0,
+            serviceVersion =
+            PrinterServiceVersion.Info(
+                serviceVersionName = "1.0.0",
+                serviceVersionCode = 1,
+            ),
+        ),
+    )
 
     override suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit> {
         logInfo(
@@ -52,7 +50,7 @@ internal class EmulatedPrinter : Printer {
                    |${job.description}
                    |receipt END #################
                    |
-                   """.trimMargin()
+            """.trimMargin(),
         )
         return PrinterResult.Success(Unit)
     }

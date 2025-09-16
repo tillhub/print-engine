@@ -17,8 +17,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-actual class EpsonPrinterDiscovery(private val context: Context) : PrinterDiscovery {
-
+actual class EpsonPrinterDiscovery(
+    private val context: Context,
+) : PrinterDiscovery {
     companion object {
         private const val CHARACTER_COUNT = 42
         private const val MANUFACTURER_EPSON = "EPSON"
@@ -27,37 +28,39 @@ actual class EpsonPrinterDiscovery(private val context: Context) : PrinterDiscov
     /**
      * Epson discovery parameters.
      */
-    private val discoveryFilters = FilterOption().apply {
-        deviceType = Discovery.TYPE_PRINTER
-        epsonFilter = Discovery.FILTER_NAME
-        portType = Discovery.PORTTYPE_ALL
-        deviceModel = Discovery.MODEL_ALL
-    }
+    private val discoveryFilters =
+        FilterOption().apply {
+            deviceType = Discovery.TYPE_PRINTER
+            epsonFilter = Discovery.FILTER_NAME
+            portType = Discovery.PORTTYPE_ALL
+            deviceModel = Discovery.MODEL_ALL
+        }
 
     actual override val observePrinters: Flow<DiscoveryState>
-        get() = callbackFlow {
-            trySend(DiscoveryState.Idle)
+        get() =
+            callbackFlow {
+                trySend(DiscoveryState.Idle)
 
-            val discoveredPrinters = mutableMapOf<String, ExternalPrinter>()
+                val discoveredPrinters = mutableMapOf<String, ExternalPrinter>()
 
-            try {
-                EpsonDiscoveryWrapper.start(context, discoveryFilters) { deviceInfo ->
-                    if (deviceInfo.isValid()) {
-                        with(createPrinter(deviceInfo)) {
-                            // Use the connection address as a unique identifier
-                            discoveredPrinters[connectionAddress] = this
+                try {
+                    EpsonDiscoveryWrapper.start(context, discoveryFilters) { deviceInfo ->
+                        if (deviceInfo.isValid()) {
+                            with(createPrinter(deviceInfo)) {
+                                // Use the connection address as a unique identifier
+                                discoveredPrinters[connectionAddress] = this
+                            }
+                            trySend(DiscoveryState.Discovering(discoveredPrinters.values.toList()))
                         }
-                        trySend(DiscoveryState.Discovering(discoveredPrinters.values.toList()))
                     }
+                } catch (e: Epos2Exception) {
+                    trySend(DiscoveryState.Error(e.message))
                 }
-            } catch (e: Epos2Exception) {
-                trySend(DiscoveryState.Error(e.message))
-            }
 
-            awaitClose {
-                EpsonDiscoveryWrapper.stop()
+                awaitClose {
+                    EpsonDiscoveryWrapper.stop()
+                }
             }
-        }
 
     private fun createPrinter(deviceInfo: DeviceInfo): ExternalPrinter {
         val connectionDividerIdx = deviceInfo.target.indexOfFirst { it == ':' }
@@ -65,7 +68,8 @@ actual class EpsonPrinterDiscovery(private val context: Context) : PrinterDiscov
         val address = deviceInfo.target.substring(connectionDividerIdx + 1)
 
         return ExternalPrinter(
-            info = PrinterInfo(
+            info =
+            PrinterInfo(
                 serialNumber = "n/a",
                 deviceModel = deviceInfo.deviceName,
                 printerVersion = "n/a",
@@ -73,7 +77,7 @@ actual class EpsonPrinterDiscovery(private val context: Context) : PrinterDiscov
                 printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
                 printerHead = "n/a",
                 printedDistance = 0,
-                serviceVersion = PrinterServiceVersion.Unknown
+                serviceVersion = PrinterServiceVersion.Unknown,
             ),
             manufacturer = MANUFACTURER_EPSON,
             connectionAddress = address,
@@ -84,6 +88,5 @@ actual class EpsonPrinterDiscovery(private val context: Context) : PrinterDiscov
     private fun String.toConnectionType() = ConnectionType.entries.find { it.value == this }
         ?: throw IllegalArgumentException("Unsupported connection type: $this")
 
-    private fun DeviceInfo.isValid() =
-        deviceType == Discovery.TYPE_PRINTER && deviceName.isNotEmpty()
+    private fun DeviceInfo.isValid() = deviceType == Discovery.TYPE_PRINTER && deviceName.isNotEmpty()
 }

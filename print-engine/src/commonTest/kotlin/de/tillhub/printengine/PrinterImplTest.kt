@@ -27,7 +27,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class PrinterImplTest {
-
     lateinit var controller: PrinterController
     lateinit var service: PrintService
     lateinit var analytics: PrintAnalytics
@@ -35,36 +34,40 @@ internal class PrinterImplTest {
 
     @BeforeTest
     fun setup() {
-        controller = mock {
-            every { observePrinterState() } returns MutableStateFlow(PrinterState.Connected)
-            every { setFontSize(any()) } returns Unit
-            every { setIntensity(any()) } returns Unit
-            every { printText(any()) } returns Unit
-            every { printBarcode(any()) } returns Unit
-            every { printQr(any()) } returns Unit
-            everySuspend { sendRawData(any()) } returns Unit
-            every { feedPaper() } returns Unit
-            every { cutPaper() } returns Unit
-            everySuspend { start() } returns Unit
-            everySuspend { getPrinterInfo() } returns PrinterInfo(
-                serialNumber = "n/a",
-                deviceModel = "P9 pro",
-                printerVersion = "n/a",
-                printerPaperSpec = PrintingPaperSpec.SunmiPaper56mm,
-                printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-                printerHead = "n/a",
-                printedDistance = 0,
-                serviceVersion = PrinterServiceVersion.Unknown
-            )
-        }
-        service = mock {
-            every { printController } returns controller
-            every { printerState } returns MutableStateFlow(PrinterState.Connected)
-        }
-        analytics = mock {
-            every { logPrintReceipt(any()) } returns Unit
-            every { logErrorPrintReceipt(any()) } returns Unit
-        }
+        controller =
+            mock {
+                every { observePrinterState() } returns MutableStateFlow(PrinterState.Connected)
+                every { setFontSize(any()) } returns Unit
+                every { setIntensity(any()) } returns Unit
+                every { printText(any()) } returns Unit
+                every { printBarcode(any()) } returns Unit
+                every { printQr(any()) } returns Unit
+                everySuspend { sendRawData(any()) } returns Unit
+                every { feedPaper() } returns Unit
+                every { cutPaper() } returns Unit
+                everySuspend { start() } returns Unit
+                everySuspend { getPrinterInfo() } returns
+                    PrinterInfo(
+                        serialNumber = "n/a",
+                        deviceModel = "P9 pro",
+                        printerVersion = "n/a",
+                        printerPaperSpec = PrintingPaperSpec.SunmiPaper56mm,
+                        printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+                        printerHead = "n/a",
+                        printedDistance = 0,
+                        serviceVersion = PrinterServiceVersion.Unknown,
+                    )
+            }
+        service =
+            mock {
+                every { printController } returns controller
+                every { printerState } returns MutableStateFlow(PrinterState.Connected)
+            }
+        analytics =
+            mock {
+                every { logPrintReceipt(any()) } returns Unit
+                every { logErrorPrintReceipt(any()) } returns Unit
+            }
         printer = PrinterImpl(service, analytics)
     }
 
@@ -75,21 +78,21 @@ internal class PrinterImplTest {
 
     @Test
     fun getPrinterInfo() = runTest {
-        val expected = PrinterResult.Success(
-            PrinterInfo(
-                serialNumber = "n/a",
-                deviceModel = "P9 pro",
-                printerVersion = "n/a",
-                printerPaperSpec = PrintingPaperSpec.SunmiPaper56mm,
-                printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-                printerHead = "n/a",
-                printedDistance = 0,
-                serviceVersion = PrinterServiceVersion.Unknown
+        val expected =
+            PrinterResult.Success(
+                PrinterInfo(
+                    serialNumber = "n/a",
+                    deviceModel = "P9 pro",
+                    printerVersion = "n/a",
+                    printerPaperSpec = PrintingPaperSpec.SunmiPaper56mm,
+                    printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+                    printerHead = "n/a",
+                    printedDistance = 0,
+                    serviceVersion = PrinterServiceVersion.Unknown,
+                ),
             )
-        )
         assertEquals(expected, printer.getPrinterInfo())
     }
-
 
     @Test
     fun `printer enabled printText`() = runTest {
@@ -99,9 +102,9 @@ internal class PrinterImplTest {
             PrintJob(
                 listOf(
                     PrintCommand.Text("text_to_print"),
-                    PrintCommand.FeedPaper
-                )
-            )
+                    PrintCommand.FeedPaper,
+                ),
+            ),
         )
 
         verifySuspend(mode = VerifyMode.order) {
@@ -112,7 +115,7 @@ internal class PrinterImplTest {
             controller.start()
             analytics.logPrintReceipt(
                 "text_to_print\n" +
-                        "-----FEED PAPER-----"
+                    "-----FEED PAPER-----",
             )
         }
     }
@@ -126,9 +129,9 @@ internal class PrinterImplTest {
             PrintJob(
                 listOf(
                     PrintCommand.Text("text_to_print"),
-                    PrintCommand.FeedPaper
-                )
-            )
+                    PrintCommand.FeedPaper,
+                ),
+            ),
         )
 
         verifySuspend(mode = VerifyMode.order) {
@@ -140,7 +143,6 @@ internal class PrinterImplTest {
         }
     }
 
-
     @Test
     fun `printer enabled print RawReceipt`() = runTest {
         printer.settings.enabled = true
@@ -149,9 +151,9 @@ internal class PrinterImplTest {
         printer.startPrintJob(
             PrintJob(
                 listOf(
-                    PrintCommand.RawData(rawPrinterData)
-                )
-            )
+                    PrintCommand.RawData(rawPrinterData),
+                ),
+            ),
         )
 
         verifySuspend(mode = VerifyMode.order) {
@@ -163,7 +165,6 @@ internal class PrinterImplTest {
         }
     }
 
-
     @Test
     fun `printer disabled printText`() = runTest {
         printer.settings.enabled = false
@@ -172,9 +173,9 @@ internal class PrinterImplTest {
             PrintJob(
                 listOf(
                     PrintCommand.Text("text_to_print"),
-                    PrintCommand.FeedPaper
-                )
-            )
+                    PrintCommand.FeedPaper,
+                ),
+            ),
         )
 
         verify(mode = VerifyMode.not) {
@@ -191,9 +192,9 @@ internal class PrinterImplTest {
             PrintJob(
                 listOf(
                     PrintCommand.RawData(RawPrinterData("raw_data".encodeToByteArray())),
-                    PrintCommand.FeedPaper
-                )
-            )
+                    PrintCommand.FeedPaper,
+                ),
+            ),
         )
 
         verifySuspend(mode = VerifyMode.not) {

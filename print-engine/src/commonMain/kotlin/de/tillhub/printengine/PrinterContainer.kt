@@ -15,15 +15,15 @@ internal class PrinterContainer : Printer {
     private val selectedPrinter = MutableStateFlow<Printer>(EmulatedPrinter())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override val printerState: Flow<PrinterState> = selectedPrinter
-        .flatMapLatest { it.printerState }
+    override val printerState: Flow<PrinterState> =
+        selectedPrinter
+            .flatMapLatest { it.printerState }
 
     override val settings: PrinterSettings get() = selectedPrinter.value.settings
-    override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> =
-        selectedPrinter.value.getPrinterInfo()
 
-    override suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit> =
-        selectedPrinter.value.startPrintJob(job)
+    override suspend fun getPrinterInfo(): PrinterResult<PrinterInfo> = selectedPrinter.value.getPrinterInfo()
+
+    override suspend fun startPrintJob(job: PrintJob): PrinterResult<Unit> = selectedPrinter.value.startPrintJob(job)
 
     fun initPrinter(printer: Printer) {
         selectedPrinter.value = printer

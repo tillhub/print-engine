@@ -8,6 +8,6 @@ actual interface PrinterServiceProvider {
     fun build(
         context: Context,
         printer: ExternalPrinter? = null,
-        barcode: BarcodeEncoder? = null
+        barcode: BarcodeEncoder? = null,
     ): PrintService
 }

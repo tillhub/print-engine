@@ -13,62 +13,65 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 
-class StarPrintServiceTest : FunSpec({
+class StarPrintServiceTest :
+    FunSpec({
 
-    lateinit var printer: ExternalPrinter
-    lateinit var context: Context
+        lateinit var printer: ExternalPrinter
+        lateinit var context: Context
 
-    lateinit var target: StarPrintService
+        lateinit var target: StarPrintService
 
-    beforeTest {
-        context = mockk<Context>(relaxed = true)
-        printer = mockk<ExternalPrinter> {
-            every { connectionType } returns ConnectionType.LAN
-            every { connectionAddress } returns "12345"
-            every { info } returns mockk(relaxed = true)
+        beforeTest {
+            context = mockk<Context>(relaxed = true)
+            printer =
+                mockk<ExternalPrinter> {
+                    every { connectionType } returns ConnectionType.LAN
+                    every { connectionAddress } returns "12345"
+                    every { info } returns mockk(relaxed = true)
+                }
+            target = StarPrintService(context, printer)
         }
-        target = StarPrintService(context, printer)
-    }
-    test("initial printer state should be CheckingForPrinter") {
-        target.printerState.first() shouldBe PrinterState.CheckingForPrinter
-    }
+        test("initial printer state should be CheckingForPrinter") {
+            target.printerState.first() shouldBe PrinterState.CheckingForPrinter
+        }
 
-    test("connectionListener onReady updates state to Connected") {
-        val listener = target.connectionListener
+        test("connectionListener onReady updates state to Connected") {
+            val listener = target.connectionListener
 
-        listener.onReady()
-        target.printerState.first() shouldBe PrinterState.Connected
-    }
+            listener.onReady()
+            target.printerState.first() shouldBe PrinterState.Connected
+        }
 
-    test("connectionListener onPaperEmpty updates state to OutOfPaper") {
-        val listener = target.connectionListener
+        test("connectionListener onPaperEmpty updates state to OutOfPaper") {
+            val listener = target.connectionListener
 
-        listener.onPaperEmpty()
-        target.printerState.first() shouldBe PrinterState.Error.OutOfPaper
-    }
+            listener.onPaperEmpty()
+            target.printerState.first() shouldBe PrinterState.Error.OutOfPaper
+        }
 
-    test("connectionListener onError updates state to Malfunctions") {
-        val listener = target.connectionListener
+        test("connectionListener onError updates state to Malfunctions") {
+            val listener = target.connectionListener
 
-        listener.onError()
-        target.printerState.first() shouldBe PrinterState.Error.Malfunctions
-    }
+            listener.onError()
+            target.printerState.first() shouldBe PrinterState.Error.Malfunctions
+        }
 
-    test("connectionListener onCommunicationError updates state to ConnectionLost") {
-        val listener = target.connectionListener
-        val exception = mockk<StarIO10Exception>()
+        test("connectionListener onCommunicationError updates state to ConnectionLost") {
+            val listener = target.connectionListener
+            val exception = mockk<StarIO10Exception>()
 
-        listener.onCommunicationError(exception)
-        target.printerState.first() shouldBe PrinterState.Error.ConnectionLost
-    }
+            listener.onCommunicationError(exception)
+            target.printerState.first() shouldBe PrinterState.Error.ConnectionLost
+        }
 
-    test("printController is initialized as StarPrinterController") {
-        target.printController.shouldBeInstanceOf<StarPrinterController>()
-    }
-
-})
+        test("printController is initialized as StarPrinterController") {
+            target.printController.shouldBeInstanceOf<StarPrinterController>()
+        }
+    })
 
 private val StarPrintService.connectionListener: PrinterDelegate
-    get() = this::class.java.getDeclaredField("connectionListener")
-        .apply { isAccessible = true }
-        .get(this) as PrinterDelegate
+    get() =
+        this::class.java
+            .getDeclaredField("connectionListener")
+            .apply { isAccessible = true }
+            .get(this) as PrinterDelegate

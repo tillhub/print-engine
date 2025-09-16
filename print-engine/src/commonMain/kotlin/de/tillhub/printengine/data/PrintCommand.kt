@@ -1,10 +1,12 @@
 package de.tillhub.printengine.data
 
-import de.tillhub.printengine.helpers.HashHelper
 import de.tillhub.printengine.data.ImageBitmap
+import de.tillhub.printengine.helpers.HashHelper
 
 sealed class PrintCommand {
-    class Text(val text: String) : PrintCommand() {
+    class Text(
+        val text: String,
+    ) : PrintCommand() {
         override fun toString() = "PrintCommand.Text(" +
             "text=$text" +
             ")"
@@ -14,7 +16,10 @@ sealed class PrintCommand {
 
         override fun hashCode() = HashHelper.hash(text)
     }
-    class Image(val image: ImageBitmap) : PrintCommand() {
+
+    class Image(
+        val image: ImageBitmap,
+    ) : PrintCommand() {
         override fun toString() = "PrintCommand.Image(" +
             "image=$image" +
             ")"
@@ -24,7 +29,10 @@ sealed class PrintCommand {
 
         override fun hashCode() = HashHelper.hash(image)
     }
-    class Barcode(val barcode: String) : PrintCommand() {
+
+    class Barcode(
+        val barcode: String,
+    ) : PrintCommand() {
         override fun toString() = "PrintCommand.Text(" +
             "barcode=$barcode" +
             ")"
@@ -34,7 +42,10 @@ sealed class PrintCommand {
 
         override fun hashCode() = HashHelper.hash(barcode)
     }
-    class QrCode(val code: String) : PrintCommand() {
+
+    class QrCode(
+        val code: String,
+    ) : PrintCommand() {
         override fun toString() = "PrintCommand.QrCode(" +
             "code=$code" +
             ")"
@@ -44,7 +55,10 @@ sealed class PrintCommand {
 
         override fun hashCode() = HashHelper.hash(code)
     }
-    class RawData(val data: RawPrinterData) : PrintCommand() {
+
+    class RawData(
+        val data: RawPrinterData,
+    ) : PrintCommand() {
         override fun toString() = "PrintCommand.RawData(" +
             "data=$data" +
             ")"
@@ -54,12 +68,14 @@ sealed class PrintCommand {
 
         override fun hashCode() = HashHelper.hash(data)
     }
+
     /**
      *  Due to the distance between the paper hatch and the print head,
      *  the paper needs to be fed out automatically
      *  But if the Api does not support it, it will be replaced by printing three lines
      */
     data object FeedPaper : PrintCommand()
+
     /**
      *  Printer cuts paper and throws exception on machines without a cutter
      */

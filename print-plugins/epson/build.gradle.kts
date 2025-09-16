@@ -93,11 +93,11 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
 
             consumerProguardFiles(
-                "consumer-rules.pro"
+                "consumer-rules.pro",
             )
         }
     }
@@ -126,7 +126,7 @@ android {
     }
 }
 
-//afterEvaluate {
+// afterEvaluate {
 //    publishing {
 //        publications {
 //            create<MavenPublication>("release-epson") {
@@ -138,4 +138,4 @@ android {
 //            }
 //        }
 //    }
-//}
+// }

@@ -1,43 +1,44 @@
 package de.tillhub.printengine.barcode
 
-import com.google.zxing.EncodeHintType
+import androidx.core.graphics.createBitmap
+import co.touchlab.kermit.Logger
 import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
-import androidx.core.graphics.createBitmap
-import co.touchlab.kermit.Logger
 import de.tillhub.printengine.data.ImageBitmap
 
 internal actual class BarcodeEncoderImpl : BarcodeEncoder {
-
     actual override fun encodeAsBitmap(
         content: String,
         type: BarcodeType,
         imgWidth: Int,
-        imgHeight: Int
+        imgHeight: Int,
     ): ImageBitmap? {
-        val hints = HashMap<EncodeHintType, Any>().apply {
-            guessAppropriateEncoding(content)?.let { encoding ->
-                put(EncodeHintType.CHARACTER_SET, encoding)
-            }
-            when (type) {
-                BarcodeType.CODE_128 -> {
-                    put(EncodeHintType.MARGIN, 0)
+        val hints =
+            HashMap<EncodeHintType, Any>().apply {
+                guessAppropriateEncoding(content)?.let { encoding ->
+                    put(EncodeHintType.CHARACTER_SET, encoding)
                 }
-                BarcodeType.QR_CODE -> {
-                    put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.Q)
+                when (type) {
+                    BarcodeType.CODE_128 -> {
+                        put(EncodeHintType.MARGIN, 0)
+                    }
+                    BarcodeType.QR_CODE -> {
+                        put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.Q)
+                    }
                 }
             }
-        }
 
         val writer = MultiFormatWriter()
-        val result: BitMatrix = try {
-            writer.encode(content, typeConverter(type), imgWidth, imgHeight, hints)
-        } catch (e: IllegalArgumentException) {
-            Logger.e("error encoding barcode", e)
-            return null
-        }
+        val result: BitMatrix =
+            try {
+                writer.encode(content, typeConverter(type), imgWidth, imgHeight, hints)
+            } catch (e: IllegalArgumentException) {
+                Logger.e("error encoding barcode", e)
+                return null
+            }
 
         val width = result.width
         val height = result.height
@@ -54,11 +55,10 @@ internal actual class BarcodeEncoderImpl : BarcodeEncoder {
         }
     }
 
-    private fun typeConverter(type: BarcodeType): BarcodeFormat =
-        when (type) {
-            BarcodeType.CODE_128 -> BarcodeFormat.CODE_128
-            BarcodeType.QR_CODE -> BarcodeFormat.QR_CODE
-        }
+    private fun typeConverter(type: BarcodeType): BarcodeFormat = when (type) {
+        BarcodeType.CODE_128 -> BarcodeFormat.CODE_128
+        BarcodeType.QR_CODE -> BarcodeFormat.QR_CODE
+    }
 
     private fun guessAppropriateEncoding(content: CharSequence): String? {
         content.forEach {
