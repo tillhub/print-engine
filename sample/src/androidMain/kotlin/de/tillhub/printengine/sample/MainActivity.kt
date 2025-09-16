@@ -89,8 +89,6 @@ class MainActivity : ComponentActivity() {
         requestBluetoothPermission(requestBluetoothPermissionLauncher)
     }
 
-
-
     private fun discoverPrinters() {
         lifecycleScope.launch {
             printerEngine.discoverExternalPrinters(

@@ -41,19 +41,17 @@ fun PrinterLayout(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyLarge
         )
-        Column {
-            Spacer(modifier = Modifier.height(36.dp))
-            Button(onClick = { onPrinterSelected(null) }) {
-                Text(text = "Print sample job")
-            }
-            Spacer(modifier = Modifier.height(36.dp))
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                items(printers, key = { it.connectionAddress }) { printer ->
-                    PrinterItem(
-                        printerInfo = printer,
-                        onClick = { onPrinterSelected(printer) }
-                    )
-                }
+        Spacer(modifier = Modifier.height(36.dp))
+        Button(onClick = { onPrinterSelected(null) }) {
+            Text(text = "Print sample job")
+        }
+        Spacer(modifier = Modifier.height(36.dp))
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            items(printers, key = { it.connectionAddress }) { printer ->
+                PrinterItem(
+                    printerInfo = printer,
+                    onClick = { onPrinterSelected(printer) }
+                )
             }
         }
     }
