@@ -1,0 +1,3 @@
+package de.tillhub.printengine
+
+expect interface PrinterServiceProvider

@@ -19,7 +19,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Tillhub Print Engine"
+rootProject.name = "Tillhub_Print_Engine"
 include(":print-engine")
 include(":print-plugins:star")
 include(":print-plugins:epson")

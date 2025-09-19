@@ -17,34 +17,42 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * Print service for encapsulating connection handling, error handling and convenience methods for working with
  * [PaxPrinterController].
  */
-internal class PaxPrintService(context: Context, barcodeEncoder: BarcodeEncoder) : PrintService() {
-
+internal class PaxPrintService(
+    context: Context,
+    barcodeEncoder: BarcodeEncoder,
+) : PrintService() {
     override var printController: PrinterController? = null
 
     private val connectionState = MutableStateFlow<PrinterState>(PrinterState.CheckingForPrinter)
     override val printerState: Flow<PrinterState> = connectionState
 
-    private val connection = object : ServiceConnection {
+    private val connection =
+        object : ServiceConnection {
+            override fun onServiceConnected(
+                name: ComponentName?,
+                service: IBinder,
+            ) {
+                printController =
+                    PaxPrinterController(
+                        printService =
+                        DirectPrintServiceImpl(
+                            requestMessenger = Messenger(service),
+                        ),
+                        printerState = connectionState,
+                        barcodeEncoder = barcodeEncoder,
+                    )
+            }
 
-        override fun onServiceConnected(name: ComponentName?, service: IBinder) {
-            printController = PaxPrinterController(
-                printService = DirectPrintServiceImpl(
-                    requestMessenger = Messenger(service)
-                ),
-                printerState = connectionState,
-                barcodeEncoder = barcodeEncoder
-            )
+            override fun onServiceDisconnected(name: ComponentName?) {
+                connectionState.value = PrinterState.Error.NotAvailable
+            }
         }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            connectionState.value = PrinterState.Error.NotAvailable
-        }
-    }
 
     init {
-        val intent = Intent().apply {
-            component = ComponentName(PRINTING_PACKAGE, PRINTING_CLASS)
-        }
+        val intent =
+            Intent().apply {
+                component = ComponentName(PRINTING_PACKAGE, PRINTING_CLASS)
+            }
         if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
             context.unbindService(connection)
             connectionState.value = PrinterState.Error.NotAvailable

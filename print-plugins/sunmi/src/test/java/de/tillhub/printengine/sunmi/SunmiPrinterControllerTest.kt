@@ -21,119 +21,121 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @RobolectricTest
-internal class SunmiPrinterControllerTest : FunSpec({
+internal class SunmiPrinterControllerTest :
+    FunSpec({
 
-    lateinit var printerService: SunmiPrinterService
-    lateinit var serviceVersion: PrinterServiceVersion
-    lateinit var printerState: MutableStateFlow<PrinterState>
-    lateinit var printerController: PrinterController
+        lateinit var printerService: SunmiPrinterService
+        lateinit var serviceVersion: PrinterServiceVersion
+        lateinit var printerState: MutableStateFlow<PrinterState>
+        lateinit var printerController: PrinterController
 
-    beforeTest {
-        printerService = mockk {
-            every { sendRAWData(any(), any()) } just Runs
-            every { setFontSize(any(), any()) } just Runs
-            every { printText(any(), any()) } just Runs
-            every { lineWrap(any(), any()) } just Runs
-            every { setAlignment(any(), any()) } just Runs
-            every { printBarCode(any(), any(), any(), any(), any(), any()) } just Runs
-            every { printQRCode(any(), any(), any(), any()) } just Runs
-            every { printBitmapCustom(any(), any(), any()) } just Runs
-            every { autoOutPaper(any()) } just Runs
-            every { cutPaper(any()) } just Runs
-            every { updatePrinterState() } returns 1
+        beforeTest {
+            printerService =
+                mockk {
+                    every { sendRAWData(any(), any()) } just Runs
+                    every { setFontSize(any(), any()) } just Runs
+                    every { printText(any(), any()) } just Runs
+                    every { lineWrap(any(), any()) } just Runs
+                    every { setAlignment(any(), any()) } just Runs
+                    every { printBarCode(any(), any(), any(), any(), any(), any()) } just Runs
+                    every { printQRCode(any(), any(), any(), any()) } just Runs
+                    every { printBitmapCustom(any(), any(), any()) } just Runs
+                    every { autoOutPaper(any()) } just Runs
+                    every { cutPaper(any()) } just Runs
+                    every { updatePrinterState() } returns 1
+                }
+            serviceVersion = mockk()
+            printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
+            printerController = SunmiPrinterController(printerService, serviceVersion, printerState)
         }
-        serviceVersion = mockk()
-        printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
-        printerController = SunmiPrinterController(printerService, serviceVersion, printerState)
-    }
 
-    test("sendRawData") {
-        val rawData = RawPrinterData("raw_data".toByteArray())
-        printerController.sendRawData(rawData)
+        test("sendRawData") {
+            val rawData = RawPrinterData("raw_data".toByteArray())
+            printerController.sendRawData(rawData)
 
-        verify(exactly = 1) {
-            printerService.sendRAWData(rawData.bytes, any())
+            verify(exactly = 1) {
+                printerService.sendRAWData(rawData.bytes, any())
+            }
         }
-    }
 
-    test("observePrinterState") {
-        printerController.observePrinterState().first() shouldBe PrinterState.CheckingForPrinter
-    }
-
-    test("setFontSize") {
-        printerController.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-
-        verify {
-            printerService.setFontSize(20F, any())
+        test("observePrinterState") {
+            printerController.observePrinterState().first() shouldBe PrinterState.CheckingForPrinter
         }
-    }
 
-    test("printText") {
-        printerController.printText("text_to_print")
+        test("setFontSize") {
+            printerController.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
 
-        verify {
-            printerService.printText("text_to_print", any())
-            printerService.lineWrap(1, any())
+            verify {
+                printerService.setFontSize(20F, any())
+            }
         }
-    }
 
-    test("printBarcode") {
-        printerController.printBarcode("barcode")
+        test("printText") {
+            printerController.printText("text_to_print")
 
-        verify(ordering = Ordering.ORDERED) {
-            printerService.setAlignment(1, any())
-            printerService.printBarCode("barcode", 8, 100, 2, 2, any())
-            printerService.setAlignment(0, any())
-            printerService.lineWrap(1, any())
+            verify {
+                printerService.printText("text_to_print", any())
+                printerService.lineWrap(1, any())
+            }
         }
-    }
 
-    test("printQr") {
-        printerController.printQr("qr_code")
+        test("printBarcode") {
+            printerController.printBarcode("barcode")
 
-        verify(ordering = Ordering.ORDERED) {
-            printerService.setAlignment(1, any())
-            printerService.printQRCode("qr_code", 3, 0, any())
-            printerService.setAlignment(0, any())
-            printerService.lineWrap(1, any())
+            verify(ordering = Ordering.ORDERED) {
+                printerService.setAlignment(1, any())
+                printerService.printBarCode("barcode", 8, 100, 2, 2, any())
+                printerService.setAlignment(0, any())
+                printerService.lineWrap(1, any())
+            }
         }
-    }
 
-    test("printImage") {
-        val bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
-        printerController.printImage(bitmap)
+        test("printQr") {
+            printerController.printQr("qr_code")
 
-        verify(ordering = Ordering.ORDERED) {
-            printerService.setAlignment(1, any())
-            printerService.printBitmapCustom(bitmap, 2, any())
-            printerService.setAlignment(0, any())
-            printerService.lineWrap(1, any())
+            verify(ordering = Ordering.ORDERED) {
+                printerService.setAlignment(1, any())
+                printerService.printQRCode("qr_code", 3, 0, any())
+                printerService.setAlignment(0, any())
+                printerService.lineWrap(1, any())
+            }
         }
-    }
 
-    test("feedPaper") {
-        printerController.feedPaper()
+        test("printImage") {
+            val bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
+            printerController.printImage(bitmap)
 
-        verify {
-            printerService.autoOutPaper(any())
+            verify(ordering = Ordering.ORDERED) {
+                printerService.setAlignment(1, any())
+                printerService.printBitmapCustom(bitmap, 2, any())
+                printerService.setAlignment(0, any())
+                printerService.lineWrap(1, any())
+            }
         }
-    }
 
-    test("feedPaper exception") {
-        every { printerService.autoOutPaper(any()) } throws RemoteException()
+        test("feedPaper") {
+            printerController.feedPaper()
 
-        printerController.feedPaper()
-
-        verify {
-            printerService.lineWrap(3, any())
+            verify {
+                printerService.autoOutPaper(any())
+            }
         }
-    }
 
-    test("cutPaper") {
-        printerController.cutPaper()
+        test("feedPaper exception") {
+            every { printerService.autoOutPaper(any()) } throws RemoteException()
 
-        verify {
-            printerService.cutPaper(any())
+            printerController.feedPaper()
+
+            verify {
+                printerService.lineWrap(3, any())
+            }
         }
-    }
-})
+
+        test("cutPaper") {
+            printerController.cutPaper()
+
+            verify {
+                printerService.cutPaper(any())
+            }
+        }
+    })

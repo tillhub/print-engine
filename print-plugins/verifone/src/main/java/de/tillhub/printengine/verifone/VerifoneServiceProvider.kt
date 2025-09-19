@@ -10,7 +10,7 @@ object VerifoneServiceProvider : PrinterServiceProvider {
     override fun build(
         context: Context,
         printer: ExternalPrinter?,
-        barcode: BarcodeEncoder?
+        barcode: BarcodeEncoder?,
     ): PrintService {
         requireNotNull(barcode) {
             "VerifoneServiceProvider requires a BarcodeEncoder configuration"
@@ -18,4 +18,3 @@ object VerifoneServiceProvider : PrinterServiceProvider {
         return VerifonePrintService(context, barcode)
     }
 }
-
