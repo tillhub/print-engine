@@ -1,72 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.mokkery)
-    alias(libs.plugins.maven.publish)
-}
-
-kotlin {
-    compilerOptions {
-        // removes warnings for expect/actual classes
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-    }
-
-    androidTarget {
-        // Keep JVM target consistent with Java 17
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-
-        dependencies {
-            // Core Dependencies
-            implementation(libs.androidx.core)
-            coreLibraryDesugaring(libs.android.desugarJdkLibs)
-
-            implementation(libs.google.zxing)
-
-            // Unit tests
-            testImplementation(libs.bundles.testing)
-            testImplementation(libs.bundles.robolectric)
-        }
-    }
-
-    val xcfName = "print-engine"
-    iosX64 { binaries.framework { baseName = xcfName } }
-    iosArm64 { binaries.framework { baseName = xcfName } }
-    iosSimulatorArm64 { binaries.framework { baseName = xcfName } }
-
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(libs.kotlin.coroutines)
-
-                // Utils
-                implementation(libs.kermit)
-            }
-        }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-
-                implementation(libs.kotlin.coroutines.test)
-            }
-        }
-
-        val androidMain by getting {
-            kotlin.srcDirs("src/androidMain/kotlin")
-            dependencies {
-                implementation(libs.kotlin.coroutines.android)
-            }
-        }
-        val androidUnitTest by getting {
-            kotlin.srcDirs("src/androidUnitTest/kotlin")
-            dependencies {
-                implementation(kotlin("test"))
-            }
-        }
-    }
+    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.detekt)
+    id("maven-publish")
 }
 
 android {
@@ -77,6 +13,10 @@ android {
         minSdk = Configs.MIN_SDK
     }
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
@@ -85,10 +25,10 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
+                "proguard-rules.pro"
             )
             consumerProguardFiles(
-                "consumer-rules.pro",
+                "consumer-rules.pro"
             )
         }
     }
@@ -103,6 +43,15 @@ android {
         useJUnitPlatform()
     }
 
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = Configs.JVM_TARGET
+            freeCompilerArgs = listOf(
+                "-Xstring-concat=inline"
+            )
+        }
+    }
+
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -110,58 +59,39 @@ android {
     }
 }
 
-mavenPublishing {
-    // Define coordinates for the published artifact
-    coordinates(
-        groupId = "io.github.tillhub",
-        artifactId = "print-engine-core",
-        version =
-            libs.versions.print.engine
-                .get(),
-    )
+detekt {
+    buildUponDefaultConfig = true // preconfigure defaults
+    allRules = false // activate all available (even unstable) rules.
+    config.setFrom("$projectDir/config/detekt.yml")
+}
 
-    // Configure POM metadata for the published artifact
-    pom {
-        name.set("Print Engine")
-        description.set("Kotlin MultiPlatform Library that combines various printer implementations into a single, easy-to-use interface")
-        inceptionYear.set("2025")
-        url.set("https://github.com/tillhub/print-engine")
+dependencies {
+    // Core Dependencies
+    implementation(libs.bundles.core)
+    coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
-        licenses {
-            license {
-                name.set("MIT")
-                url.set("https://opensource.org/licenses/MIT")
-            }
-        }
+    implementation(libs.google.zxing)
+    
+    // Utils
+    implementation(libs.timber)
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.libraries)
 
-        // Specify developers information
-        developers {
-            developer {
-                id.set("djordjeh")
-                name.set("Đorđe Hrnjez")
-                email.set("dorde.hrnjez@unzer.com")
-            }
-            developer {
-                id.set("SloInfinity")
-                name.set("Martin Sirok")
-                email.set("m.sirok.ext@unzer.com")
-            }
-            developer {
-                id.set("shekar-allam")
-                name.set("Chandrashekar Allam")
-                email.set("chandrashekar.allam@unzer.com")
-            }
-        }
+    // Unit tests
+    testImplementation(libs.bundles.testing)
+    testImplementation(libs.bundles.robolectric)
+}
 
-        // Specify SCM information
-        scm {
-            url.set("https://github.com/tillhub/print-engine")
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release-core") {
+                groupId = "de.tillhub.printengine"
+                artifactId = "core"
+                version = Configs.VERSION_CODE
+
+                from(components.getByName("release"))
+            }
         }
     }
-
-    // Configure publishing to Maven Central
-    publishToMavenCentral()
-
-    // Enable GPG signing for all publications
-    signAllPublications()
 }

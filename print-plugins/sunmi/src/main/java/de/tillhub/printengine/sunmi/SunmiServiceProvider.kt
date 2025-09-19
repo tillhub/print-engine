@@ -10,6 +10,6 @@ object SunmiServiceProvider : PrinterServiceProvider {
     override fun build(
         context: Context,
         printer: ExternalPrinter?,
-        barcode: BarcodeEncoder?,
+        barcode: BarcodeEncoder?
     ): PrintService = SunmiPrintService(context)
 }

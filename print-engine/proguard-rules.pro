@@ -31,7 +31,7 @@
 -keep class de.tillhub.printengine.**$DefaultImpls { *; }
 -keep class de.tillhub.printengine.PrintEngine { *; }
 -keep class de.tillhub.printengine.PrintEngine$Companion { *; }
--keep class de.tillhub.printengine.helpers.SingletonHolder { *; }
+-keep class de.tillhub.printengine.helper.SingletonHolder { *; }
 -keep class de.tillhub.printengine.analytics.PrintAnalytics { *; }
 -keep class de.tillhub.printengine.data.** { *; }
 -keep class de.tillhub.printengine.barcode.BarcodeEncoder {  *; }
