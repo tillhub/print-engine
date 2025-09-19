@@ -24,191 +24,175 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 
 @RobolectricTest
-internal class PaxPrinterControllerTest :
-    DescribeSpec({
+internal class PaxPrinterControllerTest : DescribeSpec({
 
-        lateinit var bitmap: Bitmap
-        lateinit var printerState: MutableStateFlow<PrinterState>
-        lateinit var printService: DirectPrintService
-        lateinit var barcodeEncoder: BarcodeEncoder
-        lateinit var target: PaxPrinterController
+    lateinit var bitmap: Bitmap
+    lateinit var printerState: MutableStateFlow<PrinterState>
+    lateinit var printService: DirectPrintService
+    lateinit var barcodeEncoder: BarcodeEncoder
+    lateinit var target: PaxPrinterController
 
-        beforeSpec {
-            bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
+    beforeSpec {
+        bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
+    }
+
+    beforeTest {
+        printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
+        barcodeEncoder = mockk {
+            every { encodeAsBitmap(any(), any(), any(), any()) } returns bitmap
+        }
+        printService = mockk {
+            every { checkStatus(any()) } just runs
+            every { print(any(), any(), any()) } just runs
         }
 
-        beforeTest {
-            printerState = MutableStateFlow(PrinterState.CheckingForPrinter)
-            barcodeEncoder =
-                mockk {
-                    every { encodeAsBitmap(any(), any(), any(), any()) } returns bitmap
-                }
-            printService =
-                mockk {
-                    every { checkStatus(any()) } just runs
-                    every { print(any(), any(), any()) } just runs
-                }
+        target = PaxPrinterController(
+            printService = printService,
+            printerState = printerState,
+            barcodeEncoder = barcodeEncoder
+        )
+    }
 
-            target =
-                PaxPrinterController(
-                    printService = printService,
-                    printerState = printerState,
-                    barcodeEncoder = barcodeEncoder,
+    afterSpec {
+        bitmap.recycle()
+    }
+
+    it("getPrinterInfo") {
+        target.getPrinterInfo() shouldBe PrinterInfo(
+            serialNumber = "n/a",
+            deviceModel = "A920",
+            printerVersion = "n/a",
+            printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
+            printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+            printerHead = "n/a",
+            printedDistance = 0,
+            serviceVersion = PrinterServiceVersion.Unknown
+        )
+    }
+
+    it("observePrinterState") {
+        target.observePrinterState().first() shouldBe PrinterState.CheckingForPrinter
+
+        verify(exactly = 1) { printService.checkStatus(any()) }
+    }
+
+    it("setIntensity and printText") {
+        val payload = HtmlUtils.transformToHtml(
+            text = HtmlUtils.monospaceText("text_to_print",13) + "\n",
+            includeStyle = true
+        )
+
+        target.setIntensity(PrintingIntensity.DARKEST)
+
+        target.printText("text_to_print")
+        target.start()
+
+        verify {
+            printService.print(payload, 100, any())
+        }
+    }
+
+    it("sendRawData") {
+        val payload = HtmlUtils.transformToHtml(
+            text = HtmlUtils.monospaceText("raw_data",13) + "\n",
+            includeStyle = true
+        )
+
+        val rawData = RawPrinterData("raw_data".toByteArray())
+        target.sendRawData(rawData)
+        target.start()
+
+        verify(exactly = 1) {
+            printService.print(payload, 50, any())
+        }
+    }
+
+    it("printBarcode") {
+        val payload = HtmlUtils.transformToHtml(
+            text = StringBuilder().apply {
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode")))
+            }.toString(),
+            includeStyle = true
+        )
+
+        target.printBarcode("barcode")
+        target.start()
+
+        verify(ordering = Ordering.ORDERED) {
+            barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 435, 140)
+            printService.print(payload, 50, any())
+        }
+    }
+
+    it("printQr") {
+        val payload = HtmlUtils.transformToHtml(
+            text = StringBuilder().apply {
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(
+                    HtmlUtils.monospaceText(
+                        HtmlUtils.singleLineCenteredText("qr_code")
+                    )
                 )
+            }.toString(),
+            includeStyle = true
+        )
+
+        target.printQr("qr_code")
+        target.start()
+
+        verify(ordering = Ordering.ORDERED) {
+            barcodeEncoder.encodeAsBitmap("qr_code", BarcodeType.QR_CODE, 220, 220)
+            printService.print(payload, 50, any())
         }
+    }
 
-        afterSpec {
-            bitmap.recycle()
+    it("printImage") {
+        val payload = HtmlUtils.transformToHtml(HtmlUtils.generateImageHtml(bitmap), true)
+        target.printImage(bitmap)
+        target.start()
+
+        verify(exactly = 1) {
+            printService.print(payload, 50, any())
         }
+    }
 
-        it("getPrinterInfo") {
-            target.getPrinterInfo() shouldBe
-                PrinterInfo(
-                    serialNumber = "n/a",
-                    deviceModel = "A920",
-                    printerVersion = "n/a",
-                    printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
-                    printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-                    printerHead = "n/a",
-                    printedDistance = 0,
-                    serviceVersion = PrinterServiceVersion.Unknown,
-                )
+    it("feedPaper") {
+        val payload = HtmlUtils.transformToHtml("<br />", true)
+
+        target.feedPaper()
+        target.start()
+
+        verify(exactly = 1) {
+            printService.print(payload, 50, any())
         }
+    }
 
-        it("observePrinterState") {
-            target.observePrinterState().first() shouldBe PrinterState.CheckingForPrinter
+    it("full print") {
+        val payload = HtmlUtils.transformToHtml(
+            text = StringBuilder().apply {
+                appendLine(HtmlUtils.monospaceText("start line",13))
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode"),13))
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("qr_code"),13))
+                append(HtmlUtils.generateImageHtml(bitmap))
+                appendLine(HtmlUtils.monospaceText("end line",13))
+                append("<br />")
+            }.toString(),
+            includeStyle = true
+        )
 
-            verify(exactly = 1) { printService.checkStatus(any()) }
+        target.printText("start line")
+        target.printBarcode("barcode")
+        target.printQr("qr_code")
+        target.printImage(bitmap)
+        target.printText("end line")
+        target.feedPaper()
+        target.start()
+
+        verify(exactly = 1) {
+            printService.print(payload, 50, any())
         }
-
-        it("setIntensity and printText") {
-            val payload =
-                HtmlUtils.transformToHtml(
-                    text = HtmlUtils.monospaceText("text_to_print", 13) + "\n",
-                    includeStyle = true,
-                )
-
-            target.setIntensity(PrintingIntensity.DARKEST)
-
-            target.printText("text_to_print")
-            target.start()
-
-            verify {
-                printService.print(payload, 100, any())
-            }
-        }
-
-        it("sendRawData") {
-            val payload =
-                HtmlUtils.transformToHtml(
-                    text = HtmlUtils.monospaceText("raw_data", 13) + "\n",
-                    includeStyle = true,
-                )
-
-            val rawData = RawPrinterData("raw_data".toByteArray())
-            target.sendRawData(rawData)
-            target.start()
-
-            verify(exactly = 1) {
-                printService.print(payload, 50, any())
-            }
-        }
-
-        it("printBarcode") {
-            val payload =
-                HtmlUtils.transformToHtml(
-                    text =
-                    StringBuilder()
-                        .apply {
-                            append(HtmlUtils.generateImageHtml(bitmap))
-                            appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode")))
-                        }.toString(),
-                    includeStyle = true,
-                )
-
-            target.printBarcode("barcode")
-            target.start()
-
-            verify(ordering = Ordering.ORDERED) {
-                barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 435, 140)
-                printService.print(payload, 50, any())
-            }
-        }
-
-        it("printQr") {
-            val payload =
-                HtmlUtils.transformToHtml(
-                    text =
-                    StringBuilder()
-                        .apply {
-                            append(HtmlUtils.generateImageHtml(bitmap))
-                            appendLine(
-                                HtmlUtils.monospaceText(
-                                    HtmlUtils.singleLineCenteredText("qr_code"),
-                                ),
-                            )
-                        }.toString(),
-                    includeStyle = true,
-                )
-
-            target.printQr("qr_code")
-            target.start()
-
-            verify(ordering = Ordering.ORDERED) {
-                barcodeEncoder.encodeAsBitmap("qr_code", BarcodeType.QR_CODE, 220, 220)
-                printService.print(payload, 50, any())
-            }
-        }
-
-        it("printImage") {
-            val payload = HtmlUtils.transformToHtml(HtmlUtils.generateImageHtml(bitmap), true)
-            target.printImage(bitmap)
-            target.start()
-
-            verify(exactly = 1) {
-                printService.print(payload, 50, any())
-            }
-        }
-
-        it("feedPaper") {
-            val payload = HtmlUtils.transformToHtml("<br />", true)
-
-            target.feedPaper()
-            target.start()
-
-            verify(exactly = 1) {
-                printService.print(payload, 50, any())
-            }
-        }
-
-        it("full print") {
-            val payload =
-                HtmlUtils.transformToHtml(
-                    text =
-                    StringBuilder()
-                        .apply {
-                            appendLine(HtmlUtils.monospaceText("start line", 13))
-                            append(HtmlUtils.generateImageHtml(bitmap))
-                            appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode"), 13))
-                            append(HtmlUtils.generateImageHtml(bitmap))
-                            appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("qr_code"), 13))
-                            append(HtmlUtils.generateImageHtml(bitmap))
-                            appendLine(HtmlUtils.monospaceText("end line", 13))
-                            append("<br />")
-                        }.toString(),
-                    includeStyle = true,
-                )
-
-            target.printText("start line")
-            target.printBarcode("barcode")
-            target.printQr("qr_code")
-            target.printImage(bitmap)
-            target.printText("end line")
-            target.feedPaper()
-            target.start()
-
-            verify(exactly = 1) {
-                printService.print(payload, 50, any())
-            }
-        }
-    })
+    }
+})

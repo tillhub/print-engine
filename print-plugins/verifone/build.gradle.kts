@@ -1,9 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.maven.publish)
+    alias(libs.plugins.detekt)
+    id("maven-publish")
 }
 
 android {
@@ -22,10 +21,10 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
+                "proguard-rules.pro"
             )
             consumerProguardFiles(
-                "consumer-rules.pro",
+                "consumer-rules.pro"
             )
         }
     }
@@ -40,8 +39,13 @@ android {
         useJUnitPlatform()
     }
 
-    kotlin {
-        compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = Configs.JVM_TARGET
+            freeCompilerArgs = listOf(
+                "-Xstring-concat=inline"
+            )
+        }
     }
 
     testOptions {
@@ -56,70 +60,27 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     // Core Dependencies
-    implementation(libs.androidx.core)
-    implementation(libs.kotlin.coroutines)
+    implementation(libs.bundles.core)
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
     // Utils
-    implementation(libs.kermit)
+    implementation(libs.timber)
 
     // Unit tests
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.robolectric)
 }
 
-mavenPublishing {
-    // Define coordinates for the published artifact
-    coordinates(
-        groupId = "io.github.tillhub",
-        artifactId = "print-engine-verifone",
-        version =
-            libs.versions.print.engine
-                .get(),
-    )
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release-verifone") {
+                groupId = "de.tillhub.printengine"
+                artifactId = "verifone"
+                version = Configs.VERSION_CODE
 
-    // Configure POM metadata for the published artifact
-    pom {
-        name.set("Verifone Print Engine plugin")
-        description.set("Kotlin MultiPlatform Library printer implementation for Pax devices")
-        inceptionYear.set("2025")
-        url.set("https://github.com/tillhub/print-engine")
-
-        licenses {
-            license {
-                name.set("MIT")
-                url.set("https://opensource.org/licenses/MIT")
+                from(components.getByName("release"))
             }
-        }
-
-        // Specify developers information
-        developers {
-            developer {
-                id.set("djordjeh")
-                name.set("Đorđe Hrnjez")
-                email.set("dorde.hrnjez@unzer.com")
-            }
-            developer {
-                id.set("SloInfinity")
-                name.set("Martin Sirok")
-                email.set("m.sirok.ext@unzer.com")
-            }
-            developer {
-                id.set("shekar-allam")
-                name.set("Chandrashekar Allam")
-                email.set("chandrashekar.allam@unzer.com")
-            }
-        }
-
-        // Specify SCM information
-        scm {
-            url.set("https://github.com/tillhub/print-engine")
         }
     }
-
-    // Configure publishing to Maven Central
-    publishToMavenCentral()
-
-    // Enable GPG signing for all publications
-    signAllPublications()
 }
