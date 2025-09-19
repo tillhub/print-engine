@@ -1,8 +1,76 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.detekt)
-    id("maven-publish")
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.maven.publish)
+}
+
+kotlin {
+    compilerOptions {
+        // removes warnings for expect/actual classes
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
+    androidTarget {
+        // Keep JVM target consistent with Java 17
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+
+        dependencies {
+            // Core Dependencies
+            implementation(libs.androidx.core)
+            coreLibraryDesugaring(libs.android.desugarJdkLibs)
+
+            // Printer Dependencies
+            implementation(libs.star.printer)
+
+            // Unit tests
+            testImplementation(libs.bundles.testing)
+            testImplementation(libs.bundles.robolectric)
+        }
+    }
+
+    val xcfName = "print-engine"
+    iosX64 { binaries.framework { baseName = xcfName } }
+    iosArm64 { binaries.framework { baseName = xcfName } }
+    iosSimulatorArm64 { binaries.framework { baseName = xcfName } }
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(project(":print-engine"))
+
+                implementation(libs.kotlin.coroutines)
+
+                // Utils
+                implementation(libs.kermit)
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+
+                implementation(libs.kotlin.coroutines.test)
+            }
+        }
+
+        val androidMain by getting {
+            // Reuse existing Android sources under src/main/kotlin to avoid moving files now
+            kotlin.srcDirs("src/androidMain/kotlin")
+            dependencies {
+                implementation(libs.kotlin.coroutines.android)
+            }
+        }
+        val androidUnitTest by getting {
+            // Reuse existing Android unit tests under src/test/kotlin
+            kotlin.srcDirs("src/androidTest/kotlin")
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+    }
 }
 
 android {
@@ -21,10 +89,10 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             consumerProguardFiles(
-                "consumer-rules.pro"
+                "consumer-rules.pro",
             )
         }
     }
@@ -39,15 +107,6 @@ android {
         useJUnitPlatform()
     }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = Configs.JVM_TARGET
-            freeCompilerArgs = listOf(
-                "-Xstring-concat=inline"
-            )
-        }
-    }
-
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -55,33 +114,58 @@ android {
     }
 }
 
-dependencies {
-    implementation(project(":print-engine"))
+mavenPublishing {
+    // Define coordinates for the published artifact
+    coordinates(
+        groupId = "io.github.tillhub",
+        artifactId = "print-engine-star",
+        version =
+            libs.versions.print.engine
+                .get(),
+    )
 
-    // Core Dependencies
-    implementation(libs.bundles.core)
-    coreLibraryDesugaring(libs.android.desugarJdkLibs)
+    // Configure POM metadata for the published artifact
+    pom {
+        name.set("Start Print Engine plugin")
+        description.set("Kotlin MultiPlatform Library printer implementation for Star printers")
+        inceptionYear.set("2025")
+        url.set("https://github.com/tillhub/print-engine")
 
-    // Printer Dependencies
-    implementation(libs.star.printer)
-
-    // Utils
-    implementation(libs.timber)
-
-    // Unit tests
-    testImplementation(libs.bundles.testing)
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release-star") {
-                groupId = "de.tillhub.printengine"
-                artifactId = "star"
-                version = Configs.VERSION_CODE
-
-                from(components.getByName("release"))
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://opensource.org/licenses/MIT")
             }
         }
+
+        // Specify developers information
+        developers {
+            developer {
+                id.set("djordjeh")
+                name.set("Đorđe Hrnjez")
+                email.set("dorde.hrnjez@unzer.com")
+            }
+            developer {
+                id.set("SloInfinity")
+                name.set("Martin Sirok")
+                email.set("m.sirok.ext@unzer.com")
+            }
+            developer {
+                id.set("shekar-allam")
+                name.set("Chandrashekar Allam")
+                email.set("chandrashekar.allam@unzer.com")
+            }
+        }
+
+        // Specify SCM information
+        scm {
+            url.set("https://github.com/tillhub/print-engine")
+        }
     }
+
+    // Configure publishing to Maven Central
+    publishToMavenCentral()
+
+    // Enable GPG signing for all publications
+    signAllPublications()
 }

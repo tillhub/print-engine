@@ -11,36 +11,56 @@ import de.tillhub.printengine.pax.DirectPrintService.DirectPrintListener
 internal interface DirectPrintService {
     interface DirectPrintListener {
         fun onFailed(e: RemoteException)
+
         fun onStatus(status: Int)
     }
+
     fun checkStatus(listener: DirectPrintListener)
-    fun print(content: String, printingIntensity: Int, listener: DirectPrintListener)
+
+    fun print(
+        content: String,
+        printingIntensity: Int,
+        listener: DirectPrintListener,
+    )
 }
 
-internal class DirectPrintServiceImpl(private val requestMessenger: Messenger) : DirectPrintService {
-
+internal class DirectPrintServiceImpl(
+    private val requestMessenger: Messenger,
+) : DirectPrintService {
     override fun checkStatus(listener: DirectPrintListener) {
-        Message.obtain(null, MSG_STATUS, 0, 0).apply {
-            replyTo = Messenger(PrintResponseHandler(listener))
-        }.also { message ->
-            sendMessage(message, listener)
-        }
+        Message
+            .obtain(null, MSG_STATUS, 0, 0)
+            .apply {
+                replyTo = Messenger(PrintResponseHandler(listener))
+            }.also { message ->
+                sendMessage(message, listener)
+            }
     }
 
-    override fun print(content: String, printingIntensity: Int, listener: DirectPrintListener) {
-        Message.obtain(null, MSG_PRINT, 0, 0).apply {
-            replyTo = Messenger(PrintResponseHandler(listener))
-            data = bundleOf(
-                MSG_PRINT_HTML to content,
-                MSG_PRINT_AUTO_CROP to true,
-                MSG_PRINT_INTENSITY to printingIntensity
-            )
-        }.also { message ->
-            sendMessage(message, listener)
-        }
+    override fun print(
+        content: String,
+        printingIntensity: Int,
+        listener: DirectPrintListener,
+    ) {
+        Message
+            .obtain(null, MSG_PRINT, 0, 0)
+            .apply {
+                replyTo = Messenger(PrintResponseHandler(listener))
+                data =
+                    bundleOf(
+                        MSG_PRINT_HTML to content,
+                        MSG_PRINT_AUTO_CROP to true,
+                        MSG_PRINT_INTENSITY to printingIntensity,
+                    )
+            }.also { message ->
+                sendMessage(message, listener)
+            }
     }
 
-    private fun sendMessage(message: Message, listener: DirectPrintListener) {
+    private fun sendMessage(
+        message: Message,
+        listener: DirectPrintListener,
+    ) {
         try {
             requestMessenger.send(message)
         } catch (e: RemoteException) {
@@ -49,7 +69,7 @@ internal class DirectPrintServiceImpl(private val requestMessenger: Messenger) :
     }
 
     class PrintResponseHandler(
-        private val listener: DirectPrintListener
+        private val listener: DirectPrintListener,
     ) : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             val status = msg.data.getInt(PRINTER_STATUS_KEY, PaxPrinterState.NotAvailable.code)
