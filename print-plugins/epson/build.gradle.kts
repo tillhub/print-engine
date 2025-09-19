@@ -35,7 +35,7 @@ kotlin {
         }
     }
 
-    val xcfName = "print-engine"
+    val xcfName = "print-engine-epson"
     iosX64 { binaries.framework { baseName = xcfName } }
     iosArm64 { binaries.framework { baseName = xcfName } }
     iosSimulatorArm64 { binaries.framework { baseName = xcfName } }
@@ -60,15 +60,19 @@ kotlin {
         }
 
         val androidMain by getting {
-            // Reuse existing Android sources under src/main/kotlin to avoid moving files now
             kotlin.srcDirs("src/androidMain/kotlin")
             dependencies {
                 implementation(libs.kotlin.coroutines.android)
             }
         }
         val androidUnitTest by getting {
-            // Reuse existing Android unit tests under src/test/kotlin
-            kotlin.srcDirs("src/androidTest/kotlin")
+            kotlin.srcDirs("src/androidUnitTest/kotlin")
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        val androidInstrumentedTest by getting {
+            kotlin.srcDirs("src/androidInstrumentedTest/kotlin")
             dependencies {
                 implementation(kotlin("test"))
             }
