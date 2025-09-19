@@ -1,8 +1,8 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.detekt)
-    id("maven-publish")
 }
 
 android {
@@ -21,10 +21,10 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             consumerProguardFiles(
-                "consumer-rules.pro"
+                "consumer-rules.pro",
             )
         }
     }
@@ -39,13 +39,8 @@ android {
         useJUnitPlatform()
     }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = Configs.JVM_TARGET
-            freeCompilerArgs = listOf(
-                "-Xstring-concat=inline"
-            )
-        }
+    kotlin {
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
     }
 
     testOptions {
@@ -59,30 +54,17 @@ dependencies {
     implementation(project(":print-engine"))
 
     // Core Dependencies
-    implementation(libs.bundles.core)
+    implementation(libs.androidx.core)
+    implementation(libs.kotlin.coroutines)
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
     // Sunmi Dependencies
     implementation(libs.sunmi.printer)
 
     // Utils
-    implementation(libs.timber)
+    implementation(libs.kermit)
 
     // Unit tests
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.robolectric)
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release-sunmi") {
-                groupId = "de.tillhub.printengine"
-                artifactId = "sunmi"
-                version = Configs.VERSION_CODE
-
-                from(components.getByName("release"))
-            }
-        }
-    }
 }

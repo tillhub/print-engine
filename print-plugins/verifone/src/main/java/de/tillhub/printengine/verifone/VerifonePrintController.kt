@@ -27,7 +27,7 @@ internal class VerifonePrintController(
     qrCodeSize = VERIFONE_QR_CODE_SIZE,
     fontSize = VERIFONE_FONT_SIZE,
     feedString = VERIFONE_FEED_STRING,
-    includeStyleTag = false
+    includeStyleTag = false,
 ) {
     private var useCutter = false
 
@@ -39,7 +39,10 @@ internal class VerifonePrintController(
             }
 
             /** Called when the print job cannot continue, but could be resumed later. */
-            override fun block(printId: String?, errorMessage: String?) {
+            override fun block(
+                printId: String?,
+                errorMessage: String?,
+            ) {
                 printerState.value = PrinterState.Error.PrintingUnfinished
             }
 
@@ -49,7 +52,11 @@ internal class VerifonePrintController(
             }
 
             /** Called when the print job has failed, and cannot be resumed. This is the final message. */
-            override fun failed(printId: String?, errorMessage: String?, status: Int) {
+            override fun failed(
+                printId: String?,
+                errorMessage: String?,
+                status: Int,
+            ) {
                 printerState.value = VerifonePrinterState.convert(status)
             }
 
@@ -60,14 +67,17 @@ internal class VerifonePrintController(
         }
     }
 
-    override fun printContent(content: String, cutAfterPrint: Boolean) {
+    override fun printContent(
+        content: String,
+        cutAfterPrint: Boolean,
+    ) {
         printManager.printString(
             printListener,
             content,
             when {
                 cutAfterPrint || useCutter -> Printer.PRINTER_FULL_CUT
                 else -> Printer.PRINTER_NO_CUTTER_LINE_FEED
-            }
+            },
         )
 
         useCutter = false
@@ -81,17 +91,16 @@ internal class VerifonePrintController(
 
     override fun setIntensity(intensity: PrintingIntensity) = Unit // Not supported
 
-    override suspend fun getPrinterInfo(): PrinterInfo =
-        PrinterInfo(
-            serialNumber = "n/a",
-            deviceModel = "Verifone T630c",
-            printerVersion = "n/a",
-            printerPaperSpec = PrintingPaperSpec.VerifonePaper56mm,
-            printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
-            printerHead = "n/a",
-            printedDistance = 0,
-            serviceVersion = PrinterServiceVersion.Unknown
-        )
+    override suspend fun getPrinterInfo(): PrinterInfo = PrinterInfo(
+        serialNumber = "n/a",
+        deviceModel = "Verifone T630c",
+        printerVersion = "n/a",
+        printerPaperSpec = PrintingPaperSpec.VerifonePaper56mm,
+        printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+        printerHead = "n/a",
+        printedDistance = 0,
+        serviceVersion = PrinterServiceVersion.Unknown,
+    )
 
     companion object {
         private val VERIFONE_FEED_STRING = FeedString("<br /><br /><br /><br /><br />")

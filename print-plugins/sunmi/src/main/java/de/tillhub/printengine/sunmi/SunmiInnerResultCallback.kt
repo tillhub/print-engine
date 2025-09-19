@@ -10,7 +10,10 @@ internal abstract class SunmiInnerResultCallback : InnerResultCallback() {
         // not needed
     }
 
-    final override fun onPrintResult(code: Int, msg: String?) {
+    final override fun onPrintResult(
+        code: Int,
+        msg: String?,
+    ) {
         // not needed
     }
 }
