@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
-    id("maven-publish")
 }
 
 android {
@@ -68,18 +67,4 @@ dependencies {
     // Unit tests
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.robolectric)
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release-sunmi") {
-                groupId = "de.tillhub.printengine"
-                artifactId = "sunmi"
-                version = Configs.VERSION_CODE
-
-                from(components.getByName("release"))
-            }
-        }
-    }
 }

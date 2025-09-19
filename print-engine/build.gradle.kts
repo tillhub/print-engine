@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.mokkery)
-    id("maven-publish")
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
@@ -112,16 +112,58 @@ android {
     }
 }
 
-// afterEvaluate {
-//    publishing {
-//        publications {
-//            create<MavenPublication>("release-core") {
-//                groupId = "de.tillhub.printengine"
-//                artifactId = "core"
-//                version = Configs.VERSION_CODE
-//
-//                from(components.getByName("release"))
-//            }
-//        }
-//    }
-// }
+mavenPublishing {
+    // Define coordinates for the published artifact
+    coordinates(
+        groupId = "io.github.tillhub",
+        artifactId = "print-engine-core",
+        version =
+            libs.versions.print.engine
+                .get(),
+    )
+
+    // Configure POM metadata for the published artifact
+    pom {
+        name.set("Print Engine")
+        description.set("Kotlin MultiPlatform Library that combines various printer implementations into a single, easy-to-use interface")
+        inceptionYear.set("2025")
+        url.set("https://github.com/tillhub/print-engine")
+
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://opensource.org/licenses/MIT")
+            }
+        }
+
+        // Specify developers information
+        developers {
+            developer {
+                id.set("djordjeh")
+                name.set("Đorđe Hrnjez")
+                email.set("dorde.hrnjez@unzer.com")
+            }
+            developer {
+                id.set("SloInfinity")
+                name.set("Martin Sirok")
+                email.set("m.sirok.ext@unzer.com")
+            }
+            developer {
+                id.set("shekar-allam")
+                name.set("Chandrashekar Allam")
+                email.set("chandrashekar.allam@unzer.com")
+            }
+        }
+
+        // Specify SCM information
+        scm {
+            url.set("https://github.com/tillhub/print-engine")
+        }
+    }
+
+    // Configure publishing to Maven Central
+    publishToMavenCentral()
+
+    // Enable GPG signing for all publications
+    signAllPublications()
+}

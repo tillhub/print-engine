@@ -1,11 +1,12 @@
 [versions]
-print-engine = "3.0.0"
+print-engine = "3.0.1"
 
 # Build tools
 kotlin = "2.2.0"
 agp = "8.11.1"
 spotless = "7.1.0"
 mokkery = "2.9.0"
+maven-publish = "0.34.0"
 
 # Core Android libraries
 core = "1.12.0"
@@ -97,6 +98,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
 
 [bundles]
 testing = [
