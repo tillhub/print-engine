@@ -94,9 +94,9 @@ internal class VerifonePrintController(
         )
 
     companion object {
-        private val VERIFONE_FEED_STRING = FeedString("<br /><br /><br /><br /><br />")
+        private val VERIFONE_FEED_STRING = FeedString("<br /><br />")
         private val VERIFONE_FONT_SIZE = FontSize(20)
         private val VERIFONE_QR_CODE_SIZE = QrCodeSize(420)
-        private val VERIFONE_BARCODE_SIZE = BarcodeSize(140, 435)
+        private val VERIFONE_BARCODE_SIZE = BarcodeSize(140, 420)
     }
 }

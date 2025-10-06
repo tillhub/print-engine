@@ -21,7 +21,7 @@ object PrinterServiceFactory {
         return when (PrinterManufacturer.get()) {
             PrinterManufacturer.PAX -> PaxServiceProvider.build(context, barcode = barcode)
             PrinterManufacturer.SUNMI -> SunmiServiceProvider.build(context)
-            PrinterManufacturer.VERIFONE -> VerifoneServiceProvider.build(context)
+            PrinterManufacturer.VERIFONE -> VerifoneServiceProvider.build(context, barcode = barcode)
             PrinterManufacturer.UNKNOWN -> createExternalPrinterService(context, externalPrinter)
         }
     }
