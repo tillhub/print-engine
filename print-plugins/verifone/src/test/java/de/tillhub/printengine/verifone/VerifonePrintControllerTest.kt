@@ -135,7 +135,7 @@ internal class VerifonePrintControllerTest :
             printerController.start()
 
             verify(ordering = Ordering.ORDERED) {
-                barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 435, 140)
+                barcodeEncoder.encodeAsBitmap("barcode", BarcodeType.CODE_128, 420, 140)
                 printManager.printString(any(), payload, Printer.PRINTER_NO_CUTTER_LINE_FEED)
             }
         }
@@ -175,7 +175,7 @@ internal class VerifonePrintControllerTest :
         }
 
         it("feedPaper") {
-            val payload = HtmlUtils.transformToHtml("<br /><br /><br /><br /><br />")
+            val payload = HtmlUtils.transformToHtml("<br /><br />")
 
             printerController.feedPaper()
             printerController.start()
@@ -207,7 +207,7 @@ internal class VerifonePrintControllerTest :
                             )
                             append(HtmlUtils.generateImageHtml(bitmap))
                             appendLine(HtmlUtils.monospaceText("end line", 20))
-                            append("<br /><br /><br /><br /><br />")
+                            append("<br /><br />")
                         }.toString(),
                 )
 
@@ -246,7 +246,7 @@ internal class VerifonePrintControllerTest :
                             )
                             append(HtmlUtils.generateImageHtml(bitmap))
                             appendLine(HtmlUtils.monospaceText("end line", 20))
-                            append("<br /><br /><br /><br /><br />")
+                            append("<br /><br />")
                         }.toString(),
                 )
 
