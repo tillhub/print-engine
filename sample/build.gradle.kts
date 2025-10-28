@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "de.tillhub.printengine.sample"
-        minSdk = Configs.MIN_SDK
+        minSdk = Configs.MIN_SDK_STAR
 
         vectorDrawables {
             useSupportLibrary = true
