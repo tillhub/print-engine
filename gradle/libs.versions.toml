@@ -24,7 +24,7 @@ runner = "1.6.2"
 rules = "1.6.1"
 truth = "1.6.0"
 
-starPrinter = "1.11.0"
+starPrinter = "1.10.0"
 
 
 lifecycle = "2.7.0"
