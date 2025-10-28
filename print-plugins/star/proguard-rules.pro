@@ -23,3 +23,15 @@
 
 -keep class de.tillhub.printengine.star.StarPrinterDiscovery { *; }
 -keep class de.tillhub.printengine.star.StarServiceProvider { *; }
+
+## StarIO10 / StarXpand SDK - keep rules for 1.11.x
+-keep,includedescriptorclasses class com.starmicronics.** { *; }
+-dontwarn com.starmicronics.**
+
+## Preserve attributes often used by reflection/inner classes
+-keepattributes Exceptions,InnerClasses,EnclosingMethod,Signature,SourceFile,LineNumberTable,
+    RuntimeVisibleAnnotations,RuntimeInvisibleAnnotations,RuntimeVisibleParameterAnnotations,
+    RuntimeInvisibleParameterAnnotations,AnnotationDefault
+
+## Keep native signatures
+-keepclasseswithmembernames class * { native <methods>; }
