@@ -59,10 +59,11 @@ internal class PaxPrintService(
             // Service doesn't exist on this device
             connectionState.value = PrinterState.Error.NotAvailable
         } else {
-        // Service exists, attempt to bind
-        if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
-            context.unbindService(connection)
-            connectionState.value = PrinterState.Error.NotAvailable
+            // Service exists, attempt to bind
+            if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
+                context.unbindService(connection)
+                connectionState.value = PrinterState.Error.NotAvailable
+            }
         }
     }
 
