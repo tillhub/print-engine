@@ -45,9 +45,18 @@ internal class PaxPrintService(context: Context, barcodeEncoder: BarcodeEncoder)
         val intent = Intent().apply {
             component = ComponentName(PRINTING_PACKAGE, PRINTING_CLASS)
         }
-        if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
-            context.unbindService(connection)
+
+        // Check if the service exists before attempting to bind
+        val serviceInfo = context.packageManager.resolveService(intent, 0)
+        if (serviceInfo == null) {
+            // Service doesn't exist on this device
             connectionState.value = PrinterState.Error.NotAvailable
+        } else {
+            // Service exists, attempt to bind
+            if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
+                context.unbindService(connection)
+                connectionState.value = PrinterState.Error.NotAvailable
+            }
         }
     }
 
