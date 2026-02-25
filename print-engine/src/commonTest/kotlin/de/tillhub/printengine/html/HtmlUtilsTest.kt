@@ -19,7 +19,7 @@ class HtmlUtilsTest {
             @page {
                 margin-left: 0.55cm;
                 margin-right: 0.55cm;
-                margin-top: 0.55cm
+                margin-top: 0.55cm;
                 margin-bottom: 0px;
             }
             pre {
@@ -45,7 +45,7 @@ class HtmlUtilsTest {
         val result = HtmlUtils.monospaceText("Line text")
         assertEquals(
             "<pre style=\"font-family: monospace; " +
-                "letter-spacing: 0px; font-size: 13px;\">Line text</pre>",
+                "letter-spacing: 0px; font-size: 13px; text-align: center;\">Line text</pre>",
             result,
         )
     }
@@ -55,7 +55,7 @@ class HtmlUtilsTest {
         val result = HtmlUtils.monospaceText("Line text", fontSize = 15)
         assertEquals(
             "<pre style=\"font-family: monospace; " +
-                "letter-spacing: 0px; font-size: 15px;\">Line text</pre>",
+                "letter-spacing: 0px; font-size: 15px; text-align: center;\">Line text</pre>",
             result,
         )
     }

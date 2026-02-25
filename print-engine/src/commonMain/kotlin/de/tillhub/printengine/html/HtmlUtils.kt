@@ -16,7 +16,7 @@ object HtmlUtils {
     fun monospaceText(
         text: String,
         fontSize: Int = FONT_SIZE,
-    ): String = "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px;\">$text</pre>"
+    ): String = "<pre style=\"font-family: monospace; letter-spacing: 0px; font-size: ${fontSize}px; text-align: center;\">$text</pre>"
 
     fun singleLineCenteredText(text: String): String = "<div style=\"text-align:center;\">$text</div>"
 
@@ -30,7 +30,7 @@ object HtmlUtils {
             @page {
                 margin-left: 0.55cm;
                 margin-right: 0.55cm;
-                margin-top: 0.55cm
+                margin-top: 0.55cm;
                 margin-bottom: 0px;
             }
             pre {
