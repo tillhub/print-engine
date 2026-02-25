@@ -164,6 +164,8 @@ mavenPublishing {
     // Configure publishing to Maven Central
     publishToMavenCentral()
 
-    // Enable GPG signing for all publications
-    signAllPublications()
+    // Enable GPG signing for all publications (disabled on JitPack)
+    if (System.getenv("JITPACK") == null) {
+        signAllPublications()
+    }
 }

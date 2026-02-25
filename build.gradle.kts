@@ -9,6 +9,13 @@ plugins {
     alias(libs.plugins.spotless).apply(false)
 }
 subprojects {
+    // Disable Dokka JavaDoc generation on JitPack (ASM version incompatibility)
+    if (System.getenv("JITPACK") != null) {
+        tasks.matching { it.name.contains("javaDoc", ignoreCase = true) }.configureEach {
+            enabled = false
+        }
+    }
+
     apply(plugin = "com.diffplug.spotless")
     configure<com.diffplug.gradle.spotless.SpotlessExtension> {
         kotlin {
