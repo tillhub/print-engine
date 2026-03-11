@@ -1,3 +1,4 @@
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -69,6 +70,13 @@ dependencies {
 }
 
 mavenPublishing {
+    configure(
+        AndroidSingleVariantLibrary(
+            sourcesJar = true,
+            publishJavadocJar = false,
+        ),
+    )
+
     // Define coordinates for the published artifact
     coordinates(
         groupId = "io.github.tillhub",
@@ -81,7 +89,7 @@ mavenPublishing {
     // Configure POM metadata for the published artifact
     pom {
         name.set("Verifone Print Engine plugin")
-        description.set("Kotlin MultiPlatform Library printer implementation for Pax devices")
+        description.set("Kotlin MultiPlatform Library printer implementation for Verifone devices")
         inceptionYear.set("2025")
         url.set("https://github.com/tillhub/print-engine")
 

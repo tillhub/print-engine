@@ -1,3 +1,4 @@
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -71,6 +72,13 @@ dependencies {
 }
 
 mavenPublishing {
+    configure(
+        AndroidSingleVariantLibrary(
+            sourcesJar = true,
+            publishJavadocJar = false,
+        ),
+    )
+
     // Define coordinates for the published artifact
     coordinates(
         groupId = "io.github.tillhub",

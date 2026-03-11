@@ -18,6 +18,8 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
 
+        publishLibraryVariants("release")
+
         dependencies {
             // Core Dependencies
             implementation(libs.androidx.core)
@@ -124,7 +126,7 @@ mavenPublishing {
 
     // Configure POM metadata for the published artifact
     pom {
-        name.set("Start Print Engine plugin")
+        name.set("Star Print Engine plugin")
         description.set("Kotlin MultiPlatform Library printer implementation for Star printers")
         inceptionYear.set("2025")
         url.set("https://github.com/tillhub/print-engine")
