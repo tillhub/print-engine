@@ -19,6 +19,8 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
 
+        publishLibraryVariants("release")
+
         dependencies {
             // Core Dependencies
             implementation(libs.androidx.core)
