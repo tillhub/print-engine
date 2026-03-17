@@ -1,6 +1,7 @@
 package de.tillhub.printengine.epson
 
-import android.graphics.Bitmap
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import com.epson.epos2.Epos2Exception
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.ExternalPrinter
@@ -61,13 +62,14 @@ internal actual class EpsonPrinterController(
         )
     }
 
-    actual override fun printImage(image: Bitmap) = executeEpsonCommand {
+    actual override fun printImage(image: ImageBitmap) = executeEpsonCommand {
+        val bitmap = image.asAndroidBitmap()
         printerWrapper.addImage(
-            image,
+            bitmap,
             IMAGE_START_XY,
             IMAGE_START_XY,
-            image.getWidth(),
-            image.getHeight(),
+            bitmap.width,
+            bitmap.height,
             EpsonPrinter.COLOR_1,
             EpsonPrinter.MODE_MONO,
             EpsonPrinter.HALFTONE_DITHER,

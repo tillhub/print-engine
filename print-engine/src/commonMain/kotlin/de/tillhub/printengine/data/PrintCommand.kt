@@ -1,6 +1,6 @@
 package de.tillhub.printengine.data
 
-import de.tillhub.printengine.data.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import de.tillhub.printengine.helpers.HashHelper
 
 sealed class PrintCommand {

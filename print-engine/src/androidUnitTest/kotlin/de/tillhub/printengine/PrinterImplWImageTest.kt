@@ -1,6 +1,7 @@
 package de.tillhub.printengine
 
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import de.tillhub.printengine.analytics.PrintAnalytics
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
@@ -91,7 +92,7 @@ internal class PrinterImplWImageTest :
                 printer.startPrintJob(
                     PrintJob(
                         listOf(
-                            PrintCommand.Image(bitmap),
+                            PrintCommand.Image(bitmap.asImageBitmap()),
                             PrintCommand.Text("receipt_to_print"),
                         ),
                     ),
@@ -100,7 +101,7 @@ internal class PrinterImplWImageTest :
                 coVerify(ordering = Ordering.ORDERED) {
                     controller.setIntensity(PrintingIntensity.DEFAULT)
                     controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                    controller.printImage(bitmap)
+                    controller.printImage(any())
                     controller.printText("receipt_to_print")
                     controller.start()
                     analytics.logPrintReceipt(
@@ -114,11 +115,11 @@ internal class PrinterImplWImageTest :
                 printer.startPrintJob(
                     PrintJob(
                         listOf(
-                            PrintCommand.Image(bitmap),
+                            PrintCommand.Image(bitmap.asImageBitmap()),
                             PrintCommand.Text("raw_receipt_text"),
                             PrintCommand.QrCode("signature_qr_code"),
                             PrintCommand.Barcode("barcode"),
-                            PrintCommand.Image(footerBitmap),
+                            PrintCommand.Image(footerBitmap.asImageBitmap()),
                             PrintCommand.FeedPaper,
                         ),
                     ),
@@ -127,11 +128,11 @@ internal class PrinterImplWImageTest :
                 coVerify(ordering = Ordering.ORDERED) {
                     controller.setIntensity(PrintingIntensity.DEFAULT)
                     controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                    controller.printImage(bitmap)
+                    controller.printImage(any())
                     controller.printText("raw_receipt_text")
                     controller.printQr("signature_qr_code")
                     controller.printBarcode("barcode")
-                    controller.printImage(footerBitmap)
+                    controller.printImage(any())
                     controller.feedPaper()
                     controller.start()
                     analytics.logPrintReceipt(
@@ -155,11 +156,11 @@ internal class PrinterImplWImageTest :
                 printer.startPrintJob(
                     PrintJob(
                         listOf(
-                            PrintCommand.Image(bitmap),
+                            PrintCommand.Image(bitmap.asImageBitmap()),
                             PrintCommand.Text("raw_receipt_text"),
                             PrintCommand.QrCode("signature_qr_code"),
                             PrintCommand.Barcode("barcode"),
-                            PrintCommand.Image(footerBitmap),
+                            PrintCommand.Image(footerBitmap.asImageBitmap()),
                             PrintCommand.FeedPaper,
                         ),
                     ),

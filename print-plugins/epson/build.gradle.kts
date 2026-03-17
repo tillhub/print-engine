@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.compose)
     alias(libs.plugins.maven.publish)
 }
 
@@ -48,6 +50,7 @@ kotlin {
                 implementation(project(":print-engine"))
 
                 implementation(libs.kotlin.coroutines)
+                implementation(compose.ui)
 
                 // Utils
                 implementation(libs.kermit)

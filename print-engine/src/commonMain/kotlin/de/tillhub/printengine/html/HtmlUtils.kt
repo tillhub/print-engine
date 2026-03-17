@@ -1,6 +1,6 @@
 package de.tillhub.printengine.html
 
-import de.tillhub.printengine.data.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import de.tillhub.printengine.data.encodeToBase64
 
 object HtmlUtils {

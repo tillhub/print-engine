@@ -1,5 +1,5 @@
 package de.tillhub.printengine.data
 
-expect class ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 
 expect fun ImageBitmap.encodeToBase64(): String
