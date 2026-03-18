@@ -77,9 +77,12 @@ internal actual class BarcodeEncoderImpl : BarcodeEncoder {
         val targetSize = CGSizeMake(imgWidth.toDouble(), imgHeight.toDouble())
 
         UIGraphicsBeginImageContextWithOptions(targetSize, true, 1.0)
-        ciBasedImage.drawInRect(CGRectMake(0.0, 0.0, imgWidth.toDouble(), imgHeight.toDouble()))
-        val renderedImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
+        val renderedImage = try {
+            ciBasedImage.drawInRect(CGRectMake(0.0, 0.0, imgWidth.toDouble(), imgHeight.toDouble()))
+            UIGraphicsGetImageFromCurrentImageContext()
+        } finally {
+            UIGraphicsEndImageContext()
+        }
 
         val pngData = renderedImage?.let { UIImagePNGRepresentation(it) } ?: run {
             Logger.e("Failed to create PNG representation")

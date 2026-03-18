@@ -118,7 +118,7 @@ List of commands:
 
 ```kotlin
 PrintCommand.Text(val text : String)
-PrintCommand.Image(val image : Bitmap)
+PrintCommand.Image(val image : ImageBitmap)
 PrintCommand.Barcode(val barcode : String)
 PrintCommand.QrCode(val code : String)
 PrintCommand.RawData(val data : RawPrinterData)
@@ -192,14 +192,14 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
     val barcodeEncoder = printEngine.barcodeEncoder
 
-    val qrCode: Bitmap? = barcodeEncoder.encodeAsBitmap(
+    val qrCode: ImageBitmap? = barcodeEncoder.encodeAsBitmap(
         content = "barcode_content",
         type = BarcodeType.QR_CODE,
         imgWidth = 500,
         imgHeight = 500
     )
 
-    val code128: Bitmap? = barcodeEncoder.encodeAsBitmap(
+    val code128: ImageBitmap? = barcodeEncoder.encodeAsBitmap(
         content = "barcode_content",
         type = BarcodeType.CODE_128,
         imgWidth = 500,

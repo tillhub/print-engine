@@ -50,7 +50,6 @@ kotlin {
                 implementation(project(":print-engine"))
 
                 implementation(libs.kotlin.coroutines)
-                implementation(compose.ui)
 
                 // Utils
                 implementation(libs.kermit)

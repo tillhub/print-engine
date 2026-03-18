@@ -87,3 +87,10 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Xcode user-specific data
+xcuserdata/
+*.xcuserstate

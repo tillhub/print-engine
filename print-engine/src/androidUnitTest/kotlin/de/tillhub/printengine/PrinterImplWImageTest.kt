@@ -1,6 +1,7 @@
 package de.tillhub.printengine
 
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import de.tillhub.printengine.analytics.PrintAnalytics
 import de.tillhub.printengine.data.PrintCommand
@@ -30,6 +31,8 @@ internal class PrinterImplWImageTest :
 
         lateinit var bitmap: Bitmap
         lateinit var footerBitmap: Bitmap
+        lateinit var imageBitmap: ImageBitmap
+        lateinit var footerImageBitmap: ImageBitmap
         lateinit var controller: PrinterController
         lateinit var service: PrintService
         lateinit var analytics: PrintAnalytics
@@ -38,6 +41,8 @@ internal class PrinterImplWImageTest :
         beforeSpec {
             bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
             footerBitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
+            imageBitmap = bitmap.asImageBitmap()
+            footerImageBitmap = footerBitmap.asImageBitmap()
         }
 
         beforeTest {
@@ -81,6 +86,7 @@ internal class PrinterImplWImageTest :
 
         afterSpec {
             bitmap.recycle()
+            footerBitmap.recycle()
         }
 
         describe("printer enabled") {
@@ -92,7 +98,7 @@ internal class PrinterImplWImageTest :
                 printer.startPrintJob(
                     PrintJob(
                         listOf(
-                            PrintCommand.Image(bitmap.asImageBitmap()),
+                            PrintCommand.Image(imageBitmap),
                             PrintCommand.Text("receipt_to_print"),
                         ),
                     ),
@@ -101,7 +107,7 @@ internal class PrinterImplWImageTest :
                 coVerify(ordering = Ordering.ORDERED) {
                     controller.setIntensity(PrintingIntensity.DEFAULT)
                     controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                    controller.printImage(any())
+                    controller.printImage(imageBitmap)
                     controller.printText("receipt_to_print")
                     controller.start()
                     analytics.logPrintReceipt(
@@ -115,11 +121,11 @@ internal class PrinterImplWImageTest :
                 printer.startPrintJob(
                     PrintJob(
                         listOf(
-                            PrintCommand.Image(bitmap.asImageBitmap()),
+                            PrintCommand.Image(imageBitmap),
                             PrintCommand.Text("raw_receipt_text"),
                             PrintCommand.QrCode("signature_qr_code"),
                             PrintCommand.Barcode("barcode"),
-                            PrintCommand.Image(footerBitmap.asImageBitmap()),
+                            PrintCommand.Image(footerImageBitmap),
                             PrintCommand.FeedPaper,
                         ),
                     ),
@@ -128,11 +134,11 @@ internal class PrinterImplWImageTest :
                 coVerify(ordering = Ordering.ORDERED) {
                     controller.setIntensity(PrintingIntensity.DEFAULT)
                     controller.setFontSize(PrintingFontType.DEFAULT_FONT_SIZE)
-                    controller.printImage(any())
+                    controller.printImage(imageBitmap)
                     controller.printText("raw_receipt_text")
                     controller.printQr("signature_qr_code")
                     controller.printBarcode("barcode")
-                    controller.printImage(any())
+                    controller.printImage(footerImageBitmap)
                     controller.feedPaper()
                     controller.start()
                     analytics.logPrintReceipt(
@@ -156,11 +162,11 @@ internal class PrinterImplWImageTest :
                 printer.startPrintJob(
                     PrintJob(
                         listOf(
-                            PrintCommand.Image(bitmap.asImageBitmap()),
+                            PrintCommand.Image(imageBitmap),
                             PrintCommand.Text("raw_receipt_text"),
                             PrintCommand.QrCode("signature_qr_code"),
                             PrintCommand.Barcode("barcode"),
-                            PrintCommand.Image(footerBitmap.asImageBitmap()),
+                            PrintCommand.Image(footerImageBitmap),
                             PrintCommand.FeedPaper,
                         ),
                     ),

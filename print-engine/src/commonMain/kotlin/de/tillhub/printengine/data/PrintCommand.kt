@@ -33,7 +33,7 @@ sealed class PrintCommand {
     class Barcode(
         val barcode: String,
     ) : PrintCommand() {
-        override fun toString() = "PrintCommand.Text(" +
+        override fun toString() = "PrintCommand.Barcode(" +
             "barcode=$barcode" +
             ")"
 
