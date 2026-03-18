@@ -91,6 +91,39 @@ lint/tmp/
 # Claude Code local settings
 .claude/settings.local.json
 
-# Xcode user-specific data
+# Xcode / iOS
+## User-specific settings
 xcuserdata/
 *.xcuserstate
+## Legacy per-user project settings (keep default.* variants)
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+## Source control metadata
+*.xccheckout
+*.xcscmblueprint
+## Misc
+*.moved-aside
+*.hmap
+DerivedData/
+
+# iOS build artifacts
+*.ipa
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+
+# CocoaPods
+# Pods/ and Podfile.lock are intentionally NOT ignored — treat them like package-lock.json
+# Uncomment below only if your team explicitly does not commit Pods:
+# Pods/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+# Package.resolved is intentionally NOT ignored — it is a lockfile for reproducible builds
