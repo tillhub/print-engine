@@ -40,9 +40,59 @@ kotlin {
     }
 
     val xcfName = "print-engine-epson"
-    iosX64 { binaries.framework { baseName = xcfName } }
-    iosArm64 { binaries.framework { baseName = xcfName } }
-    iosSimulatorArm64 { binaries.framework { baseName = xcfName } }
+    val xcfLibsDir = "${project.projectDir}/nativeInterop/libs/ios"
+
+    iosArm64 {
+        binaries.framework { baseName = xcfName }
+        compilations["main"].cinterops {
+            create("epos2") {
+                defFile = file("nativeInterop/cinterop/epos2.def")
+                includeDirs("$xcfLibsDir/libepos2.xcframework/ios-arm64_armv7/Headers")
+            }
+        }
+        binaries.all {
+            linkerOpts(
+                "-L$xcfLibsDir/libepos2.xcframework/ios-arm64_armv7",
+                "-lepos2",
+                "-framework", "CoreBluetooth",
+                "-framework", "ExternalAccessory",
+            )
+        }
+    }
+    iosX64 {
+        binaries.framework { baseName = xcfName }
+        compilations["main"].cinterops {
+            create("epos2") {
+                defFile = file("nativeInterop/cinterop/epos2.def")
+                includeDirs("$xcfLibsDir/libepos2.xcframework/ios-arm64_i386_x86_64-simulator/Headers")
+            }
+        }
+        binaries.all {
+            linkerOpts(
+                "-L$xcfLibsDir/libepos2.xcframework/ios-arm64_i386_x86_64-simulator",
+                "-lepos2",
+                "-framework", "CoreBluetooth",
+                "-framework", "ExternalAccessory",
+            )
+        }
+    }
+    iosSimulatorArm64 {
+        binaries.framework { baseName = xcfName }
+        compilations["main"].cinterops {
+            create("epos2") {
+                defFile = file("nativeInterop/cinterop/epos2.def")
+                includeDirs("$xcfLibsDir/libepos2.xcframework/ios-arm64_i386_x86_64-simulator/Headers")
+            }
+        }
+        binaries.all {
+            linkerOpts(
+                "-L$xcfLibsDir/libepos2.xcframework/ios-arm64_i386_x86_64-simulator",
+                "-lepos2",
+                "-framework", "CoreBluetooth",
+                "-framework", "ExternalAccessory",
+            )
+        }
+    }
 
     sourceSets {
         val commonMain by getting {

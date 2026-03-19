@@ -4,5 +4,21 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Required to discover and connect to Epson printers via Bluetooth.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Required to discover and connect to Epson printers on the local network.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_printer._tcp</string>
+		<string>_pdl-datastream._tcp</string>
+		<string>_ipp._tcp</string>
+		<string>_ipps._tcp</string>
+	</array>
 </dict>
 </plist>

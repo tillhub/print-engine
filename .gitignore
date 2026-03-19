@@ -127,3 +127,7 @@ DerivedData/
 .build/
 .swiftpm/
 # Package.resolved is intentionally NOT ignored — it is a lockfile for reproducible builds
+
+# Epson iOS SDK — binary artifact, not committed to git
+# Download script: see print-plugins/epson/nativeInterop/README.md
+print-plugins/epson/nativeInterop/libs/
