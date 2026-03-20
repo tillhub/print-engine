@@ -20,5 +20,9 @@
 		<string>_ipp._tcp</string>
 		<string>_ipps._tcp</string>
 	</array>
+	<key>UISupportedExternalAccessoryProtocols</key>
+	<array>
+		<string>com.epson.escpos</string>
+	</array>
 </dict>
 </plist>

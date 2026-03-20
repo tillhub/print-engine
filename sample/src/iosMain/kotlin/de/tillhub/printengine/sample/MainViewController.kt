@@ -40,6 +40,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
 
     val printers = remember { mutableStateListOf<ExternalPrinter>() }
     var initialized by remember { mutableStateOf(false) }
+    var discoveryStatus by remember { mutableStateOf("Searching for printers…") }
     val scope = rememberCoroutineScope()
 
     // Collect discovery flow on IO, but update Compose state on Main via flowOn
@@ -48,15 +49,20 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
             EpsonPrinterDiscovery(),
         ).flowOn(Dispatchers.IO).collect { state ->
             when (state) {
+                is DiscoveryState.Idle -> discoveryStatus = "Searching for printers…"
                 is DiscoveryState.Discovering -> {
                     printers.clear()
                     printers.addAll(state.printers)
+                    discoveryStatus = "Found ${state.printers.size} printer(s)"
                 }
                 is DiscoveryState.Finished -> {
                     printers.clear()
                     printers.addAll(state.printers)
+                    discoveryStatus = "Discovery done: ${state.printers.size} printer(s)"
                 }
-                else -> Unit
+                is DiscoveryState.Error -> {
+                    discoveryStatus = "Discovery error: ${state.message}"
+                }
             }
         }
     }
@@ -71,6 +77,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
         ) {
             PrinterLayout(
                 printState = printState,
+                discoveryStatus = discoveryStatus,
                 printers = printers,
                 onPrinterSelected = { selectedPrinter ->
                     scope.launch {
@@ -81,6 +88,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                                 }
                                 initialized = true
                             } catch (_: Exception) {
+                                discoveryStatus = "Failed to initialize printer"
                                 return@launch
                             }
                         }
