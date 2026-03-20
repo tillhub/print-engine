@@ -4,7 +4,6 @@ import com.epson.epos2.Epos2DeviceInfo
 import com.epson.epos2.Epos2Discovery
 import com.epson.epos2.Epos2DiscoveryDelegateProtocol
 import com.epson.epos2.Epos2FilterOption
-import kotlinx.cinterop.ExperimentalForeignApi
 import de.tillhub.printengine.data.ConnectionType
 import de.tillhub.printengine.data.DiscoveryState
 import de.tillhub.printengine.data.ExternalPrinter
@@ -13,6 +12,7 @@ import de.tillhub.printengine.data.PrinterServiceVersion
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.external.PrinterDiscovery
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +26,7 @@ actual class EpsonPrinterDiscovery : PrinterDiscovery {
     private companion object {
         const val CHARACTER_COUNT = 42
         const val MANUFACTURER_EPSON = "EPSON"
+
         // ePOS2.h enum values
         const val EPOS2_SUCCESS = 0
         const val EPOS2_PORTTYPE_ALL = 0
@@ -94,10 +95,8 @@ actual class EpsonPrinterDiscovery : PrinterDiscovery {
         )
     }
 
-    private fun String.toConnectionType(): ConnectionType =
-        ConnectionType.entries.find { it.value == this }
-            ?: ConnectionType.LAN
+    private fun String.toConnectionType(): ConnectionType = ConnectionType.entries.find { it.value == this }
+        ?: ConnectionType.LAN
 
-    private fun Epos2DeviceInfo.isValid(): Boolean =
-        deviceType == EPOS2_TYPE_PRINTER && !deviceName.isNullOrEmpty()
+    private fun Epos2DeviceInfo.isValid(): Boolean = deviceType == EPOS2_TYPE_PRINTER && !deviceName.isNullOrEmpty()
 }
