@@ -55,12 +55,11 @@ internal object EpsonPrinterErrorState {
         else -> PrinterState.Error.Epson.InternalError
     }
 
-    fun epsonStatusToState(code: Int, status: Epos2PrinterStatusInfo?): PrinterState =
-        when (code) {
-            EPOS2_CODE_SUCCESS -> PrinterState.Connected
-            EPOS2_CODE_PRINTING -> PrinterState.Busy
-            else -> if (status != null) evaluateStatusInfo(status) else PrinterState.Error.Epson.InternalError
-        }
+    fun epsonStatusToState(code: Int, status: Epos2PrinterStatusInfo?): PrinterState = when (code) {
+        EPOS2_CODE_SUCCESS -> PrinterState.Connected
+        EPOS2_CODE_PRINTING -> PrinterState.Busy
+        else -> if (status != null) evaluateStatusInfo(status) else PrinterState.Error.Epson.InternalError
+    }
 
     private fun evaluateStatusInfo(status: Epos2PrinterStatusInfo): PrinterState = when {
         status.online == EPOS2_FALSE -> PrinterState.Error.ConnectionLost
@@ -76,20 +75,20 @@ internal object EpsonPrinterErrorState {
         else -> PrinterState.Connected
     }
 
-    private fun handleUnrecoverableError(status: Epos2PrinterStatusInfo): PrinterState =
-        when (status.unrecoverError) {
-            EPOS2_LOW_VOLTAGE_ERR,
-            EPOS2_HIGH_VOLTAGE_ERR -> PrinterState.Error.VoltageTooLow
-            else -> PrinterState.Error.Malfunctions
-        }
+    private fun handleUnrecoverableError(status: Epos2PrinterStatusInfo): PrinterState = when (status.unrecoverError) {
+        EPOS2_LOW_VOLTAGE_ERR,
+        EPOS2_HIGH_VOLTAGE_ERR,
+        -> PrinterState.Error.VoltageTooLow
+        else -> PrinterState.Error.Malfunctions
+    }
 
-    private fun handleAutoRecoverableError(status: Epos2PrinterStatusInfo): PrinterState =
-        when (status.autoRecoverError) {
-            EPOS2_HEAD_OVERHEAT,
-            EPOS2_MOTOR_OVERHEAT,
-            EPOS2_BATTERY_OVERHEAT -> PrinterState.Error.Overheated
-            EPOS2_WRONG_PAPER -> PrinterState.Error.PaperAbnormal
-            EPOS2_COVER_OPEN -> PrinterState.Error.CoverNotClosed
-            else -> PrinterState.Error.Malfunctions
-        }
+    private fun handleAutoRecoverableError(status: Epos2PrinterStatusInfo): PrinterState = when (status.autoRecoverError) {
+        EPOS2_HEAD_OVERHEAT,
+        EPOS2_MOTOR_OVERHEAT,
+        EPOS2_BATTERY_OVERHEAT,
+        -> PrinterState.Error.Overheated
+        EPOS2_WRONG_PAPER -> PrinterState.Error.PaperAbnormal
+        EPOS2_COVER_OPEN -> PrinterState.Error.CoverNotClosed
+        else -> PrinterState.Error.Malfunctions
+    }
 }

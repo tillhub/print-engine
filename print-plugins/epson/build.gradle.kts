@@ -19,10 +19,11 @@ object EpsonSdk {
     const val DEVICE_SLICE = "ios-arm64_armv7"
     const val SIMULATOR_SLICE = "ios-arm64_i386_x86_64-simulator"
 
-    fun sliceFor(target: KonanTarget): String = when (target) {
-        KonanTarget.IOS_ARM64 -> DEVICE_SLICE
-        else -> SIMULATOR_SLICE
-    }
+    fun sliceFor(target: KonanTarget): String =
+        when (target) {
+            KonanTarget.IOS_ARM64 -> DEVICE_SLICE
+            else -> SIMULATOR_SLICE
+        }
 }
 
 val epsonXcframeworkDir = "${project.projectDir}/nativeInterop/libs/ios/libepos2.xcframework"
@@ -34,18 +35,29 @@ val downloadEpsonSdk by tasks.registering {
     onlyIf { !file(epsonXcframeworkDir).exists() }
 
     doLast {
-        val tmpDir = layout.buildDirectory.dir("tmp/epson-sdk").get().asFile
+        val tmpDir =
+            layout.buildDirectory
+                .dir("tmp/epson-sdk")
+                .get()
+                .asFile
         tmpDir.deleteRecursively()
         tmpDir.mkdirs()
 
         logger.lifecycle("Downloading Epson ePOS SDK v${EpsonSdk.VERSION} ...")
-        providers.exec {
-            commandLine(
-                "git", "clone", "--depth", "1",
-                "--branch", EpsonSdk.VERSION,
-                EpsonSdk.REPO, tmpDir.absolutePath,
-            )
-        }.result.get()
+        providers
+            .exec {
+                commandLine(
+                    "git",
+                    "clone",
+                    "--depth",
+                    "1",
+                    "--branch",
+                    EpsonSdk.VERSION,
+                    EpsonSdk.REPO,
+                    tmpDir.absolutePath,
+                )
+            }.result
+            .get()
 
         file(epsonXcframeworkDir).parentFile.mkdirs()
         copy {
@@ -54,7 +66,7 @@ val downloadEpsonSdk by tasks.registering {
         }
 
         tmpDir.deleteRecursively()
-        logger.lifecycle("Epson ePOS SDK installed at ${epsonXcframeworkDir}")
+        logger.lifecycle("Epson ePOS SDK installed at $epsonXcframeworkDir")
     }
 }
 
@@ -93,15 +105,17 @@ kotlin {
         compilations["main"].cinterops {
             create("epos2") {
                 definitionFile = file("nativeInterop/cinterop/epos2.def")
-                includeDirs("${epsonXcframeworkDir}/$slice/Headers")
+                includeDirs("$epsonXcframeworkDir/$slice/Headers")
             }
         }
         binaries.all {
             linkerOpts(
-                "-L${epsonXcframeworkDir}/$slice",
+                "-L$epsonXcframeworkDir/$slice",
                 "-lepos2",
-                "-framework", "CoreBluetooth",
-                "-framework", "ExternalAccessory",
+                "-framework",
+                "CoreBluetooth",
+                "-framework",
+                "ExternalAccessory",
             )
         }
     }
