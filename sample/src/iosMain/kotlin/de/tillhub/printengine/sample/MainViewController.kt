@@ -3,6 +3,7 @@ package de.tillhub.printengine.sample
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -13,14 +14,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeUIViewController
 import de.tillhub.printengine.PrintEngine
+import de.tillhub.printengine.data.DiscoveryState
 import de.tillhub.printengine.data.ExternalPrinter
 import de.tillhub.printengine.data.PrintCommand
 import de.tillhub.printengine.data.PrintJob
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingIntensity
+import de.tillhub.printengine.epson.EpsonPrinterDiscovery
 import de.tillhub.printengine.epson.EpsonServiceProvider
 import de.tillhub.printengine.sample.ui.PrinterLayout
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import platform.UIKit.UIViewController
 
@@ -34,7 +40,32 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
 
     val printers = remember { mutableStateListOf<ExternalPrinter>() }
     var initialized by remember { mutableStateOf(false) }
+    var discoveryStatus by remember { mutableStateOf("Searching for printers…") }
     val scope = rememberCoroutineScope()
+
+    // Collect discovery flow on IO, but update Compose state on Main via flowOn
+    LaunchedEffect(Unit) {
+        printEngine.discoverExternalPrinters(
+            EpsonPrinterDiscovery(),
+        ).flowOn(Dispatchers.IO).collect { state ->
+            when (state) {
+                is DiscoveryState.Idle -> discoveryStatus = "Searching for printers…"
+                is DiscoveryState.Discovering -> {
+                    printers.clear()
+                    printers.addAll(state.printers)
+                    discoveryStatus = "Found ${state.printers.size} printer(s)"
+                }
+                is DiscoveryState.Finished -> {
+                    printers.clear()
+                    printers.addAll(state.printers)
+                    discoveryStatus = "Discovery done: ${state.printers.size} printer(s)"
+                }
+                is DiscoveryState.Error -> {
+                    discoveryStatus = "Discovery error: ${state.message}"
+                }
+            }
+        }
+    }
 
     val printState by printEngine.printer.printerState
         .collectAsState(PrinterState.CheckingForPrinter)
@@ -46,6 +77,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
         ) {
             PrinterLayout(
                 printState = printState,
+                discoveryStatus = discoveryStatus,
                 printers = printers,
                 onPrinterSelected = { selectedPrinter ->
                     scope.launch {
@@ -56,6 +88,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                                 }
                                 initialized = true
                             } catch (_: Exception) {
+                                discoveryStatus = "Failed to initialize printer"
                                 return@launch
                             }
                         }
