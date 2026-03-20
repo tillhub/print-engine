@@ -1,6 +1,6 @@
 package de.tillhub.printengine
 
-import de.tillhub.printengine.data.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType

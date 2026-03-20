@@ -1,6 +1,8 @@
 package de.tillhub.printengine.verifone
 
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import com.verifone.peripherals.DirectPrintManager
 import com.verifone.peripherals.Printer
 import de.tillhub.printengine.PrinterController
@@ -29,14 +31,16 @@ import kotlinx.coroutines.flow.first
 internal class VerifonePrintControllerTest :
     DescribeSpec({
 
-        lateinit var bitmap: Bitmap
+        lateinit var androidBitmap: Bitmap
+        lateinit var bitmap: ImageBitmap
         lateinit var printManager: DirectPrintManager
         lateinit var printerState: MutableStateFlow<PrinterState>
         lateinit var barcodeEncoder: BarcodeEncoder
         lateinit var printerController: PrinterController
 
         beforeSpec {
-            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+            androidBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+            bitmap = androidBitmap.asImageBitmap()
         }
 
         beforeTest {
@@ -60,7 +64,7 @@ internal class VerifonePrintControllerTest :
         }
 
         afterSpec {
-            bitmap.recycle()
+            androidBitmap.recycle()
         }
 
         it("observePrinterState") {

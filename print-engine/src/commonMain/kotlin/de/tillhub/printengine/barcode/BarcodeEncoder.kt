@@ -1,6 +1,6 @@
 package de.tillhub.printengine.barcode
 
-import de.tillhub.printengine.data.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 
 interface BarcodeEncoder {
     fun encodeAsBitmap(

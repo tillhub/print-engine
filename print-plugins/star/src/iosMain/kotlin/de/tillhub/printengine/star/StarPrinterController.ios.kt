@@ -1,7 +1,7 @@
 package de.tillhub.printengine.star
 
+import androidx.compose.ui.graphics.ImageBitmap
 import de.tillhub.printengine.PrinterController
-import de.tillhub.printengine.data.ImageBitmap
 import de.tillhub.printengine.data.PrinterInfo
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
