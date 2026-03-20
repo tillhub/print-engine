@@ -30,7 +30,6 @@ fun PrinterLayout(
     printState: PrinterState,
     printers: List<ExternalPrinter>,
     onPrinterSelected: (ExternalPrinter?) -> Unit,
-    discoveryStatus: String? = null,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -42,14 +41,6 @@ fun PrinterLayout(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyLarge,
         )
-        if (discoveryStatus != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = discoveryStatus,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
         Spacer(modifier = Modifier.height(36.dp))
         Button(onClick = { onPrinterSelected(null) }) {
             Text(text = "Print sample job")
