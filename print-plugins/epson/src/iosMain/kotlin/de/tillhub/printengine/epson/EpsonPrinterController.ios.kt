@@ -9,19 +9,15 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.RawPrinterData
+import de.tillhub.printengine.data.encodeToPngBytes
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.jetbrains.skia.Bitmap as SkiaBitmap
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image as SkiaImage
-import org.jetbrains.skia.ImageInfo
 import platform.Foundation.NSData
 import platform.Foundation.create
 import platform.UIKit.UIImage
-import platform.posix.memcpy
 
 @Suppress("TooManyFunctions")
 @OptIn(ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
@@ -32,99 +28,135 @@ internal actual class EpsonPrinterController(
 ) : PrinterController {
 
     actual override fun sendRawData(data: RawPrinterData) = executeEpsonCommand {
-        epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER)
-        epsonPrinter.addCommand(data.bytes.toNSData())
+        checkSdkResult(epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER), "addTextAlign")
+        checkSdkResult(epsonPrinter.addCommand(data.bytes.toNSData()), "addCommand")
     }
 
     actual override fun observePrinterState(): Flow<PrinterState> = printerState
 
     actual override fun setFontSize(fontSize: PrintingFontType) = executeEpsonCommand {
-        epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER)
-        epsonPrinter.addTextFont(
-            when (fontSize) {
-                PrintingFontType.DEFAULT_FONT_SIZE -> EPOS2_FONT_A
-            },
+        checkSdkResult(epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER), "addTextAlign")
+        checkSdkResult(
+            epsonPrinter.addTextFont(
+                when (fontSize) {
+                    PrintingFontType.DEFAULT_FONT_SIZE -> EPOS2_FONT_A
+                },
+            ),
+            "addTextFont",
         )
     }
 
     actual override fun printText(text: String) = executeEpsonCommand {
-        epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER)
-        epsonPrinter.addText("$text\n")
+        checkSdkResult(epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER), "addTextAlign")
+        checkSdkResult(epsonPrinter.addText("$text\n"), "addText")
     }
 
     actual override fun printBarcode(barcode: String) = executeEpsonCommand {
-        epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER)
+        checkSdkResult(epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER), "addTextAlign")
         // "{B" forces Code Set B — same convention as Android
-        epsonPrinter.addBarcode(
-            "{B$barcode",
-            EPOS2_BARCODE_CODE128,
-            EPOS2_HRI_BELOW,
-            EPOS2_FONT_A,
-            BARCODE_MODULE_WIDTH.toLong(),
-            BARCODE_HEIGHT.toLong(),
+        checkSdkResult(
+            epsonPrinter.addBarcode(
+                "{B$barcode",
+                EPOS2_BARCODE_CODE128,
+                EPOS2_HRI_BELOW,
+                EPOS2_FONT_A,
+                BARCODE_MODULE_WIDTH.toLong(),
+                BARCODE_HEIGHT.toLong(),
+            ),
+            "addBarcode",
         )
-        epsonPrinter.addFeedLine(THREE_FEED_LINES.toLong())
+        checkSdkResult(epsonPrinter.addFeedLine(THREE_FEED_LINES.toLong()), "addFeedLine")
     }
 
     actual override fun printQr(qrData: String) = executeEpsonCommand {
-        epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER)
-        epsonPrinter.addSymbol(
-            qrData,
-            EPOS2_SYMBOL_QRCODE_MODEL_1,
-            EPOS2_LEVEL_M,
-            QR_DIMENSION.toLong(),
-            QR_DIMENSION.toLong(),
-            EPOS2_PARAM_UNSPECIFIED.toLong(),
+        checkSdkResult(epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER), "addTextAlign")
+        checkSdkResult(
+            epsonPrinter.addSymbol(
+                qrData,
+                EPOS2_SYMBOL_QRCODE_MODEL_1,
+                EPOS2_LEVEL_M,
+                QR_DIMENSION.toLong(),
+                QR_DIMENSION.toLong(),
+                EPOS2_PARAM_UNSPECIFIED.toLong(),
+            ),
+            "addSymbol",
         )
     }
 
     actual override fun printImage(image: ImageBitmap) = executeEpsonCommand {
-        epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER)
+        checkSdkResult(epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER), "addTextAlign")
         val uiImage = image.toUIImage() ?: return@executeEpsonCommand
-        epsonPrinter.addImage(
-            uiImage,
-            IMAGE_START_XY.toLong(),
-            IMAGE_START_XY.toLong(),
-            image.width.toLong(),
-            image.height.toLong(),
-            EPOS2_COLOR_1,
-            EPOS2_MODE_MONO,
-            EPOS2_HALFTONE_DITHER,
-            IMAGE_BRIGHTNESS,
-            EPOS2_COMPRESS_AUTO,
+        checkSdkResult(
+            epsonPrinter.addImage(
+                uiImage,
+                IMAGE_START_XY.toLong(),
+                IMAGE_START_XY.toLong(),
+                image.width.toLong(),
+                image.height.toLong(),
+                EPOS2_COLOR_1,
+                EPOS2_MODE_MONO,
+                EPOS2_HALFTONE_DITHER,
+                IMAGE_BRIGHTNESS,
+                EPOS2_COMPRESS_AUTO,
+            ),
+            "addImage",
         )
     }
 
     actual override fun feedPaper() = executeEpsonCommand {
-        epsonPrinter.addFeedLine(ONE_FEED_LINE.toLong())
+        checkSdkResult(epsonPrinter.addFeedLine(ONE_FEED_LINE.toLong()), "addFeedLine")
     }
 
     actual override fun cutPaper() = executeEpsonCommand {
-        epsonPrinter.addCut(EPOS2_CUT_NO_FEED)
+        checkSdkResult(epsonPrinter.addCut(EPOS2_CUT_NO_FEED), "addCut")
     }
 
     actual override fun setIntensity(intensity: PrintingIntensity) = Unit
 
     actual override fun start() {
+        var connected = false
         executeEpsonCommand {
             val status = epsonPrinter.getStatus()
             if (status?.connection != EPOS2_TRUE) {
-                epsonPrinter.connect(printerData.getTarget(), EPOS2_PARAM_DEFAULT.toLong())
+                checkSdkResult(
+                    epsonPrinter.connect(printerData.getTarget(), EPOS2_PARAM_DEFAULT.toLong()),
+                    "connect",
+                )
             }
-            epsonPrinter.addTextAlign(EPOS2_ALIGN_CENTER)
-            epsonPrinter.sendData(EPOS2_PARAM_DEFAULT.toLong())
+            connected = true
+            checkSdkResult(epsonPrinter.sendData(EPOS2_PARAM_DEFAULT.toLong()), "sendData")
         }
         epsonPrinter.clearCommandBuffer()
-        epsonPrinter.disconnect()
+        if (connected) {
+            try {
+                epsonPrinter.disconnect()
+            } catch (_: Exception) {
+                // Disconnect failure is non-critical; connection will be re-established next print
+            }
+        }
     }
 
     actual override suspend fun getPrinterInfo(): PrinterInfo = printerData.info
 
+    /**
+     * Checks an Epson SDK return code and throws [EpsonSdkException] on failure.
+     * iOS SDK methods return int codes (0 = success) rather than throwing exceptions,
+     * so we must check every return value explicitly.
+     */
+    private fun checkSdkResult(result: Int, operation: String) {
+        if (result != EPOS2_SUCCESS) {
+            throw EpsonSdkException(result, operation)
+        }
+    }
+
     private fun executeEpsonCommand(command: () -> Unit) {
         try {
             command.invoke()
+        } catch (e: EpsonSdkException) {
+            printerState.value = EpsonPrinterErrorState.epsonErrorStatusToState(e.errorCode)
+            epsonPrinter.clearCommandBuffer()
         } catch (e: Exception) {
-            printerState.value = EpsonPrinterErrorState.epsonExceptionToState(e)
+            printerState.value = PrinterState.Error.Epson.InternalError
             epsonPrinter.clearCommandBuffer()
         }
     }
@@ -141,55 +173,47 @@ internal actual class EpsonPrinterController(
 
     @OptIn(ExperimentalForeignApi::class)
     private fun ImageBitmap.toUIImage(): UIImage? {
-        val w = width
-        val h = height
-        val buffer = IntArray(w * h)
-        readPixels(buffer)
-
-        val bytes = ByteArray(buffer.size * 4)
-        buffer.usePinned { src ->
-            bytes.usePinned { dst ->
-                memcpy(dst.addressOf(0), src.addressOf(0), bytes.size.toULong())
-            }
-        }
-
-        val imageInfo = ImageInfo.makeN32Premul(w, h)
-        val skiaBitmap = SkiaBitmap().apply {
-            allocPixels(imageInfo)
-            installPixels(imageInfo, bytes, w * 4)
-        }
-        val skiaImage = SkiaImage.makeFromBitmap(skiaBitmap)
-        val pngData = skiaImage.encodeToData(EncodedImageFormat.PNG) ?: return null
-
-        val nsData = pngData.bytes.usePinned { pinned ->
-            NSData.create(bytes = pinned.addressOf(0), length = pngData.bytes.size.toULong())
+        val pngBytes = encodeToPngBytes() ?: return null
+        val nsData = pngBytes.usePinned { pinned ->
+            NSData.create(bytes = pinned.addressOf(0), length = pngBytes.size.toULong())
         }
         return UIImage(data = nsData)
     }
 
     private companion object {
-        const val QR_DIMENSION          = 240
-        const val BARCODE_HEIGHT        = 100
-        const val BARCODE_MODULE_WIDTH  = 3
-        const val ONE_FEED_LINE         = 1
-        const val THREE_FEED_LINES      = 3
-        const val IMAGE_BRIGHTNESS      = 1.0
-        const val IMAGE_START_XY        = 0
+        const val EPOS2_SUCCESS = 0
 
-        // Constants matching ePOS2.h enum values
-        const val EPOS2_TRUE            = 1
-        const val EPOS2_PARAM_DEFAULT   = -2
+        const val QR_DIMENSION = 240
+        const val BARCODE_HEIGHT = 100
+        const val BARCODE_MODULE_WIDTH = 3
+        const val ONE_FEED_LINE = 1
+        const val THREE_FEED_LINES = 3
+        const val IMAGE_BRIGHTNESS = 1.0
+        const val IMAGE_START_XY = 0
+
+        // ePOS2.h enum values
+        const val EPOS2_TRUE = 1
+        const val EPOS2_PARAM_DEFAULT = -2
         const val EPOS2_PARAM_UNSPECIFIED = -1
-        const val EPOS2_ALIGN_CENTER    = 1
-        const val EPOS2_FONT_A          = 0
-        const val EPOS2_COLOR_1         = 1
-        const val EPOS2_MODE_MONO       = 0
+        const val EPOS2_ALIGN_CENTER = 1
+        const val EPOS2_FONT_A = 0
+        const val EPOS2_COLOR_1 = 1
+        const val EPOS2_MODE_MONO = 0
         const val EPOS2_HALFTONE_DITHER = 0
-        const val EPOS2_COMPRESS_AUTO   = 2
+        const val EPOS2_COMPRESS_AUTO = 2
         const val EPOS2_BARCODE_CODE128 = 10
-        const val EPOS2_HRI_BELOW       = 2
-        const val EPOS2_SYMBOL_QRCODE_MODEL_1 = 2  // EPOS2_SYMBOL_QRCODE_MODEL_1 (PDF417_STANDARD=0, PDF417_TRUNCATED=1, QRCODE_MODEL_1=2)
-        const val EPOS2_LEVEL_M         = 10 // EPOS2_LEVEL_M (LEVEL_0..LEVEL_8=0..8, LEVEL_L=9, LEVEL_M=10)
-        const val EPOS2_CUT_NO_FEED     = 1
+        const val EPOS2_HRI_BELOW = 2
+        const val EPOS2_SYMBOL_QRCODE_MODEL_1 = 2
+        const val EPOS2_LEVEL_M = 10
+        const val EPOS2_CUT_NO_FEED = 1
     }
 }
+
+/**
+ * Exception thrown when an Epson SDK method returns a non-zero error code on iOS.
+ * On Android, the SDK throws Epos2Exception directly; on iOS, we must check return values.
+ */
+internal class EpsonSdkException(
+    val errorCode: Int,
+    val operation: String,
+) : Exception("Epson SDK $operation failed with error code: $errorCode")

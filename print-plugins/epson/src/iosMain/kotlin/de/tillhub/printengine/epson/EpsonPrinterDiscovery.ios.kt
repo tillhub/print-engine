@@ -26,10 +26,11 @@ actual class EpsonPrinterDiscovery : PrinterDiscovery {
     private companion object {
         const val CHARACTER_COUNT = 42
         const val MANUFACTURER_EPSON = "EPSON"
-        // ePOS2.h: EPOS2_PORTTYPE_ALL=0, EPOS2_TYPE_PRINTER=1 (first after TYPE_ALL=0), EPOS2_MODEL_ALL=0
+        // ePOS2.h enum values
+        const val EPOS2_SUCCESS = 0
         const val EPOS2_PORTTYPE_ALL = 0
         const val EPOS2_TYPE_PRINTER = 1
-        const val EPOS2_MODEL_ALL    = 0
+        const val EPOS2_MODEL_ALL = 0
     }
 
     actual override val observePrinters: Flow<DiscoveryState>
@@ -39,11 +40,12 @@ actual class EpsonPrinterDiscovery : PrinterDiscovery {
             val discoveredPrinters = mutableMapOf<String, ExternalPrinter>()
 
             val filterOption = Epos2FilterOption().apply {
-                portType    = EPOS2_PORTTYPE_ALL
-                deviceType  = EPOS2_TYPE_PRINTER
+                portType = EPOS2_PORTTYPE_ALL
+                deviceType = EPOS2_TYPE_PRINTER
                 deviceModel = EPOS2_MODEL_ALL
             }
 
+            // Epson SDK dispatches onDiscovery callbacks sequentially on its internal thread
             val discoveryDelegate = object : NSObject(), Epos2DiscoveryDelegateProtocol {
                 override fun onDiscovery(deviceInfo: Epos2DeviceInfo?) {
                     val info = deviceInfo ?: return
@@ -63,6 +65,9 @@ actual class EpsonPrinterDiscovery : PrinterDiscovery {
 
             awaitClose {
                 Epos2Discovery.stop()
+                // Reference delegate to prevent Kotlin/Native GC from collecting it
+                // while the Epson SDK still holds a weak reference to it
+                discoveryDelegate.hashCode()
             }
         }
 
@@ -70,22 +75,22 @@ actual class EpsonPrinterDiscovery : PrinterDiscovery {
         val target = deviceInfo.target ?: ""
         val dividerIdx = target.indexOf(':')
         val protocol = if (dividerIdx >= 0) target.substring(0, dividerIdx) else ""
-        val address  = if (dividerIdx >= 0) target.substring(dividerIdx + 1) else target
+        val address = if (dividerIdx >= 0) target.substring(dividerIdx + 1) else target
 
         return ExternalPrinter(
             info = PrinterInfo(
-                serialNumber       = "n/a",
-                deviceModel        = deviceInfo.deviceName ?: "",
-                printerVersion     = "n/a",
-                printerPaperSpec   = PrintingPaperSpec.External(CHARACTER_COUNT),
-                printingFontType   = PrintingFontType.DEFAULT_FONT_SIZE,
-                printerHead        = "n/a",
-                printedDistance    = 0,
-                serviceVersion     = PrinterServiceVersion.Unknown,
+                serialNumber = "n/a",
+                deviceModel = deviceInfo.deviceName ?: "",
+                printerVersion = "n/a",
+                printerPaperSpec = PrintingPaperSpec.External(CHARACTER_COUNT),
+                printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
+                printerHead = "n/a",
+                printedDistance = 0,
+                serviceVersion = PrinterServiceVersion.Unknown,
             ),
-            manufacturer       = MANUFACTURER_EPSON,
-            connectionAddress  = address,
-            connectionType     = protocol.toConnectionType(),
+            manufacturer = MANUFACTURER_EPSON,
+            connectionAddress = address,
+            connectionType = protocol.toConnectionType(),
         )
     }
 
@@ -95,7 +100,4 @@ actual class EpsonPrinterDiscovery : PrinterDiscovery {
 
     private fun Epos2DeviceInfo.isValid(): Boolean =
         deviceType == EPOS2_TYPE_PRINTER && !deviceName.isNullOrEmpty()
-
-    // ePOS2.h: EPOS2_SUCCESS = 0 (first value in Epos2ErrorStatus enum)
-    private val EPOS2_SUCCESS = 0
 }

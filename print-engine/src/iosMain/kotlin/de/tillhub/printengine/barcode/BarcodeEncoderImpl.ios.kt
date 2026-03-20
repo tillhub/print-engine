@@ -92,7 +92,12 @@ internal actual class BarcodeEncoderImpl : BarcodeEncoder {
         // Convert NSData → ByteArray → Skia Image → Compose ImageBitmap
         val bytes = pngData.toByteArray()
         return try {
-            SkiaImage.makeFromEncoded(bytes).toComposeImageBitmap()
+            val skiaImage = SkiaImage.makeFromEncoded(bytes)
+            try {
+                skiaImage.toComposeImageBitmap()
+            } finally {
+                skiaImage.close()
+            }
         } catch (e: Exception) {
             Logger.e("Failed to decode barcode image", e)
             null
@@ -101,8 +106,8 @@ internal actual class BarcodeEncoderImpl : BarcodeEncoder {
 
     /**
      * Creates a CIFilter via ObjC runtime +[CIFilter filterWithName:].
-     * K/N bindings don't expose this factory method, so we call it
-     * via performSelector on the CIFilter class object.
+     * K/N bindings only expose CIFilter() and CIFilter(coder:) constructors,
+     * so we must call the factory class method via performSelector.
      */
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
     @Suppress("UNCHECKED_CAST")

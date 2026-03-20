@@ -89,7 +89,10 @@ internal actual class EpsonPrintService(
         "EU-M30"              -> EPOS2_TM_M30
         "SB-H50"              -> EPOS2_TM_T88
         "TM PRINTER", ""      -> EPOS2_TM_T88
-        else -> throw IllegalArgumentException("Unsupported printer type: $this")
+        else -> {
+            logger.w { "Unknown printer model '$this', falling back to TM-T88" }
+            EPOS2_TM_T88
+        }
     }
 
     // SDK 2.23.1 series constants (values match the NS_ENUM order in ePOS2.h)

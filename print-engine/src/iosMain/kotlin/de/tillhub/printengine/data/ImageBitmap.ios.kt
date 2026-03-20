@@ -12,12 +12,17 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 import org.jetbrains.skia.Bitmap as SkiaBitmap
 import org.jetbrains.skia.Image as SkiaImage
 
-@OptIn(ExperimentalEncodingApi::class, ExperimentalForeignApi::class)
-actual fun ImageBitmap.encodeToBase64(): String {
-    val width = this.width
-    val height = this.height
-    val buffer = IntArray(width * height)
-    this.readPixels(buffer)
+/**
+ * Encodes a Compose [ImageBitmap] to PNG bytes via Skia.
+ * Handles pixel extraction, Skia bitmap/image lifecycle, and cleanup.
+ * Returns null if PNG encoding fails.
+ */
+@OptIn(ExperimentalForeignApi::class)
+fun ImageBitmap.encodeToPngBytes(): ByteArray? {
+    val w = width
+    val h = height
+    val buffer = IntArray(w * h)
+    readPixels(buffer)
 
     // On little-endian (all Apple platforms), raw int bytes are already in
     // BGRA order which matches Skia's N32 native format — memcpy directly.
@@ -28,15 +33,27 @@ actual fun ImageBitmap.encodeToBase64(): String {
         }
     }
 
-    val imageInfo = ImageInfo.makeN32Premul(width, height)
+    val imageInfo = ImageInfo.makeN32Premul(w, h)
     val skiaBitmap = SkiaBitmap().apply {
         allocPixels(imageInfo)
-        installPixels(imageInfo, bytes, width * 4)
+        installPixels(imageInfo, bytes, w * 4)
     }
 
-    val skiaImage = SkiaImage.makeFromBitmap(skiaBitmap)
-    val pngData = skiaImage.encodeToData(EncodedImageFormat.PNG)
-        ?: error("Failed to encode image to PNG")
+    return try {
+        val skiaImage = SkiaImage.makeFromBitmap(skiaBitmap)
+        try {
+            skiaImage.encodeToData(EncodedImageFormat.PNG)?.bytes
+        } finally {
+            skiaImage.close()
+        }
+    } finally {
+        skiaBitmap.close()
+    }
+}
 
-    return Base64.encode(pngData.bytes)
+@OptIn(ExperimentalEncodingApi::class)
+actual fun ImageBitmap.encodeToBase64(): String {
+    val pngBytes = encodeToPngBytes()
+        ?: error("Failed to encode image to PNG")
+    return Base64.encode(pngBytes)
 }
