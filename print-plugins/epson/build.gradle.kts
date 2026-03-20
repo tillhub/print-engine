@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.konan.target.KonanTarget
 
 plugins {
     alias(libs.plugins.androidLibrary)
@@ -8,14 +9,65 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
+object EpsonSdk {
+    const val VERSION = "2.23.1"
+    const val REPO = "https://github.com/popina/EpsonSDK.git"
+    const val FRAMEWORK_NAME = "print-engine-epson"
+
+    // DEVICE_SLICE  → all physical iPhones/iPads (arm64 + legacy armv7)
+    // SIMULATOR_SLICE → Xcode Simulator on Intel & Apple Silicon Macs
+    const val DEVICE_SLICE = "ios-arm64_armv7"
+    const val SIMULATOR_SLICE = "ios-arm64_i386_x86_64-simulator"
+
+    fun sliceFor(target: KonanTarget): String = when (target) {
+        KonanTarget.IOS_ARM64 -> DEVICE_SLICE
+        else -> SIMULATOR_SLICE
+    }
+}
+
+val epsonXcframeworkDir = "${project.projectDir}/nativeInterop/libs/ios/libepos2.xcframework"
+
+val downloadEpsonSdk by tasks.registering {
+    group = "setup"
+    description = "Downloads Epson ePOS SDK xcframework if not already present"
+    outputs.dir(epsonXcframeworkDir)
+    onlyIf { !file(epsonXcframeworkDir).exists() }
+
+    doLast {
+        val tmpDir = layout.buildDirectory.dir("tmp/epson-sdk").get().asFile
+        tmpDir.deleteRecursively()
+        tmpDir.mkdirs()
+
+        logger.lifecycle("Downloading Epson ePOS SDK v${EpsonSdk.VERSION} ...")
+        providers.exec {
+            commandLine(
+                "git", "clone", "--depth", "1",
+                "--branch", EpsonSdk.VERSION,
+                EpsonSdk.REPO, tmpDir.absolutePath,
+            )
+        }.result.get()
+
+        file(epsonXcframeworkDir).parentFile.mkdirs()
+        copy {
+            from("${tmpDir.absolutePath}/libepos2.xcframework")
+            into(epsonXcframeworkDir)
+        }
+
+        tmpDir.deleteRecursively()
+        logger.lifecycle("Epson ePOS SDK installed at ${epsonXcframeworkDir}")
+    }
+}
+
+tasks.configureEach {
+    if (name.startsWith("cinteropEpos2")) dependsOn(downloadEpsonSdk)
+}
+
 kotlin {
     compilerOptions {
-        // removes warnings for expect/actual classes
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
     androidTarget {
-        // Keep JVM target consistent with Java 17
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
@@ -23,76 +75,40 @@ kotlin {
         publishLibraryVariants("release")
 
         dependencies {
-            // Core Dependencies
             implementation(libs.androidx.core)
             coreLibraryDesugaring(libs.android.desugarJdkLibs)
-
             implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-            // Unit tests
             testImplementation(libs.bundles.testing)
             testImplementation(libs.bundles.robolectric)
 
-            // Android tests
             androidTestImplementation(libs.bundles.testing)
             androidTestImplementation(libs.bundles.testing.android)
         }
     }
 
-    val xcfName = "print-engine-epson"
-    val xcfLibsDir = "${project.projectDir}/nativeInterop/libs/ios"
+    fun org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget.configureEpsonInterop() {
+        val slice = EpsonSdk.sliceFor(konanTarget)
+        binaries.framework { baseName = EpsonSdk.FRAMEWORK_NAME }
+        compilations["main"].cinterops {
+            create("epos2") {
+                definitionFile = file("nativeInterop/cinterop/epos2.def")
+                includeDirs("${epsonXcframeworkDir}/$slice/Headers")
+            }
+        }
+        binaries.all {
+            linkerOpts(
+                "-L${epsonXcframeworkDir}/$slice",
+                "-lepos2",
+                "-framework", "CoreBluetooth",
+                "-framework", "ExternalAccessory",
+            )
+        }
+    }
 
-    iosArm64 {
-        binaries.framework { baseName = xcfName }
-        compilations["main"].cinterops {
-            create("epos2") {
-                defFile = file("nativeInterop/cinterop/epos2.def")
-                includeDirs("$xcfLibsDir/libepos2.xcframework/ios-arm64_armv7/Headers")
-            }
-        }
-        binaries.all {
-            linkerOpts(
-                "-L$xcfLibsDir/libepos2.xcframework/ios-arm64_armv7",
-                "-lepos2",
-                "-framework", "CoreBluetooth",
-                "-framework", "ExternalAccessory",
-            )
-        }
-    }
-    iosX64 {
-        binaries.framework { baseName = xcfName }
-        compilations["main"].cinterops {
-            create("epos2") {
-                defFile = file("nativeInterop/cinterop/epos2.def")
-                includeDirs("$xcfLibsDir/libepos2.xcframework/ios-arm64_i386_x86_64-simulator/Headers")
-            }
-        }
-        binaries.all {
-            linkerOpts(
-                "-L$xcfLibsDir/libepos2.xcframework/ios-arm64_i386_x86_64-simulator",
-                "-lepos2",
-                "-framework", "CoreBluetooth",
-                "-framework", "ExternalAccessory",
-            )
-        }
-    }
-    iosSimulatorArm64 {
-        binaries.framework { baseName = xcfName }
-        compilations["main"].cinterops {
-            create("epos2") {
-                defFile = file("nativeInterop/cinterop/epos2.def")
-                includeDirs("$xcfLibsDir/libepos2.xcframework/ios-arm64_i386_x86_64-simulator/Headers")
-            }
-        }
-        binaries.all {
-            linkerOpts(
-                "-L$xcfLibsDir/libepos2.xcframework/ios-arm64_i386_x86_64-simulator",
-                "-lepos2",
-                "-framework", "CoreBluetooth",
-                "-framework", "ExternalAccessory",
-            )
-        }
-    }
+    iosArm64 { configureEpsonInterop() }
+    iosX64 { configureEpsonInterop() }
+    iosSimulatorArm64 { configureEpsonInterop() }
 
     sourceSets {
         val commonMain by getting {

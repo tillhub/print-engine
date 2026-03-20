@@ -24,9 +24,6 @@ import de.tillhub.printengine.epson.EpsonPrinterDiscovery
 import de.tillhub.printengine.epson.EpsonServiceProvider
 import de.tillhub.printengine.sample.ui.PrinterLayout
 import de.tillhub.printengine.sample.ui.theme.TillhubPrintEngineTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import platform.UIKit.UIViewController
 
@@ -43,11 +40,10 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     var discoveryStatus by remember { mutableStateOf("Searching for printers…") }
     val scope = rememberCoroutineScope()
 
-    // Collect discovery flow on IO, but update Compose state on Main via flowOn
     LaunchedEffect(Unit) {
         printEngine.discoverExternalPrinters(
             EpsonPrinterDiscovery(),
-        ).flowOn(Dispatchers.IO).collect { state ->
+        ).collect { state ->
             when (state) {
                 is DiscoveryState.Idle -> discoveryStatus = "Searching for printers…"
                 is DiscoveryState.Discovering -> {
