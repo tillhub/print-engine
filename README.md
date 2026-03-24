@@ -70,6 +70,23 @@ dependencies {
 }
 ```
 
+### Compose UI (required for image printing)
+
+If you use `PrintCommand.Image`, you need to add Compose UI to your project since `ImageBitmap` is
+part of the API:
+
+```kotlin
+// build.gradle.kts
+plugins {
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.compose")
+}
+
+dependencies {
+    implementation(compose.ui)
+}
+```
+
 ### Android-specific setup
 
 **Step 3.** Enable JNI legacy packaging
@@ -81,6 +98,9 @@ packaging {
     }
 }
 ```
+
+> **Note:** ProGuard/R8 consumer rules are applied automatically — no manual ProGuard configuration
+> is needed.
 
 # Usage
 
@@ -264,10 +284,10 @@ Supports Android and iOS.
 
 #### Installation
 
-Add to your `build.gradle`
+See [Maven Central setup](#maven-central-recommended) above for the correct coordinates, or via JitPack:
 
    ```gradle
-   implementation 'com.tillhub.printengine:star-printer:1.0.0'
+   implementation 'com.github.tillhub:print-engine:x.x.x'
    ```
 
 #### Setup & Usage
@@ -356,12 +376,14 @@ Add to your `build.gradle`
 A library for integrating Epson printers using the ePOS2 lib.
 Supports Android and iOS.
 
+> **Note:** On iOS, the Epson ePOS2 SDK (~68 MB) is automatically downloaded on the first build.
+
 #### Installation
 
-Add to your `build.gradle`
+See [Maven Central setup](#maven-central-recommended) above for the correct coordinates, or via JitPack:
 
    ```gradle
-   implementation 'com.tillhub.printengine:epson-printer:1.0.0'
+   implementation 'com.github.tillhub:print-engine:x.x.x'
    ```
 
 #### Setup & Usage
