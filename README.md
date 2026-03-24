@@ -1,4 +1,3 @@
-[![](https://jitpack.io/v/tillhub/print-engine.svg)](https://jitpack.io/#tillhub/print-engine)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.tillhub/print-engine-core.svg)](https://central.sonatype.com/artifact/io.github.tillhub/print-engine-core)
 [![API](https://img.shields.io/badge/API-24%2B-green.svg?style=flat)](https://android-arsenal.com/api?level=24)
 
@@ -15,8 +14,6 @@ Built as a Kotlin Multiplatform (KMP) library, it supports both Android and iOS 
 | iOS      | — | Star, Epson |
 
 # How to setup
-
-### Maven Central (recommended)
 
 **Step 1.** Add Maven Central to your repository list:
 
@@ -48,32 +45,7 @@ dependencies {
 }
 ```
 
-### JitPack (legacy)
-
-**Step 1.** Add the JitPack repository to your `settings.gradle` file:
-
-```groovy
-dependencyResolutionManagement {
-    repositories {
-        ...
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-    }
-}
-```
-
-**Step 2.** Add the dependency to your app `build.gradle`:
-
-```groovy
-dependencies {
-    implementation 'com.github.tillhub:print-engine:x.x.x'
-}
-```
-
-### Compose UI (required for image printing)
-
-If you use `PrintCommand.Image`, you need to add Compose UI to your project since `ImageBitmap` is
-part of the API:
+**Step 3.** If you use `PrintCommand.Image`, add Compose UI since `ImageBitmap` is part of the API:
 
 ```kotlin
 // build.gradle.kts
@@ -87,20 +59,20 @@ dependencies {
 }
 ```
 
-### Android-specific setup
+**Step 4.** Enable JNI legacy packaging (Android only):
 
-**Step 3.** Enable JNI legacy packaging
-
-```groovy
-packaging {
-    jniLibs {
-        useLegacyPackaging = true
+```kotlin
+// build.gradle.kts
+android {
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 }
 ```
 
-> **Note:** ProGuard/R8 consumer rules are applied automatically — no manual ProGuard configuration
-> is needed.
+> **Note:** ProGuard/R8 consumer rules are applied automatically — no manual configuration needed.
 
 # Usage
 
@@ -284,11 +256,9 @@ Supports Android and iOS.
 
 #### Installation
 
-See [Maven Central setup](#maven-central-recommended) above for the correct coordinates, or via JitPack:
-
-   ```gradle
-   implementation 'com.github.tillhub:print-engine:x.x.x'
-   ```
+```kotlin
+implementation("io.github.tillhub:print-engine-star:3.0.5")
+```
 
 #### Setup & Usage
 
@@ -371,6 +341,7 @@ See [Maven Central setup](#maven-central-recommended) above for the correct coor
    printerEngine.initPrinter(service)
    printerEngine.printer.startPrintJob(printJob)
     ```
+
 ### Epson Printer Library
 
 A library for integrating Epson printers using the ePOS2 lib.
@@ -380,11 +351,9 @@ Supports Android and iOS.
 
 #### Installation
 
-See [Maven Central setup](#maven-central-recommended) above for the correct coordinates, or via JitPack:
-
-   ```gradle
-   implementation 'com.github.tillhub:print-engine:x.x.x'
-   ```
+```kotlin
+implementation("io.github.tillhub:print-engine-epson:3.0.5")
+```
 
 #### Setup & Usage
 
