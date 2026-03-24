@@ -72,8 +72,6 @@ android {
 }
 ```
 
-> **Note:** ProGuard/R8 consumer rules are applied automatically — no manual configuration needed.
-
 # Usage
 
 This SDK offers supports the following printing devices:
