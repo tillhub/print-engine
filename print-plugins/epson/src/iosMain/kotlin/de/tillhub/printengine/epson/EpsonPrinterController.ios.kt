@@ -1,6 +1,21 @@
 package de.tillhub.printengine.epson
 
 import androidx.compose.ui.graphics.ImageBitmap
+import com.epson.epos2.EPOS2_ALIGN_CENTER
+import com.epson.epos2.EPOS2_BARCODE_CODE128
+import com.epson.epos2.EPOS2_COLOR_1
+import com.epson.epos2.EPOS2_COMPRESS_AUTO
+import com.epson.epos2.EPOS2_CUT_NO_FEED
+import com.epson.epos2.EPOS2_FONT_A
+import com.epson.epos2.EPOS2_HALFTONE_DITHER
+import com.epson.epos2.EPOS2_HRI_BELOW
+import com.epson.epos2.EPOS2_LEVEL_M
+import com.epson.epos2.EPOS2_MODE_MONO
+import com.epson.epos2.EPOS2_PARAM_DEFAULT
+import com.epson.epos2.EPOS2_PARAM_UNSPECIFIED
+import com.epson.epos2.EPOS2_SUCCESS
+import com.epson.epos2.EPOS2_SYMBOL_QRCODE_MODEL_1
+import com.epson.epos2.EPOS2_TRUE
 import com.epson.epos2.Epos2Printer
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.ExternalPrinter
@@ -181,8 +196,6 @@ internal actual class EpsonPrinterController(
     }
 
     private companion object {
-        const val EPOS2_SUCCESS = 0
-
         const val QR_DIMENSION = 240
         const val BARCODE_HEIGHT = 100
         const val BARCODE_MODULE_WIDTH = 3
@@ -190,22 +203,6 @@ internal actual class EpsonPrinterController(
         const val THREE_FEED_LINES = 3
         const val IMAGE_BRIGHTNESS = 1.0
         const val IMAGE_START_XY = 0
-
-        // ePOS2.h enum values
-        const val EPOS2_TRUE = 1
-        const val EPOS2_PARAM_DEFAULT = -2
-        const val EPOS2_PARAM_UNSPECIFIED = -1
-        const val EPOS2_ALIGN_CENTER = 1
-        const val EPOS2_FONT_A = 0
-        const val EPOS2_COLOR_1 = 1
-        const val EPOS2_MODE_MONO = 0
-        const val EPOS2_HALFTONE_DITHER = 0
-        const val EPOS2_COMPRESS_AUTO = 2
-        const val EPOS2_BARCODE_CODE128 = 10
-        const val EPOS2_HRI_BELOW = 2
-        const val EPOS2_SYMBOL_QRCODE_MODEL_1 = 2
-        const val EPOS2_LEVEL_M = 10
-        const val EPOS2_CUT_NO_FEED = 1
     }
 }
 

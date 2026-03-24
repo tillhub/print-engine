@@ -105,7 +105,10 @@ kotlin {
         compilations["main"].cinterops {
             create("epos2") {
                 definitionFile = file("nativeInterop/cinterop/epos2.def")
-                includeDirs("$epsonXcframeworkDir/$slice/Headers")
+                includeDirs(
+                    file("nativeInterop/cinterop/shim"),
+                    "$epsonXcframeworkDir/$slice/Headers",
+                )
             }
         }
         binaries.all {
@@ -130,6 +133,7 @@ kotlin {
                 implementation(project(":print-engine"))
 
                 implementation(libs.kotlin.coroutines)
+                implementation(compose.ui)
 
                 // Utils
                 implementation(libs.kermit)

@@ -1,50 +1,37 @@
 package de.tillhub.printengine.epson
 
+import com.epson.epos2.EPOS2_AUTOCUTTER_ERR
+import com.epson.epos2.EPOS2_AUTORECOVER_ERR
+import com.epson.epos2.EPOS2_BATTERY_LEVEL_0
+import com.epson.epos2.EPOS2_BATTERY_OVERHEAT
+import com.epson.epos2.EPOS2_CODE_PRINTING
+import com.epson.epos2.EPOS2_CODE_SUCCESS
+import com.epson.epos2.EPOS2_COVER_OPEN
+import com.epson.epos2.EPOS2_ERR_CONNECT
+import com.epson.epos2.EPOS2_ERR_DISCONNECT
+import com.epson.epos2.EPOS2_ERR_MEMORY
+import com.epson.epos2.EPOS2_ERR_PARAM
+import com.epson.epos2.EPOS2_ERR_TIMEOUT
+import com.epson.epos2.EPOS2_FALSE
+import com.epson.epos2.EPOS2_HEAD_OVERHEAT
+import com.epson.epos2.EPOS2_MECHANICAL_ERR
+import com.epson.epos2.EPOS2_MOTOR_OVERHEAT
+import com.epson.epos2.EPOS2_NO_ERR
+import com.epson.epos2.EPOS2_PAPER_EMPTY
+import com.epson.epos2.EPOS2_TRUE
+import com.epson.epos2.EPOS2_UNKNOWN
+import com.epson.epos2.EPOS2_UNRECOVER_ERR
+import com.epson.epos2.EPOS2_WRONG_PAPER
 import com.epson.epos2.Epos2PrinterStatusInfo
 import de.tillhub.printengine.data.PrinterState
 import kotlinx.cinterop.ExperimentalForeignApi
 
+// Epos2UnrecoverError enum values — not commonized by cinterop across iOS targets
+private const val EPOS2_HIGH_VOLTAGE_ERR = 0
+private const val EPOS2_LOW_VOLTAGE_ERR = 1
+
 @OptIn(ExperimentalForeignApi::class)
 internal object EpsonPrinterErrorState {
-
-    // ePOS2.h Epos2ErrorStatus enum (sequential from 0)
-    private const val EPOS2_SUCCESS = 0
-    private const val EPOS2_ERR_PARAM = 1
-    private const val EPOS2_ERR_CONNECT = 2
-    private const val EPOS2_ERR_TIMEOUT = 3
-    private const val EPOS2_ERR_MEMORY = 4
-    private const val EPOS2_ERR_DISCONNECT = 10
-
-    // ePOS2.h Epos2CallbackCode enum (sequential from 0)
-    private const val EPOS2_CODE_SUCCESS = 0
-    private const val EPOS2_CODE_PRINTING = 13
-
-    // ePOS2.h Epos2PrinterError enum
-    private const val EPOS2_NO_ERR = 0
-    private const val EPOS2_MECHANICAL_ERR = 1
-    private const val EPOS2_AUTOCUTTER_ERR = 2
-    private const val EPOS2_UNRECOVER_ERR = 3
-    private const val EPOS2_AUTORECOVER_ERR = 4
-
-    // ePOS2.h status constants
-    private const val EPOS2_FALSE = 0
-    private const val EPOS2_TRUE = 1
-    private const val EPOS2_PAPER_EMPTY = 2 // EPOS2_PAPER_OK=0, NEAR_END=1, EMPTY=2
-    private const val EPOS2_BATTERY_LEVEL_0 = 0
-
-    // ePOS2.h Epos2AutoRecoverError enum
-    private const val EPOS2_HEAD_OVERHEAT = 0
-    private const val EPOS2_MOTOR_OVERHEAT = 1
-    private const val EPOS2_BATTERY_OVERHEAT = 2
-    private const val EPOS2_WRONG_PAPER = 3
-    private const val EPOS2_COVER_OPEN = 4
-
-    // ePOS2.h Epos2UnrecoverError enum
-    private const val EPOS2_HIGH_VOLTAGE_ERR = 0
-    private const val EPOS2_LOW_VOLTAGE_ERR = 1
-
-    // ePOS2.h defines: #define EPOS2_UNKNOWN (-3)
-    private const val EPOS2_UNKNOWN = -3
 
     fun epsonErrorStatusToState(errorCode: Int): PrinterState = when (errorCode) {
         EPOS2_ERR_PARAM -> PrinterState.Error.Epson.DataError

@@ -1,6 +1,37 @@
 package de.tillhub.printengine.epson
 
 import co.touchlab.kermit.Logger
+import com.epson.epos2.EPOS2_MODEL_ANK
+import com.epson.epos2.EPOS2_TM_H6000
+import com.epson.epos2.EPOS2_TM_L100
+import com.epson.epos2.EPOS2_TM_L90
+import com.epson.epos2.EPOS2_TM_L90LFC
+import com.epson.epos2.EPOS2_TM_M10
+import com.epson.epos2.EPOS2_TM_M30
+import com.epson.epos2.EPOS2_TM_M30II
+import com.epson.epos2.EPOS2_TM_M30III
+import com.epson.epos2.EPOS2_TM_M50
+import com.epson.epos2.EPOS2_TM_P20
+import com.epson.epos2.EPOS2_TM_P20II
+import com.epson.epos2.EPOS2_TM_P60
+import com.epson.epos2.EPOS2_TM_P60II
+import com.epson.epos2.EPOS2_TM_P80
+import com.epson.epos2.EPOS2_TM_P80II
+import com.epson.epos2.EPOS2_TM_T100
+import com.epson.epos2.EPOS2_TM_T20
+import com.epson.epos2.EPOS2_TM_T60
+import com.epson.epos2.EPOS2_TM_T70
+import com.epson.epos2.EPOS2_TM_T81
+import com.epson.epos2.EPOS2_TM_T82
+import com.epson.epos2.EPOS2_TM_T83
+import com.epson.epos2.EPOS2_TM_T83III
+import com.epson.epos2.EPOS2_TM_T88
+import com.epson.epos2.EPOS2_TM_T88VII
+import com.epson.epos2.EPOS2_TM_T90
+import com.epson.epos2.EPOS2_TM_T90KP
+import com.epson.epos2.EPOS2_TM_U220
+import com.epson.epos2.EPOS2_TM_U330
+import com.epson.epos2.EPOS2_TS_100
 import com.epson.epos2.Epos2Printer
 import com.epson.epos2.Epos2PrinterStatusInfo
 import com.epson.epos2.Epos2PtrReceiveDelegateProtocol
@@ -93,40 +124,5 @@ internal actual class EpsonPrintService(
             logger.w { "Unknown printer model '$this', falling back to TM-T88" }
             EPOS2_TM_T88
         }
-    }
-
-    // SDK 2.23.1 series constants (values match the NS_ENUM order in ePOS2.h)
-    private companion object {
-        const val EPOS2_TM_M10 = 0
-        const val EPOS2_TM_M30 = 1
-        const val EPOS2_TM_P20 = 2
-        const val EPOS2_TM_P60 = 3
-        const val EPOS2_TM_P60II = 4
-        const val EPOS2_TM_P80 = 5
-        const val EPOS2_TM_T20 = 6
-        const val EPOS2_TM_T60 = 7
-        const val EPOS2_TM_T70 = 8
-        const val EPOS2_TM_T81 = 9
-        const val EPOS2_TM_T82 = 10
-        const val EPOS2_TM_T83 = 11
-        const val EPOS2_TM_T88 = 12
-        const val EPOS2_TM_T90 = 13
-        const val EPOS2_TM_T90KP = 14
-        const val EPOS2_TM_U220 = 15
-        const val EPOS2_TM_U330 = 16
-        const val EPOS2_TM_L90 = 17
-        const val EPOS2_TM_H6000 = 18
-        const val EPOS2_TM_T83III = 19
-        const val EPOS2_TM_T100 = 20
-        const val EPOS2_TM_M30II = 21
-        const val EPOS2_TS_100 = 22
-        const val EPOS2_TM_M50 = 23
-        const val EPOS2_TM_T88VII = 24
-        const val EPOS2_TM_L90LFC = 25
-        const val EPOS2_TM_L100 = 26
-        const val EPOS2_TM_P20II = 27
-        const val EPOS2_TM_P80II = 28
-        const val EPOS2_TM_M30III = 29
-        const val EPOS2_MODEL_ANK = 0
     }
 }

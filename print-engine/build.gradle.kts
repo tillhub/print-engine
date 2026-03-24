@@ -47,7 +47,7 @@ kotlin {
                 implementation(libs.kotlin.coroutines)
 
                 // Compose UI for cross-platform ImageBitmap
-                api(compose.ui)
+                implementation(compose.ui)
 
                 // Utils
                 implementation(libs.kermit)
