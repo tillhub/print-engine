@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.compose)
     alias(libs.plugins.mokkery)
     alias(libs.plugins.maven.publish)
 }
@@ -43,6 +45,9 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(libs.kotlin.coroutines)
+
+                // Compose UI for cross-platform ImageBitmap
+                implementation(compose.ui)
 
                 // Utils
                 implementation(libs.kermit)

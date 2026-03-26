@@ -1,5 +1,6 @@
 package de.tillhub.printengine.barcode
 
+import androidx.compose.ui.graphics.asAndroidBitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
@@ -32,7 +33,7 @@ internal class BarcodeEncoderImplTest :
             val height = expectedResult.height
             for (y in 0 until height) {
                 for (x in 0 until width) {
-                    result?.getPixel(x, y) shouldBe if (expectedResult.get(x, y)) BLACK else WHITE
+                    result?.asAndroidBitmap()?.getPixel(x, y) shouldBe if (expectedResult.get(x, y)) BLACK else WHITE
                 }
             }
         }
@@ -40,7 +41,7 @@ internal class BarcodeEncoderImplTest :
         test("encodeAsBitmap barcode compare bitmap") {
             val result = barcodeEncoder.encodeAsBitmap("RTB183648B", BarcodeType.CODE_128, 435, 140)
 
-            BitmapAssertions.assertBitmapMatches("barcode", result!!)
+            BitmapAssertions.assertBitmapMatches("barcode", result!!.asAndroidBitmap())
         }
 
         test("encodeAsBitmap qr code") {
@@ -61,7 +62,7 @@ internal class BarcodeEncoderImplTest :
             val height = expectedResult.height
             for (y in 0 until height) {
                 for (x in 0 until width) {
-                    result?.getPixel(x, y) shouldBe if (expectedResult.get(x, y)) BLACK else WHITE
+                    result?.asAndroidBitmap()?.getPixel(x, y) shouldBe if (expectedResult.get(x, y)) BLACK else WHITE
                 }
             }
         }
@@ -69,7 +70,7 @@ internal class BarcodeEncoderImplTest :
         test("encodeAsBitmap qr code compare bitmap") {
             val result = barcodeEncoder.encodeAsBitmap("123ABC", BarcodeType.QR_CODE, 220, 220)
 
-            BitmapAssertions.assertBitmapMatches("qr", result!!)
+            BitmapAssertions.assertBitmapMatches("qr", result!!.asAndroidBitmap())
         }
     }) {
     companion object {

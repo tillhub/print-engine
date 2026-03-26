@@ -1,49 +1,86 @@
-[![](https://jitpack.io/v/tillhub/print-engine.svg)](https://jitpack.io/#tillhub/print-engine)
-[![API](https://img.shields.io/badge/API-21%2B-green.svg?style=flat)](https://android-arsenal.com/api?level-11)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.tillhub/print-engine-core.svg)](https://central.sonatype.com/artifact/io.github.tillhub/print-engine-core)
+[![API](https://img.shields.io/badge/API-24%2B-green.svg?style=flat)](https://android-arsenal.com/api?level=24)
 
 # Print Engine
 
 This library combines various printer implementations into a single, easy-to-use interface.
+Built as a Kotlin Multiplatform (KMP) library, it supports both Android and iOS platforms.
+
+### Supported Platforms
+
+| Platform | Built-in Printers | External Printers |
+|----------|------------------|-------------------|
+| Android  | PAX, Sunmi, Verifone | Star, Epson |
+| iOS      | — | Star, Epson |
 
 # How to setup
 
-**Step 1.** Add the JitPack repository to your `settings.gradle` file:
+**Step 1.** Add Maven Central to your repository list:
 
-```groovy
+```kotlin
+// settings.gradle.kts
 dependencyResolutionManagement {
     repositories {
-        ...
         mavenCentral()
-        maven { url 'https://jitpack.io' }
     }
 }
 ```
 
-**Step 2.** Add the dependency to your app `build.gradle`:
+**Step 2.** Add the core dependency and the plugins you need:
 
-```groovy
+```kotlin
+// build.gradle.kts
 dependencies {
-    implementation 'com.github.tillhub:print-engine:x.x.x'
+    // Core library (required)
+    implementation("io.github.tillhub:print-engine-core:3.0.5")
+
+    // Built-in printer plugins (Android only)
+    implementation("io.github.tillhub:print-engine-pax:3.0.5")
+    implementation("io.github.tillhub:print-engine-sunmi:3.0.5")
+    implementation("io.github.tillhub:print-engine-verifone:3.0.5")
+
+    // External printer plugins (Android & iOS)
+    implementation("io.github.tillhub:print-engine-star:3.0.5")
+    implementation("io.github.tillhub:print-engine-epson:3.0.5")
 }
 ```
 
-**Step 3.** Enable JNI legacy packaging
+**Step 3.** If you use `PrintCommand.Image`, add Compose UI since `ImageBitmap` is part of the API:
 
-```groovy
-packaging {
-    jniLibs {
-        useLegacyPackaging = true
+```kotlin
+// build.gradle.kts
+plugins {
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.compose")
+}
+
+dependencies {
+    implementation(compose.ui)
+}
+```
+
+**Step 4.** Enable JNI legacy packaging (Android only):
+
+```kotlin
+// build.gradle.kts
+android {
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 }
 ```
 
 # Usage
 
-This SDK offers supports 2 types printing devices:
+This SDK offers supports the following printing devices:
 
 * PAX devices with a build in printer (A920, A920 pro, etc.)
 * Sunmi devices with a build in printer (V2, V2 PRO, V2s, etc.)
 * Verifone devices with a build in printer
+* Star Micronics external printers (via StarXpand SDK)
+* Epson external printers (via ePOS2 SDK)
 
 For devices without printer support the SDK defaults to an `EmulatedPrinter` implementation that
 prints into Logcat, this way it is easy to develop on emulators and unsupported devices.
@@ -118,7 +155,7 @@ List of commands:
 
 ```kotlin
 PrintCommand.Text(val text : String)
-PrintCommand.Image(val image : Bitmap)
+PrintCommand.Image(val image : ImageBitmap)
 PrintCommand.Barcode(val barcode : String)
 PrintCommand.QrCode(val code : String)
 PrintCommand.RawData(val data : RawPrinterData)
@@ -192,14 +229,14 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
     val barcodeEncoder = printEngine.barcodeEncoder
 
-    val qrCode: Bitmap? = barcodeEncoder.encodeAsBitmap(
+    val qrCode: ImageBitmap? = barcodeEncoder.encodeAsBitmap(
         content = "barcode_content",
         type = BarcodeType.QR_CODE,
         imgWidth = 500,
         imgHeight = 500
     )
 
-    val code128: Bitmap? = barcodeEncoder.encodeAsBitmap(
+    val code128: ImageBitmap? = barcodeEncoder.encodeAsBitmap(
         content = "barcode_content",
         type = BarcodeType.CODE_128,
         imgWidth = 500,
@@ -213,14 +250,13 @@ override fun onCreate(savedInstanceState: Bundle?) {
 ### Star Printer Library
 
 A library for integrating Star Micronics printers using the StarXpand SDK.
+Supports Android and iOS.
 
 #### Installation
 
-Add to your `build.gradle`
-
-   ```gradle
-   implementation 'com.tillhub.printengine:star-printer:1.0.0'
-   ```
+```kotlin
+implementation("io.github.tillhub:print-engine-star:3.0.5")
+```
 
 #### Setup & Usage
 
@@ -270,7 +306,7 @@ Add to your `build.gradle`
 
         if (permissions.isNotEmpty()) {
             launcher.launch(permissions.toTypedArray())
-        } 
+        }
    ```
    To avoid the USB connection permission dialog appearing every time a cable is connected or
    disconnected, add the following `<intent-filter>` and `<meta-data>` entries to your
@@ -282,7 +318,7 @@ Add to your `build.gradle`
        <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
    </intent-filter>
    ```
-2. **Discovery**  
+2. **Discovery**
    To begin discovering Star printers, use the following method and handle the results accordingly:
 
    ```kotlin
@@ -291,7 +327,7 @@ Add to your `build.gradle`
        // Handle discoveryState result
    }
    ```
-3. **Initialization & Printing**  
+3. **Initialization & Printing**
    Once a user selects a Star printer, initialize and start printer using the following approach:
 
    ```kotlin
@@ -303,21 +339,23 @@ Add to your `build.gradle`
    printerEngine.initPrinter(service)
    printerEngine.printer.startPrintJob(printJob)
     ```
+
 ### Epson Printer Library
 
 A library for integrating Epson printers using the ePOS2 lib.
+Supports Android and iOS.
+
+> **Note:** On iOS, the Epson ePOS2 SDK (~68 MB) is automatically downloaded on the first build.
 
 #### Installation
 
-Add to your `build.gradle`
-
-   ```gradle
-   implementation 'com.tillhub.printengine:epson-printer:1.0.0'
-   ```
+```kotlin
+implementation("io.github.tillhub:print-engine-epson:3.0.5")
+```
 
 #### Setup & Usage
 
-1. **Permissions**  
+1. **Permissions (Android)**
    These permissions enable Bluetooth communication and scanning to discover and connect to nearby devices,
    add the following permissions check logic:
    ```kotlin
@@ -363,7 +401,7 @@ Add to your `build.gradle`
 
         if (permissions.isNotEmpty()) {
             launcher.launch(permissions.toTypedArray())
-        } 
+        }
    ```
    To avoid the USB connection permission dialog appearing every time a cable is connected or
    disconnected, add the following `<intent-filter>` and `<meta-data>` entries to your
@@ -381,7 +419,20 @@ Add to your `build.gradle`
        android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"
        android:resource="@xml/accessory_filter" />
    ```
-2. **Discovery**  
+
+2. **Permissions (iOS)**
+   Add the following keys to your `Info.plist`:
+
+   ```xml
+   <key>NSBluetoothAlwaysUsageDescription</key>
+   <string>Required for Bluetooth printer communication</string>
+   <key>UISupportedExternalAccessoryProtocols</key>
+   <array>
+       <string>com.epson.escpos</string>
+   </array>
+   ```
+
+3. **Discovery**
    To begin discovering Epson printers, use the following method and handle the results accordingly:
 
    ```kotlin
@@ -390,7 +441,7 @@ Add to your `build.gradle`
        // Handle discoveryState result
    }
    ```
-3. **Initialization & Printing**  
+4. **Initialization & Printing**
    Once a user selects a Epson printer, initialize and start printer using the following approach:
 
    ```kotlin
@@ -402,6 +453,20 @@ Add to your `build.gradle`
    printerEngine.initPrinter(service)
    printerEngine.printer.startPrintJob(printJob)
     ```
+
+## Architecture
+
+```
+print-engine/          Core KMP module (commonMain, androidMain, iosMain)
+print-plugins/
+  pax/                 PAX built-in printer (Android only)
+  sunmi/               Sunmi built-in printer (Android only)
+  verifone/            Verifone built-in printer (Android only)
+  star/                Star Micronics external printer (Android & iOS)
+  epson/               Epson external printer (Android & iOS)
+sample/                Demo app (Android & iOS)
+```
+
 ## Credits
 
 - [Đorđe Hrnjez](https://github.com/djordjeh)

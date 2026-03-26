@@ -1,0 +1,3 @@
+language = Objective-C
+headers = ePOS2.h
+package = com.epson.epos2

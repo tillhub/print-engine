@@ -1,6 +1,7 @@
 package de.tillhub.printengine.epson
 
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import com.epson.epos2.Epos2Exception
 import com.epson.eposprint.Builder.BARCODE_CODE128
 import com.epson.eposprint.Builder.COLOR_1
@@ -18,6 +19,7 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
 import io.mockk.Ordering
 import io.mockk.Runs
@@ -27,6 +29,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 
+@RobolectricTest
 class EpsonPrinterControllerTest :
     FunSpec({
 
@@ -95,11 +98,8 @@ class EpsonPrinterControllerTest :
         }
 
         test("printImage should call addImage with correct parameters") {
-            val bitmap =
-                mockk<Bitmap> {
-                    every { width } returns 100
-                    every { height } returns 100
-                }
+            val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+            val imageBitmap = bitmap.asImageBitmap()
             every {
                 printerWrapper.addImage(
                     any(),
@@ -115,11 +115,11 @@ class EpsonPrinterControllerTest :
                 )
             } just Runs
 
-            controller.printImage(bitmap)
+            controller.printImage(imageBitmap)
 
             verify {
                 printerWrapper.addImage(
-                    bitmap = bitmap,
+                    bitmap = any(),
                     x = 0,
                     y = 0,
                     width = 100,

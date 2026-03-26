@@ -1,5 +1,11 @@
 package de.tillhub.printengine
 
+import de.tillhub.printengine.barcode.BarcodeEncoder
+import de.tillhub.printengine.data.ExternalPrinter
+
 actual interface PrinterServiceProvider {
-    // TODO("not implemented")
+    fun build(
+        printer: ExternalPrinter? = null,
+        barcode: BarcodeEncoder? = null,
+    ): PrintService
 }
