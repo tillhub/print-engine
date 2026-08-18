@@ -2,7 +2,8 @@ name: Publish to Maven Central
 
 on:
   push:
-    branches: [ "master" ]
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   publish:
@@ -13,6 +14,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # The published version comes from libs.versions.toml, not the tag - keep them in sync
+      - name: Verify tag matches library version
+        run: |
+          VERSION=$(grep -m1 '^print-engine = ' gradle/libs.versions.toml | cut -d'"' -f2)
+          if [ "${GITHUB_REF_NAME}" != "${VERSION}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match libs.versions.toml version ${VERSION}"
+            exit 1
+          fi
 
       - name: Setup Java
         uses: actions/setup-java@v4
