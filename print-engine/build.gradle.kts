@@ -148,16 +148,6 @@ mavenPublishing {
                 name.set("Đorđe Hrnjez")
                 email.set("dorde.hrnjez@unzer.com")
             }
-            developer {
-                id.set("SloInfinity")
-                name.set("Martin Sirok")
-                email.set("m.sirok.ext@unzer.com")
-            }
-            developer {
-                id.set("shekar-allam")
-                name.set("Chandrashekar Allam")
-                email.set("chandrashekar.allam@unzer.com")
-            }
         }
 
         // Specify SCM information
