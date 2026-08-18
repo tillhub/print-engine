@@ -1,6 +1,7 @@
 package de.tillhub.printengine.star
 
-import android.graphics.Bitmap
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import com.starmicronics.stario10.StarIO10Exception
 import com.starmicronics.stario10.StarPrinter
 import com.starmicronics.stario10.starxpandcommand.DocumentBuilder
@@ -78,9 +79,9 @@ internal actual class StarPrinterController(
             ).styleAlignment(Alignment.Center)
     }
 
-    actual override fun printImage(image: Bitmap) {
+    actual override fun printImage(image: ImageBitmap) {
         printerBuilder
-            .actionPrintImage(ImageParameter(image, IMAGE_WIDTH))
+            .actionPrintImage(ImageParameter(image.asAndroidBitmap(), IMAGE_WIDTH))
             .styleAlignment(Alignment.Center)
     }
 

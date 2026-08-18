@@ -1,6 +1,8 @@
 package de.tillhub.printengine.pax
 
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
 import de.tillhub.printengine.data.PrinterInfo
@@ -27,14 +29,16 @@ import kotlinx.coroutines.flow.first
 internal class PaxPrinterControllerTest :
     DescribeSpec({
 
-        lateinit var bitmap: Bitmap
+        lateinit var androidBitmap: Bitmap
+        lateinit var bitmap: ImageBitmap
         lateinit var printerState: MutableStateFlow<PrinterState>
         lateinit var printService: DirectPrintService
         lateinit var barcodeEncoder: BarcodeEncoder
         lateinit var target: PaxPrinterController
 
         beforeSpec {
-            bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
+            androidBitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
+            bitmap = androidBitmap.asImageBitmap()
         }
 
         beforeTest {
@@ -58,7 +62,7 @@ internal class PaxPrinterControllerTest :
         }
 
         afterSpec {
-            bitmap.recycle()
+            androidBitmap.recycle()
         }
 
         it("getPrinterInfo") {

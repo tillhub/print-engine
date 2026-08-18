@@ -1,6 +1,7 @@
 package de.tillhub.printengine.html
 
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
@@ -10,7 +11,7 @@ internal class HtmlUtilsImageTest :
     FunSpec({
         test("generateImageHtml") {
             val bitmap: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-            val result = HtmlUtils.generateImageHtml(bitmap)
+            val result = HtmlUtils.generateImageHtml(bitmap.asImageBitmap())
             bitmap.recycle()
 
             result shouldBe "<div style=\"text-align:center;\">" +

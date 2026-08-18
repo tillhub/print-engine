@@ -1,9 +1,9 @@
 package de.tillhub.printengine.html
 
+import androidx.compose.ui.graphics.ImageBitmap
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.barcode.BarcodeEncoder
 import de.tillhub.printengine.barcode.BarcodeType
-import de.tillhub.printengine.data.ImageBitmap
 import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.RawPrinterData
 import de.tillhub.printengine.html.HtmlUtils.generateImageHtml

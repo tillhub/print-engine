@@ -1,7 +1,8 @@
 package de.tillhub.printengine.sunmi
 
-import android.graphics.Bitmap
 import android.os.RemoteException
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import co.touchlab.kermit.Logger
 import com.sunmi.peripheral.printer.InnerResultCallback
 import com.sunmi.peripheral.printer.SunmiPrinterService
@@ -94,9 +95,9 @@ internal class SunmiPrinterController(
         printerService.lineWrap(1, printListener)
     }
 
-    override fun printImage(image: Bitmap) {
+    override fun printImage(image: ImageBitmap) {
         printerService.setAlignment(Alignment.CENTER.value, printListener)
-        printerService.printBitmapCustom(image, ImagePrintingMethod.GRAYSCALE.value, printListener)
+        printerService.printBitmapCustom(image.asAndroidBitmap(), ImagePrintingMethod.GRAYSCALE.value, printListener)
         printerService.setAlignment(Alignment.LEFT.value, printListener)
         printerService.lineWrap(1, printListener)
     }

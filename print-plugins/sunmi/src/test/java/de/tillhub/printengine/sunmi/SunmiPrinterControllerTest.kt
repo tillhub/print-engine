@@ -2,6 +2,7 @@ package de.tillhub.printengine.sunmi
 
 import android.graphics.Bitmap
 import android.os.RemoteException
+import androidx.compose.ui.graphics.asImageBitmap
 import com.sunmi.peripheral.printer.SunmiPrinterService
 import de.tillhub.printengine.PrinterController
 import de.tillhub.printengine.data.PrinterServiceVersion
@@ -103,11 +104,11 @@ internal class SunmiPrinterControllerTest :
 
         test("printImage") {
             val bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
-            printerController.printImage(bitmap)
+            printerController.printImage(bitmap.asImageBitmap())
 
             verify(ordering = Ordering.ORDERED) {
                 printerService.setAlignment(1, any())
-                printerService.printBitmapCustom(bitmap, 2, any())
+                printerService.printBitmapCustom(any(), 2, any())
                 printerService.setAlignment(0, any())
                 printerService.lineWrap(1, any())
             }

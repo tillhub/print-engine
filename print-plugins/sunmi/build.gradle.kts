@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.compose)
 }
 
 android {
@@ -56,6 +58,7 @@ dependencies {
     // Core Dependencies
     implementation(libs.androidx.core)
     implementation(libs.kotlin.coroutines)
+    implementation(compose.ui)
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
     // Sunmi Dependencies

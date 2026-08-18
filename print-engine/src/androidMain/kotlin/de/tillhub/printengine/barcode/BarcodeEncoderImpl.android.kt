@@ -1,5 +1,7 @@
 package de.tillhub.printengine.barcode
 
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.createBitmap
 import co.touchlab.kermit.Logger
 import com.google.zxing.BarcodeFormat
@@ -7,7 +9,6 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
-import de.tillhub.printengine.data.ImageBitmap
 
 internal actual class BarcodeEncoderImpl : BarcodeEncoder {
     actual override fun encodeAsBitmap(
@@ -52,7 +53,7 @@ internal actual class BarcodeEncoderImpl : BarcodeEncoder {
 
         return createBitmap(width, height).apply {
             setPixels(pixels, 0, width, 0, 0, width, height)
-        }
+        }.asImageBitmap()
     }
 
     private fun typeConverter(type: BarcodeType): BarcodeFormat = when (type) {

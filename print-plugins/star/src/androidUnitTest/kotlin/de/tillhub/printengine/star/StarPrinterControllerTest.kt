@@ -1,6 +1,7 @@
 package de.tillhub.printengine.star
 
 import android.graphics.Bitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import com.starmicronics.stario10.StarIO10ErrorCode
 import com.starmicronics.stario10.StarIO10Exception
 import com.starmicronics.stario10.StarPrinter
@@ -14,6 +15,7 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.RawPrinterData
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerifyOrder
@@ -28,6 +30,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RobolectricTest
 class StarPrinterControllerTest :
     FunSpec({
         lateinit var starPrinter: StarPrinter
@@ -130,9 +133,10 @@ class StarPrinterControllerTest :
         }
 
         test("printImage adds image with correct parameters") {
-            val bitmap = mockk<Bitmap>()
+            val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+            val imageBitmap = bitmap.asImageBitmap()
 
-            controller.printImage(bitmap)
+            controller.printImage(imageBitmap)
 
             verifyOrder {
                 printerBuilder.actionPrintImage(any())

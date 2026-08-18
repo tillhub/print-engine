@@ -1,6 +1,6 @@
 package de.tillhub.printengine.data
 
-import de.tillhub.printengine.data.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import de.tillhub.printengine.helpers.HashHelper
 
 sealed class PrintCommand {
@@ -33,7 +33,7 @@ sealed class PrintCommand {
     class Barcode(
         val barcode: String,
     ) : PrintCommand() {
-        override fun toString() = "PrintCommand.Text(" +
+        override fun toString() = "PrintCommand.Barcode(" +
             "barcode=$barcode" +
             ")"
 
