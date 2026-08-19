@@ -16,7 +16,7 @@ internal class HtmlUtilsImageTest :
 
             result shouldBe "<div style=\"text-align:center;\">" +
                 "<img src=\"data:image/png;base64," +
-                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/AAAAAAAABQAB\n" +
-                "ZHiVOAAAAABJRU5ErkJggg==\n\"/></div>"
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/AAAAAAAABQAB" +
+                "ZHiVOAAAAABJRU5ErkJggg==\"/></div>"
         }
     })

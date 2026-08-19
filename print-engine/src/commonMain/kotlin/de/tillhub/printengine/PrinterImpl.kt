@@ -40,8 +40,8 @@ internal class PrinterImpl(
                         info.serviceVersion,
                     )
                 }
-            }.doOnError {
-                logWarning("getting printer info")
+            }.doOnError { error ->
+                logWarning(error, "getting printer info")
             }
     }
 
@@ -72,8 +72,8 @@ internal class PrinterImpl(
                     controller.start()
                     analytics?.logPrintReceipt(job.description)
                 }
-            }.doOnError {
-                logWarning("printing job '${job.description}'")
+            }.doOnError { error ->
+                logWarning(error, "printing job '${job.description}'")
                 analytics?.logErrorPrintReceipt("printing text '${job.description}'")
             }
     }
@@ -82,7 +82,13 @@ internal class PrinterImpl(
         Logger.i("printing: $message")
     }
 
-    private fun logWarning(reason: String) {
-        Logger.w("Printer not connected for: $reason")
+    private fun logWarning(
+        error: PrinterResult.Error,
+        reason: String,
+    ) {
+        when (error) {
+            PrinterResult.Error.PrinterNotConnected -> Logger.w("Printer not connected for: $reason")
+            is PrinterResult.Error.WithException -> Logger.w("Failed for: $reason", error.error)
+        }
     }
 }

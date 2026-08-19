@@ -123,7 +123,10 @@ internal actual class StarPrinterController(
         serialNumber = "n/a",
         deviceModel = starPrinter.information?.model?.name ?: "Unknown",
         printerVersion = "n/a",
-        printerPaperSpec = PrintingPaperSpec.External(characterCount = 32),
+        printerPaperSpec = PrintingPaperSpec.External(
+            characterCount = 32,
+            printHeadWidthPx = IMAGE_WIDTH,
+        ),
         printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
         printerHead = "n/a",
         printedDistance = 0,

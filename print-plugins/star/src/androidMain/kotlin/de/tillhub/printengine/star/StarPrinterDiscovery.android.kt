@@ -23,6 +23,9 @@ actual class StarPrinterDiscovery(
 ) : PrinterDiscovery {
     companion object {
         private const val CHARACTER_COUNT = 52
+
+        /** Matches the width [StarPrinterController] renders images at. */
+        private const val IMAGE_WIDTH = 406
         private const val MANUFACTURER_STAR = "STAR"
     }
 
@@ -79,7 +82,10 @@ actual class StarPrinterDiscovery(
             serialNumber = "n/a",
             deviceModel = printer.information?.model?.name ?: "Unknown",
             printerVersion = "n/a",
-            printerPaperSpec = PrintingPaperSpec.External(characterCount = CHARACTER_COUNT),
+            printerPaperSpec = PrintingPaperSpec.External(
+                characterCount = CHARACTER_COUNT,
+                printHeadWidthPx = IMAGE_WIDTH,
+            ),
             printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
             printerHead = "n/a",
             printedDistance = 0,

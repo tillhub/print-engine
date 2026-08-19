@@ -4,6 +4,7 @@ import android.os.Message
 import android.os.Messenger
 import android.os.RemoteException
 import de.tillhub.printengine.pax.DirectPrintService.DirectPrintListener
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
@@ -60,7 +61,25 @@ class DirectPrintServiceImplTest :
             val ex = RemoteException()
             every { requestMessenger.send(any()) } throws ex
 
-            target.print("payload", 50, listener)
+            // Reported to the listener for the printer state, and rethrown so the caller of
+            // startPrintJob does not get a Success for a receipt that was never sent.
+            val thrown = shouldThrow<RemoteException> {
+                target.print("payload", 50, listener)
+            }
+
+            thrown shouldBe ex
+            verify {
+                listener.onFailed(ex)
+            }
+        }
+
+        test("checkStatus + exception") {
+            val ex = RemoteException()
+            every { requestMessenger.send(any()) } throws ex
+
+            // A failed status check only leaves the state unknown; it runs from the controller's
+            // constructor, so it must not throw.
+            target.checkStatus(listener)
 
             verify {
                 listener.onFailed(ex)
