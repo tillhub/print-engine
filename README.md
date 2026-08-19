@@ -32,16 +32,16 @@ dependencyResolutionManagement {
 // build.gradle.kts
 dependencies {
     // Core library (required)
-    implementation("io.github.tillhub:print-engine-core:3.0.5")
+    implementation("io.github.tillhub:print-engine-core:3.1.0")
 
     // Built-in printer plugins (Android only)
-    implementation("io.github.tillhub:print-engine-pax:3.0.5")
-    implementation("io.github.tillhub:print-engine-sunmi:3.0.5")
-    implementation("io.github.tillhub:print-engine-verifone:3.0.5")
+    implementation("io.github.tillhub:print-engine-pax:3.1.0")
+    implementation("io.github.tillhub:print-engine-sunmi:3.1.0")
+    implementation("io.github.tillhub:print-engine-verifone:3.1.0")
 
     // External printer plugins (Android & iOS)
-    implementation("io.github.tillhub:print-engine-star:3.0.5")
-    implementation("io.github.tillhub:print-engine-epson:3.0.5")
+    implementation("io.github.tillhub:print-engine-star:3.1.0")
+    implementation("io.github.tillhub:print-engine-epson:3.1.0")
 }
 ```
 
@@ -255,7 +255,7 @@ Supports Android and iOS.
 #### Installation
 
 ```kotlin
-implementation("io.github.tillhub:print-engine-star:3.0.5")
+implementation("io.github.tillhub:print-engine-star:3.1.0")
 ```
 
 #### Setup & Usage
@@ -350,7 +350,7 @@ Supports Android and iOS.
 #### Installation
 
 ```kotlin
-implementation("io.github.tillhub:print-engine-epson:3.0.5")
+implementation("io.github.tillhub:print-engine-epson:3.1.0")
 ```
 
 #### Setup & Usage

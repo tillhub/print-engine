@@ -50,33 +50,56 @@ class PrinterInfo(
 
 /**
  * Defines the width of the printing paper.
+ *
+ * [characterCount] describes the paper in text terms, [printHeadWidthPx] in dots. Both are
+ * needed: text is laid out per character, while images have to be scaled to what the head can
+ * physically resolve.
  */
 sealed class PrintingPaperSpec(
     open val characterCount: Int,
+    open val printHeadWidthPx: Int,
 ) {
-    data object PaxPaper56mm : PrintingPaperSpec(PAX_PAPER_56MM_CHAR_COUNT)
+    data object PaxPaper56mm : PrintingPaperSpec(
+        characterCount = PAX_PAPER_56MM_CHAR_COUNT,
+        printHeadWidthPx = PAPER_56MM_HEAD_WIDTH_PX,
+    )
 
-    data object SunmiPaper56mm : PrintingPaperSpec(SUNMI_PAPER_56MM_CHAR_COUNT)
+    data object SunmiPaper56mm : PrintingPaperSpec(
+        characterCount = SUNMI_PAPER_56MM_CHAR_COUNT,
+        printHeadWidthPx = PAPER_56MM_HEAD_WIDTH_PX,
+    )
 
-    data object VerifonePaper56mm : PrintingPaperSpec(VERIFONE_PAPER_56MM_CHAR_COUNT)
+    data object VerifonePaper56mm : PrintingPaperSpec(
+        characterCount = VERIFONE_PAPER_56MM_CHAR_COUNT,
+        printHeadWidthPx = PAPER_56MM_HEAD_WIDTH_PX,
+    )
 
     class External(
         override val characterCount: Int,
-    ) : PrintingPaperSpec(characterCount) {
+        override val printHeadWidthPx: Int = EXTERNAL_HEAD_WIDTH_PX,
+    ) : PrintingPaperSpec(characterCount, printHeadWidthPx) {
         override fun toString() = "PrintingPaperSpec.External(" +
-            "characterCount=$characterCount" +
+            "characterCount=$characterCount, " +
+            "printHeadWidthPx=$printHeadWidthPx" +
             ")"
 
         override fun equals(other: Any?) = other is External &&
-            characterCount == other.characterCount
+            characterCount == other.characterCount &&
+            printHeadWidthPx == other.printHeadWidthPx
 
-        override fun hashCode() = HashHelper.hash(characterCount)
+        override fun hashCode() = HashHelper.hash(characterCount, printHeadWidthPx)
     }
 
     companion object {
         const val PAX_PAPER_56MM_CHAR_COUNT = 35
         const val SUNMI_PAPER_56MM_CHAR_COUNT = 38
         const val VERIFONE_PAPER_56MM_CHAR_COUNT = 32
+
+        /** 56mm of printable width at the 203 dpi every built-in head in this library runs at. */
+        const val PAPER_56MM_HEAD_WIDTH_PX = 384
+
+        /** 80mm at 203 dpi, the common width of the external receipt printers we support. */
+        const val EXTERNAL_HEAD_WIDTH_PX = 576
     }
 }
 

@@ -1,6 +1,7 @@
 package de.tillhub.printengine.verifone
 
 import android.graphics.Bitmap
+import android.os.RemoteException
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import com.verifone.peripherals.DirectPrintManager
@@ -14,7 +15,9 @@ import de.tillhub.printengine.data.PrinterState
 import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.RawPrinterData
+import de.tillhub.printengine.data.normalizeForPrintHead
 import de.tillhub.printengine.html.HtmlUtils
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
@@ -33,6 +36,10 @@ internal class VerifonePrintControllerTest :
 
         lateinit var androidBitmap: Bitmap
         lateinit var bitmap: ImageBitmap
+
+        // What printImage inlines: normalised for the print head. Barcodes and QR codes are
+        // generated for this printer already, so they are inlined unchanged.
+        lateinit var normalizedBitmap: ImageBitmap
         lateinit var printManager: DirectPrintManager
         lateinit var printerState: MutableStateFlow<PrinterState>
         lateinit var barcodeEncoder: BarcodeEncoder
@@ -41,6 +48,9 @@ internal class VerifonePrintControllerTest :
         beforeSpec {
             androidBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
             bitmap = androidBitmap.asImageBitmap()
+            normalizedBitmap = bitmap.normalizeForPrintHead(
+                PrintingPaperSpec.VerifonePaper56mm.printHeadWidthPx,
+            )
         }
 
         beforeTest {
@@ -169,7 +179,7 @@ internal class VerifonePrintControllerTest :
         }
 
         it("printImage") {
-            val payload = HtmlUtils.transformToHtml(HtmlUtils.generateImageHtml(bitmap))
+            val payload = HtmlUtils.transformToHtml(HtmlUtils.generateImageHtml(normalizedBitmap))
             printerController.printImage(bitmap)
             printerController.start()
 
@@ -209,7 +219,7 @@ internal class VerifonePrintControllerTest :
                                     20,
                                 ),
                             )
-                            append(HtmlUtils.generateImageHtml(bitmap))
+                            append(HtmlUtils.generateImageHtml(normalizedBitmap))
                             appendLine(HtmlUtils.monospaceText("end line", 20))
                             append("<br /><br />")
                         }.toString(),
@@ -248,7 +258,7 @@ internal class VerifonePrintControllerTest :
                                     20,
                                 ),
                             )
-                            append(HtmlUtils.generateImageHtml(bitmap))
+                            append(HtmlUtils.generateImageHtml(normalizedBitmap))
                             appendLine(HtmlUtils.monospaceText("end line", 20))
                             append("<br /><br />")
                         }.toString(),
@@ -266,5 +276,19 @@ internal class VerifonePrintControllerTest :
             verify(exactly = 1) {
                 printManager.printString(any(), payload, Printer.PRINTER_FULL_CUT)
             }
+        }
+
+        it("a transport failure is reflected in the state and propagates out of start") {
+            // The print listener never sees a transaction that failed on the way out, so without
+            // this the caller would get a Success for a receipt that was never printed.
+            every { printManager.printString(any(), any(), any()) } throws RemoteException()
+
+            printerController.printText("text_to_print")
+
+            shouldThrow<RemoteException> {
+                printerController.start()
+            }
+
+            printerState.value shouldBe PrinterState.Error.ConnectionLost
         }
     })

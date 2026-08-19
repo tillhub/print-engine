@@ -33,7 +33,9 @@ internal class DirectPrintServiceImpl(
             .apply {
                 replyTo = Messenger(PrintResponseHandler(listener))
             }.also { message ->
-                sendMessage(message, listener)
+                // A failed status check only means the state is unknown, so it is reported and
+                // swallowed - this runs from the controller's constructor.
+                sendMessage(message, listener, rethrowOnFailure = false)
             }
     }
 
@@ -53,18 +55,28 @@ internal class DirectPrintServiceImpl(
                         MSG_PRINT_INTENSITY to printingIntensity,
                     )
             }.also { message ->
-                sendMessage(message, listener)
+                sendMessage(message, listener, rethrowOnFailure = true)
             }
     }
 
+    /**
+     * @throws RemoteException if [rethrowOnFailure] and the transaction fails.
+     *
+     * [DirectPrintListener.onFailed] only moves the printer state; it does not tell the caller of
+     * `startPrintJob` anything. Rethrowing is what turns a failed transaction - including the
+     * `TransactionTooLargeException` an oversized receipt triggers - into a `PrinterResult.Error`
+     * instead of a `Success` for a receipt that was never printed.
+     */
     private fun sendMessage(
         message: Message,
         listener: DirectPrintListener,
+        rethrowOnFailure: Boolean,
     ) {
         try {
             requestMessenger.send(message)
         } catch (e: RemoteException) {
             listener.onFailed(e)
+            if (rethrowOnFailure) throw e
         }
     }
 

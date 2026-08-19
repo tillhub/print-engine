@@ -22,6 +22,7 @@ internal class PaxPrinterController(
 ) : HtmlPrinterController(
     printerState = printerState,
     barcodeEncoder = barcodeEncoder,
+    paperSpec = PAX_PAPER_SPEC,
     barcodeSize = PAX_BARCODE_SIZE,
     qrCodeSize = PAX_QR_CODE_SIZE,
     fontSize = PAX_FONT_SIZE,
@@ -49,7 +50,7 @@ internal class PaxPrinterController(
         serialNumber = "n/a",
         deviceModel = "A920",
         printerVersion = "n/a",
-        printerPaperSpec = PrintingPaperSpec.PaxPaper56mm,
+        printerPaperSpec = PAX_PAPER_SPEC,
         printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
         printerHead = "n/a",
         printedDistance = 0,
@@ -89,6 +90,7 @@ internal class PaxPrinterController(
     }
 
     companion object {
+        private val PAX_PAPER_SPEC = PrintingPaperSpec.PaxPaper56mm
         private const val DEFAULT_INTENSITY = 50
         private const val LIGHT_INTENSITY = 25
         private const val DARK_INTENSITY = 70

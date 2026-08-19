@@ -1,6 +1,7 @@
 package de.tillhub.printengine.pax
 
 import android.graphics.Bitmap
+import android.os.RemoteException
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import de.tillhub.printengine.barcode.BarcodeEncoder
@@ -12,7 +13,9 @@ import de.tillhub.printengine.data.PrintingFontType
 import de.tillhub.printengine.data.PrintingIntensity
 import de.tillhub.printengine.data.PrintingPaperSpec
 import de.tillhub.printengine.data.RawPrinterData
+import de.tillhub.printengine.data.normalizeForPrintHead
 import de.tillhub.printengine.html.HtmlUtils
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.extensions.robolectric.RobolectricTest
 import io.kotest.matchers.shouldBe
@@ -31,6 +34,10 @@ internal class PaxPrinterControllerTest :
 
         lateinit var androidBitmap: Bitmap
         lateinit var bitmap: ImageBitmap
+
+        // What printImage inlines: normalised for the print head. Barcodes and QR codes are
+        // generated for this printer already, so they are inlined unchanged.
+        lateinit var normalizedBitmap: ImageBitmap
         lateinit var printerState: MutableStateFlow<PrinterState>
         lateinit var printService: DirectPrintService
         lateinit var barcodeEncoder: BarcodeEncoder
@@ -39,6 +46,9 @@ internal class PaxPrinterControllerTest :
         beforeSpec {
             androidBitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
             bitmap = androidBitmap.asImageBitmap()
+            normalizedBitmap = bitmap.normalizeForPrintHead(
+                PrintingPaperSpec.PaxPaper56mm.printHeadWidthPx,
+            )
         }
 
         beforeTest {
@@ -165,7 +175,8 @@ internal class PaxPrinterControllerTest :
         }
 
         it("printImage") {
-            val payload = HtmlUtils.transformToHtml(HtmlUtils.generateImageHtml(bitmap), true)
+            val payload =
+                HtmlUtils.transformToHtml(HtmlUtils.generateImageHtml(normalizedBitmap), true)
             target.printImage(bitmap)
             target.start()
 
@@ -196,7 +207,7 @@ internal class PaxPrinterControllerTest :
                             appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("barcode"), 13))
                             append(HtmlUtils.generateImageHtml(bitmap))
                             appendLine(HtmlUtils.monospaceText(HtmlUtils.singleLineCenteredText("qr_code"), 13))
-                            append(HtmlUtils.generateImageHtml(bitmap))
+                            append(HtmlUtils.generateImageHtml(normalizedBitmap))
                             appendLine(HtmlUtils.monospaceText("end line", 13))
                             append("<br />")
                         }.toString(),
@@ -213,6 +224,17 @@ internal class PaxPrinterControllerTest :
 
             verify(exactly = 1) {
                 printService.print(payload, 50, any())
+            }
+        }
+
+        it("a transport failure propagates out of start") {
+            val ex = RemoteException()
+            every { printService.print(any(), any(), any()) } throws ex
+
+            target.printText("text_to_print")
+
+            shouldThrow<RemoteException> {
+                target.start()
             }
         }
     })

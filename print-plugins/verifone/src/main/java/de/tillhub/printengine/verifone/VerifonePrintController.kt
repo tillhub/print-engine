@@ -1,5 +1,6 @@
 package de.tillhub.printengine.verifone
 
+import android.os.RemoteException
 import com.verifone.peripherals.DirectPrintManager
 import com.verifone.peripherals.Printer
 import de.tillhub.printengine.barcode.BarcodeEncoder
@@ -23,6 +24,7 @@ internal class VerifonePrintController(
 ) : HtmlPrinterController(
     printerState = printerState,
     barcodeEncoder = barcodeEncoder,
+    paperSpec = VERIFONE_PAPER_SPEC,
     barcodeSize = VERIFONE_BARCODE_SIZE,
     qrCodeSize = VERIFONE_QR_CODE_SIZE,
     fontSize = VERIFONE_FONT_SIZE,
@@ -67,20 +69,34 @@ internal class VerifonePrintController(
         }
     }
 
+    /**
+     * @throws RemoteException if handing the receipt to the print service fails.
+     *
+     * [printListener] only reports failures the service itself reports back, and only by moving
+     * the printer state - it never sees a transaction that failed on the way out, and the caller
+     * of `startPrintJob` would get a `Success` for a receipt that was never printed. So a
+     * transport failure - `TransactionTooLargeException` among them - is reflected in the state
+     * and rethrown for `withPrinterCatching` to turn into a `PrinterResult.Error`.
+     */
     override fun printContent(
         content: String,
         cutAfterPrint: Boolean,
     ) {
-        printManager.printString(
-            printListener,
-            content,
-            when {
-                cutAfterPrint || useCutter -> Printer.PRINTER_FULL_CUT
-                else -> Printer.PRINTER_NO_CUTTER_LINE_FEED
-            },
-        )
-
-        useCutter = false
+        try {
+            printManager.printString(
+                printListener,
+                content,
+                when {
+                    cutAfterPrint || useCutter -> Printer.PRINTER_FULL_CUT
+                    else -> Printer.PRINTER_NO_CUTTER_LINE_FEED
+                },
+            )
+        } catch (e: RemoteException) {
+            printerState.value = PrinterState.Error.ConnectionLost
+            throw e
+        } finally {
+            useCutter = false
+        }
     }
 
     override fun setFontSize(fontSize: PrintingFontType) = Unit // Not supported
@@ -95,7 +111,7 @@ internal class VerifonePrintController(
         serialNumber = "n/a",
         deviceModel = "Verifone T630c",
         printerVersion = "n/a",
-        printerPaperSpec = PrintingPaperSpec.VerifonePaper56mm,
+        printerPaperSpec = VERIFONE_PAPER_SPEC,
         printingFontType = PrintingFontType.DEFAULT_FONT_SIZE,
         printerHead = "n/a",
         printedDistance = 0,
@@ -103,6 +119,7 @@ internal class VerifonePrintController(
     )
 
     companion object {
+        private val VERIFONE_PAPER_SPEC = PrintingPaperSpec.VerifonePaper56mm
         private val VERIFONE_FEED_STRING = FeedString("<br /><br />")
         private val VERIFONE_FONT_SIZE = FontSize(20)
         private val VERIFONE_QR_CODE_SIZE = QrCodeSize(420)
