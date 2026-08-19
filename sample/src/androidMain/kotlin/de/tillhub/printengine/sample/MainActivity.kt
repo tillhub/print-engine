@@ -2,6 +2,7 @@ package de.tillhub.printengine.sample
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -9,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -16,6 +18,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.lifecycleScope
 import de.tillhub.printengine.PrintEngine
 import de.tillhub.printengine.data.DiscoveryState
@@ -38,6 +42,32 @@ class MainActivity : ComponentActivity() {
         }
     }
     private val printers = mutableStateListOf<ExternalPrinter>()
+
+    private val printJob: PrintJob by lazy {
+        PrintJob(
+            listOf(
+                // A branch header image, printed before anything else.
+                PrintCommand.Image(decodeDrawable(R.drawable.apex)),
+                PrintCommand.Text(RECEIPT_TEXT),
+                PrintCommand.Text("This is a another line"),
+                PrintCommand.Text("-------"),
+                PrintCommand.Text("Barcode working:"),
+                PrintCommand.Barcode("RTC6093739"),
+                PrintCommand.Text("Barcode broken:"),
+                PrintCommand.Barcode("RTB183648B"),
+                PrintCommand.Text("Barcode more broken:"),
+                PrintCommand.Barcode("RTABCDEFAB"),
+                PrintCommand.Text("QR code:"),
+                PrintCommand.QrCode("123ABC"),
+                PrintCommand.Text("40 char line:"),
+                PrintCommand.Text("1234567890123456789012345678901234567890"),
+                // A branch footer image, printed last before the paper is fed and cut.
+                PrintCommand.Image(decodeDrawable(R.drawable.photoshoppng)),
+                PrintCommand.FeedPaper,
+                PrintCommand.CutPaper,
+            ),
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -170,69 +200,58 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * The drawables live in `drawable-nodpi`, so they are decoded at their authored pixel size
+     * rather than being density scaled for the screen - a print head has its own resolution and
+     * scaling for the display would only distort it.
+     */
+    private fun decodeDrawable(
+        @DrawableRes resId: Int,
+    ): ImageBitmap = BitmapFactory.decodeResource(resources, resId).asImageBitmap()
+
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     companion object {
-        private val printJob =
-            PrintJob(
-                listOf(
-                    PrintCommand.Text(
-                        "              receipt-header              \n" +
-                            "------------------------------------------\n" +
-                            "Receipt:                                 1\n" +
-                            "Salesperson:                    staff name\n" +
-                            "Date and Time:             20.5.2020 20:00\n" +
-                            "Branch:                                  1\n" +
-                            "Register:                              123\n" +
-                            "------------------------------------------\n" +
-                            "Customer number:                    654321\n" +
-                            "------------------------------------------\n" +
-                            "  receipt-note                            \n" +
-                            "------------------------------------------\n" +
-                            "0011                                      \n" +
-                            "multiline long product item name for      \n" +
-                            "receipt att-desc                          \n" +
-                            "- addon_name                              \n" +
-                            "             10.00 €       1       10.00 €\n" +
-                            "  note                                    \n" +
-                            "voucher-code                              \n" +
-                            "                                          \n" +
-                            "------------------------------------------\n" +
-                            "Tips                                3.00 €\n" +
-                            "                                          \n" +
-                            "******************************************\n" +
-                            "Total (gross):                     10.00 €\n" +
-                            "******************************************\n" +
-                            "Given:                                    \n" +
-                            "Cash                               10.00 €\n" +
-                            "- including tip:                    3.00 €\n" +
-                            "------------------------------------------\n" +
-                            "Change:                            10.00 €\n" +
-                            "------------------------------------------\n" +
-                            "Vat                                       \n" +
-                            "    19 %                            1.00 €\n" +
-                            "------------------------------------------\n" +
-                            "Net:                               10.00 €\n" +
-                            "------------------------------------------\n" +
-                            "              receipt-footer              \n",
-                    ),
-                    PrintCommand.Text("This is a another line"),
-                    PrintCommand.Text("-------"),
-                    PrintCommand.Text("Barcode working:"),
-                    PrintCommand.Barcode("RTC6093739"),
-                    PrintCommand.Text("Barcode broken:"),
-                    PrintCommand.Barcode("RTB183648B"),
-                    PrintCommand.Text("Barcode more broken:"),
-                    PrintCommand.Barcode("RTABCDEFAB"),
-                    PrintCommand.Text("QR code:"),
-                    PrintCommand.QrCode("123ABC"),
-                    PrintCommand.Text("40 char line:"),
-                    PrintCommand.Text("1234567890123456789012345678901234567890"),
-                    PrintCommand.FeedPaper,
-                    PrintCommand.CutPaper,
-                ),
-            )
+        private const val RECEIPT_TEXT =
+            "              receipt-header              \n" +
+                "------------------------------------------\n" +
+                "Receipt:                                 1\n" +
+                "Salesperson:                    staff name\n" +
+                "Date and Time:             20.5.2020 20:00\n" +
+                "Branch:                                  1\n" +
+                "Register:                              123\n" +
+                "------------------------------------------\n" +
+                "Customer number:                    654321\n" +
+                "------------------------------------------\n" +
+                "  receipt-note                            \n" +
+                "------------------------------------------\n" +
+                "0011                                      \n" +
+                "multiline long product item name for      \n" +
+                "receipt att-desc                          \n" +
+                "- addon_name                              \n" +
+                "             10.00 €       1       10.00 €\n" +
+                "  note                                    \n" +
+                "voucher-code                              \n" +
+                "                                          \n" +
+                "------------------------------------------\n" +
+                "Tips                                3.00 €\n" +
+                "                                          \n" +
+                "******************************************\n" +
+                "Total (gross):                     10.00 €\n" +
+                "******************************************\n" +
+                "Given:                                    \n" +
+                "Cash                               10.00 €\n" +
+                "- including tip:                    3.00 €\n" +
+                "------------------------------------------\n" +
+                "Change:                            10.00 €\n" +
+                "------------------------------------------\n" +
+                "Vat                                       \n" +
+                "    19 %                            1.00 €\n" +
+                "------------------------------------------\n" +
+                "Net:                               10.00 €\n" +
+                "------------------------------------------\n" +
+                "              receipt-footer              \n"
     }
 }
